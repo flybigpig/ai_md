@@ -1,0 +1,29 @@
+/dts-v1/;
+/* CAN 控制器 DTS 模板（M_CAN，示例 SoC） */
+/* 适配步骤：复制到 board dts 的 &soc 下，按 SoC TRM 填寄存器/中断/时钟。 */
+
+&soc {
+    can0: can@0x40000000 {
+        compatible = "bosch,m_can";
+        reg = <0x0 0x40000000 0x0 0x400>,     /* M_CAN 寄存器 */
+              <0x0 0x40080000 0x0 0x2000>;     /* 消息 RAM */
+        reg-names = "m_can", "mram";
+        interrupts = <GIC_SPI 64 IRQ_TYPE_LEVEL_HIGH>;
+        interrupt-names = "int0";
+        clocks = <&clk CAN0_CLK>, <&clk CAN0_PHY_CLK>;
+        clock-names = "hclk", "cclk";
+        bosch,mram-cfg = <0x0 0 0 32 0 0 32 32>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&can0_pins>;
+        status = "okay";
+    };
+};
+
+&pinctrl {
+    can0_pins: can0-pins {
+        pins = "CAN0_TX", "CAN0_RX";
+        function = "can0";
+        bias-pull-up;          /* 依硬件：上拉/无上下拉 */
+        drive-strength = <2>;  /* mA，依 SoC 规格 */
+    };
+};
