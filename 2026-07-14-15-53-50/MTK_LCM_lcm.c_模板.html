@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCM lcm.c 完整模板（含 get_params 时序填法）</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{fontSize:'14px'}});</script>
+<style>
+  :root{--bg:#fafbfc;--card:#fff;--ink:#1f2933;--sub:#52606d;--line:#e4e7eb;--accent:#0b7285;--tag:#e6f4f6;--warn:#fff4e6;--warnbd:#f0a868;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:38px 0 12px;padding-left:10px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--accent);}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f0f3f5;font-weight:600;}
+  code{background:#eef1f3;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .note{background:var(--tag);border:1px solid #b7e0e6;border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .note b{color:var(--accent);}
+  .warn{background:var(--warn);border:1px solid var(--warnbd);border-left:4px solid var(--warnbd);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .pill{display:inline-block;background:#eef2f4;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--sub);margin-right:6px;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:4px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>LCM <code>lcm.c</code> 完整模板</h1>
+<div class="meta">LK 侧（开机 logo 阶段）· 含 <code>get_params</code> 时序逐项填法 · 呼应第 8 份"场景二：加 LCM"</div>
+
+<div class="note">
+<span class="pill">LK</span><span class="pill">DSI</span><span class="pill">mt6893</span><span class="pill">bootloader</span><br>
+<b>这份是"填空模板"：</b>把 <code>XXX</code> 换成你的屏厂型号，<code>lcm_initialization_setting[]</code> 换成屏厂给的 DSI 初始化序列，<code>get_params</code> 的时序数字换成 datasheet 里的 porch/clock。剩下的框架照抄即可。LK 和 kernel 两份 lcm.c 结构几乎一样，差别见末尾。
+</div>
+
+<h2>1. 文件布局</h2>
+<pre><code>vendor/mediatek/proprietary/bootable/bootloader/lk/dev/lcm/xxx_1080p_lcm/
+├── lcm.c            # 本模板
+├── lcm_drv.h        # 声明 LCM_DRIVER
+├── lcm_params.h     # 分辨率 / 接口宏
+└── Android.mk       # 编译进 LK（或直接并入 lcm_list 的 Makefile）</code></pre>
+
+<h2>2. <code>lcm_params.h</code></h2>
+<pre><code>// lcm_params.h
+#ifndef __LCM_PARAMS_H__
+#define __LCM_PARAMS_H__
+
+#define LCM_WIDTH      1080
+#define LCM_HEIGHT     2400
+#define LCM_PHYSICAL_WIDTH_MM   68
+#define LCM_PHYSICAL_HEIGHT_MM  150
+
+// 屏厂面板名，必须和 kernel 侧、DTS 里 lcm_name 完全一致
+#define LCM_DRIVER_NAME "XXX_1080P_DSI"
+
+#endif // __LCM_PARAMS_H__</code></pre>
+
+<h2>3. <code>lcm_drv.h</code></h2>
+<pre><code>// lcm_drv.h
+#ifndef __LCM_DRV_H__
+#define __LCM_DRV_H__
+#include &lt;lcm_drv.h&gt;   // LK 自带：定义 LCM_DRIVER / LCM_PARAMS
+
+extern LCM_DRIVER xxx_1080p_lcm_drv;
+
+#endif // __LCM_DRV_H__</code></pre>
+
+<h2>4. <code>lcm.c</code>（核心）</h2>
+<pre><code>// lcm.c
+#include &lt;platform/mt_gpt.h&gt;
+#include &lt;platform/disp_drv.h&gt;
+#include &lt;platform/lcm_drv.h&gt;
+#include &lt;platform/dsi_drv.h&gt;
+#include "lcm_drv.h"
+#include "lcm_params.h"
+
+/* ---------- 1. 屏厂 DSI 初始化序列 ---------- */
+typedef struct {
+    unsigned char cmd;
+    unsigned char count;
+    unsigned char para_list[64];
+} LCM_setting_table;
+
+// REGFLAG_END_OF_TABLE 习惯用 cmd=0xFF,count=0 当结束符（按你 BSP 约定）
+static LCM_setting_table lcm_init_setting[] = {
+    {0xFF, 3, {0x98, 0x81, 0x03}},   // 切页（示例，按屏厂）
+    {0x11, 0, {}},                   // Exit Sleep
+    {0x29, 0, {}},                   // Display On
+    {0xFF, 0, {}},                   // END OF TABLE
+};
+
+static void push_table(LCM_setting_table *table, unsigned int cnt, unsigned char force)
+{
+    unsigned int i;
+    for (i = 0; i &lt; cnt; i++) {
+        unsigned char cmd = table[i].cmd;
+        if (cmd == 0xFF && table[i].count == 0) return;   // end
+        if (cmd == 0xFE) { mdelay(table[i].count); continue; } // delay
+        dsi_set_cmdq_pannel(cmd, table[i].count, table[i].para_list, force);
+    }
+}
+
+/* ---------- 2. util funcs（基本空实现） ---------- */
+static void lcm_set_util_funcs(const LCM_UTIL_FUNCS *util) { /* 通常留空 */ }
+
+/* ---------- 3. get_params：填分辨率 + DSI 时序 + 时钟 ---------- */
+static void lcm_get_params(LCM_PARAMS *params)
+{
+    memset(params, 0, sizeof(LCM_PARAMS));
+
+    params-&gt;type   = LCM_TYPE_DSI;
+    params-&gt;width  = LCM_WIDTH;
+    params-&gt;height = LCM_HEIGHT;
+    params-&gt;physical_width  = LCM_PHYSICAL_WIDTH_MM;
+    params-&gt;physical_height = LCM_PHYSICAL_HEIGHT_MM;
+
+    /* 数据格式 / 通道数 */
+    params-&gt;dsi.mode                    = BURST_VDO_MODE; // 或 SYNC_PULSE_VDO_MODE
+    params-&gt;dsi.data_format.color_order = LCM_COLOR_ORDER_RGB;
+    params-&gt;dsi.data_format.trans_seq   = LCM_DSI_TRANS_SEQ_MSB_FIRST;
+    params-&gt;dsi.data_format.format      = LCM_DSI_FORMAT_RGB888;
+    params-&gt;dsi.lane_num                = LCM_4LANE;     // 屏厂接口：3/4 lane
+    params-&gt;dsi.PS                      = LCM_PACKED_PS_24BIT_RGB888;
+    params-&gt;dsi.intermediat_buffer_num  = 2;
+
+    /* ---- 垂直时序（来自 datasheet 的 VFP/VBP/VSW） ---- */
+    params-&gt;dsi.vertical_sync_active  = 4;    // VSW  vsync 脉宽
+    params-&gt;dsi.vertical_back_porch   = 12;   // VBP
+    params-&gt;dsi.vertical_front_porch  = 8;    // VFP
+    params-&gt;dsi.vertical_active_line  = LCM_HEIGHT;
+
+    /* ---- 水平时序（来自 datasheet 的 HFP/HBP/HSW） ---- */
+    params-&gt;dsi.horizontal_sync_active  = 10; // HSW
+    params-&gt;dsi.horizontal_back_porch   = 40; // HBP
+    params-&gt;dsi.horizontal_front_porch  = 20; // HFP
+    params-&gt;dsi.horizontal_active_pixel = LCM_WIDTH;
+
+    /* ---- 时钟（DSI bit clock，单位约 MHz） ---- */
+    params-&gt;dsi.ssc_disable = 0;   // 开 SSC 抗 EMI
+    params-&gt;dsi.ssc_range   = 4;
+    params-&gt;dsi.PLL_CLOCK   = 480; // 见下方"时钟怎么算"
+}
+
+/* ---------- 4. init / suspend / resume ---------- */
+static void lcm_init(void)
+{
+    // 硬件 reset 由 LK platform 在调 init 前拉过；这里只发 DSI 序列
+    push_table(lcm_init_setting,
+               sizeof(lcm_init_setting)/sizeof(LCM_setting_table), 1);
+}
+
+static void lcm_suspend(void)
+{
+    unsigned char tmp = 0x00;
+    dsi_set_cmdq_pannel(0x28, 0, &tmp, 1); // Display Off
+    dsi_set_cmdq_pannel(0x10, 0, &tmp, 1); // Enter Sleep
+}
+
+static void lcm_resume(void)
+{
+    lcm_init();
+}
+
+static void lcm_set_backlight(unsigned int level)
+{
+    // level 0~255 → DCS 0x51 写背光
+    unsigned char bl = (unsigned char)(level & 0xFF);
+    dsi_set_cmdq_pannel(0x51, 1, &bl, 1);
+}
+
+/* ---------- 5. 注册 ---------- */
+LCM_DRIVER xxx_1080p_lcm_drv = {
+    .name          = LCM_DRIVER_NAME,
+    .set_util_funcs= lcm_set_util_funcs,
+    .get_params    = lcm_get_params,
+    .init          = lcm_init,
+    .suspend       = lcm_suspend,
+    .resume        = lcm_resume,
+    .set_backlight = lcm_set_backlight,
+};</code></pre>
+
+<h2>5. <code>get_params</code> 时序字段逐项解读</h2>
+<table>
+<tr><th>字段</th><th>来自 datasheet</th><th>填法</th></tr>
+<tr><td><code>vertical_sync_active</code></td><td>VSW (Vsync width)</td><td>datasheet 的 vsync pulse width，典型 2~10</td></tr>
+<tr><td><code>vertical_back_porch</code></td><td>VBP</td><td>datasheet 的 V back porch</td></tr>
+<tr><td><code>vertical_front_porch</code></td><td>VFP</td><td>datasheet 的 V front porch</td></tr>
+<tr><td><code>horizontal_sync_active</code></td><td>HSW</td><td>datasheet 的 hsync pulse width</td></tr>
+<tr><td><code>horizontal_back_porch</code></td><td>HBP</td><td>datasheet 的 H back porch</td></tr>
+<tr><td><code>horizontal_front_porch</code></td><td>HFP</td><td>datasheet 的 H front porch</td></tr>
+<tr><td><code>dsi.lane_num</code></td><td>接口 lane 数</td><td>屏厂给的 3-lane / 4-lane</td></tr>
+<tr><td><code>dsi.PLL_CLOCK</code></td><td>DSI bit clock</td><td>见下方算法；决定了能否跑到目标帧率</td></tr>
+</table>
+
+<h3>PLL_CLOCK 怎么算</h3>
+<p>DSI 在每个 lane 上的数据率（bit rate）：</p>
+<pre><code>bit_rate  = (H_total × V_total × fps × bits_per_pixel) / lane_num
+H_total   = horizontal_active + HFP + HBP + HSW
+V_total   = vertical_active   + VFP + VBP + VSW
+
+PLL_CLOCK ≈ bit_rate / 2      // LK 里 PLL_CLOCK 单位约为该半值(MHz)
+
+例：1080×2400, 60fps, RGB888(24bpp), 4 lane
+H_total = 1080+20+40+10 = 1150
+V_total = 2400+8+12+4   = 2424
+bit_rate= 1150×2424×60×24 / 4  ≈ 398 Mbps/lane
+PLL_CLOCK ≈ 199 → 取向上取整的余量值（屏厂常给 ~480 是因为含 blanking 倍数/倍频约定，<b>以屏厂给的为准</b>）</code></pre>
+<div class="warn">PLL_CLOCK 填错最常见的现象：闪屏、竖纹、点不亮但 init 不报错。拿不准就直接用屏厂规格书里写的 DSI clock。</div>
+
+<h2>6. 注册到 <code>lcm_list.c</code></h2>
+<pre><code>// vendor/.../lk/dev/lcm/lcm_list.c
+#include "xxx_1080p_lcm/lcm_drv.h"
+extern LCM_DRIVER xxx_1080p_lcm_drv;
+
+LCM_DRIVER *lcm_driver_list[] = {
+#ifdef LCM_NAME_XXX_1080P
+    &xxx_1080p_lcm_drv,
+#endif
+    // ... 其他 LCM
+    NULL,
+};</code></pre>
+<p>然后由 <code>ProjectConfig.mk</code> 的 LCM 宏决定编哪个（典型是 <code>CUSTOM_LK_LCM = xxx_1080p_lcm</code> 或一组 <code>LCM_HEIGHT/WIDTH</code> 宏 + 条件编译）。改完重编 LK 并烧 <code>lk.bin</code>。</p>
+
+<div class="mermaid">
+graph LR
+    SRC["lcm.c 填写"] --> LIST["注册 lcm_list.c"]
+    LIST --> MK["ProjectConfig 选屏宏"]
+    MK --> RLK["./mk mt6893 r lk"]
+    RLK --> BIN["lk.bin"]
+    BIN --> FLASH["SP Flash Tool 烧 lk"]
+</div>
+
+<h2>7. LK 与 kernel 两份的差异</h2>
+<table>
+<tr><th>点</th><th>LK 侧</th><th>Kernel 侧</th></tr>
+<tr><td>路径</td><td><code>bootable/bootloader/lk/dev/lcm/</code></td><td><code>kernel-5.15/drivers/misc/mediatek/lcm/</code></td></tr>
+<tr><td>头文件</td><td><code>platform/lcm_drv.h</code></td><td><code>mtk_lcm_drv.h</code> 等内核头</td></tr>
+<tr><td>DSI 发命令</td><td><code>dsi_set_cmdq_pannel()</code></td><td>走 DRM/DSI 子系统的 <code>mipi_dsi_dcs_write()</code></td></tr>
+<tr><td>probe</td><td>无，列表枚举</td><td>有 <code>probe()</code>，DTS 匹配 <code>lcm_name</code></td></tr>
+<tr><td>名字一致性</td><td colspan="2">两份的 panel name + DTS <code>lcm_name</code> <b>必须完全一致</b>，否则 kernel 起屏黑</td></tr>
+</table>
+
+<div class="warn">
+<b>屏不亮排查顺序（实战）：</b>
+<ol>
+<li>LK 和 kernel 的 LCM 名字是否一致？</li>
+<li>reset / power GPIO 与硬件原理图对得上？（DTS <code>reset-gpios</code> / <code>power-gpios</code>）</li>
+<li>DSI 初始化序列是否完整（页切换、Exit Sleep、Display On 顺序）？</li>
+<li><code>PLL_CLOCK</code> 是否按屏厂值？</li>
+<li>kernel log 搜 <code>lcm</code> / <code>panel</code> 看 probe 是否成功。</li>
+</ol>
+</div>
+
+<div class="card">关联：本文是第 8 份"场景二"的展开。配套看第 6 份的 GKI 烧录约束——LCM 改动要 <code>lk.bin</code> + <code>boot/vendor_boot</code> + <code>dtbo</code> 一起烧，缺一不可。</div>
+
+</div>
+</body>
+</html>

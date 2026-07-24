@@ -1,0 +1,33 @@
+# Automation: framework（每日 Android Framework 面试题整理）
+
+## 执行记录
+
+### 2026-07-23（首次运行）
+- 搜集近期热点：Binder 驱动层（一次拷贝/mmap/线程池/TTLE）、启动链路（ATMS）、HAL（Treble/HIDL→AIDL/FMQ）、ANR 机制、Compose 重组（SlotTable/Snapshot）、MTK 平台（DuraSpeed/AEE）。
+- 产出：`Android_Framework面试题_2026-07-23.md`（16 个专题 + 查缺补漏清单，含 AOSP 源码路径）。
+- 已覆盖主题（后续避免重复、可轮换深挖）：Handler/Looper+同步屏障、Binder(3篇)、冷启动、Zygote socket、AMS/ATMS+oom_adj、WMS/SF、View 三部曲、ANR、LMKD/PSI、Compose、HAL、GKI/内核、MTK。
+- 下次可换角度：Input 系统全链路、PMS 安装流程、ART 类加载/JIT/AOT、SystemUI/锁屏、多屏/折叠屏 WM、SELinux、OTA/AB 分区、JNI/art hook、Binder 安全、Perfetto 分析实战。
+
+### 2026-07-23（第二次运行·查缺补漏专题）
+- 主篇已覆盖 16 章主线路，本次按"轮换角度"补 10 个查缺补漏方向：Input 全链路、PMS 安装扫描、ART/JIT/AOT 与基线 Profile、SystemUI/锁屏、折叠屏/多窗口 WM(WindowOrganizer/TaskFragment)、SELinux 排错、OTA/AB+动态分区+snapuserd、JNI/hook、Binder 安全(clearCallingIdentity/SELinux ctx)、Perfetto 实战。
+- 产出：`Android_Framework面试题_热点拓展_2026-07-23.md`（与同日主篇互为补充，含 AOSP 源码路径 + 交叉索引表）。
+- 推送飞书：feishu 连接器当前为 disconnected，无法自动推送；已生成文件并提示用户连接飞书或改用 DingTalk（自动化配置的 connector 为 dingtalk，响应文本会被推送到钉钉）。
+- 后续可轮换的真·未覆盖角度：ART 内存布局/对象头、Binder 驱动 TTLE 全链路 dump 实战、Input 多指/手势、Vsync/Display 时序精算、Camera/音频 HAL、Car/Automotive、ART deopt/verify、Rust Binder 代码走读、GKI KMI 模块开发、perfetto SQL 实战范例。
+
+### 2026-07-23（第三次运行·推送飞书成功）
+- 用户要求重新推送到飞书。feishu 连接器已 connected；lark-cli 技能自带 app（cli_aaeb44244db89bc9）首次设备流仅拿到 bot 身份，云空间上传需要 user 身份 + drive scope。
+- 重新发起 drive 域 user 设备流授权（用户「王凯」授权），获得 drive:file:upload、drive:drive.metadata:readonly。
+- 用 `lark-cli markdown +create --as user --file <相对路径>` 将两份 Markdown 推送到飞书云空间根目录，均成功（主篇 file_token Q5jgbT1PkoBBtXxIOwBczW7unNd；拓展篇 Ui2RbKCaHo5qysxlIrocT6btnTd）。
+- 踩坑记录：lark-cli 的 --file 必须是「当前目录内相对路径」（需先 cd 到 workspace）；qrcode 子命令 --url 含 `&` 会被内层 cmd 误解析，自动二维码生成失败，改用「链接+设备码」手动授权更稳。
+
+### 2026-07-23（第四次运行·深挖篇）
+- 当日第三份产出：`Android_Framework面试题_深挖篇_2026-07-23.md`（11 章），覆盖此前规划的"真·未覆盖角度"：ART 对象头/LockWord、Android 14 CMC GC(userfaultfd)、verify/deopt、Binder 驱动调试实战(binderfs/binder_logs/tracepoint)、Rust Binder(libbinder_rs)、Input 多指拆分(split touch)、VSync 时序(VsyncSchedule/FrameTimeline/JankType)、Camera HAL(Camera3Device/AIDL)、Audio 全链路(AudioFlinger/FastMixer/AAudio MMAP)、GKI KMI/DDK/vendor hook、Perfetto SQL 实战；末尾附三篇交叉索引表。
+- 推送飞书成功：云空间 file_token `Kx78bw2YEoPkf9xuNMtcaSFOncb`；另用 bot 身份 `im +messages-send --user-id <open_id> --text` 把链接直发用户私聊（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）——"推送到对话"比只传云空间更贴题，后续沿用此双动作。
+- 踩坑：`im +messages-send` 传纯文本要用 `--text`，`--content` 只接受 JSON（如 '{"text":"..."}')。
+- 至此当日三篇：主篇(16章)/拓展篇(10章)/深挖篇(11章)，主线+盲区+深水区已闭环。明日起建议轮换新角度：ART deopt 已覆盖，可选 Camera/Audio 更深(Codec2/MediaCodec)、Vulkan/ANGLE/HWUI 渲染、Thermal/PowerHAL、CarService、NFC/SE、Wi-Fi/BT 协议栈、Telephony(RIL) 等。
+
+### 2026-07-24（第五篇·图形/多媒体/电源热控/通信篇）
+- 按轮换规划覆盖此前完全未涉及的角度，产出 `Android_Framework面试题_图形多媒体通信篇_2026-07-24.md`（12 大专题+查缺补漏）：HWUI/DisplayList/RenderThread 同步点、Choreographer/VSync offset、SurfaceFlinger(BufferQueue/HWC Overlay vs GPU 合成)、图形内存(Gralloc/DMA-BUF/GraphicBuffer/fence 零拷贝、Binder 传 fd)、多刷新率(DisplayModeDirector 投票/LTPO)、MediaCodec 状态机+同步异步+Surface 零拷贝、Codec2(CCodec) vs OMX(ACodec)/C2Work/C2Buffer、Thermal HAL 降频链路、Power HAL+ADPF/PerformanceHint、Telephony/RIL(RILJ↔Radio HAL AIDL)、Wi-Fi(Mainline/ClientModeImpl/supplicant)、Bluetooth(Fluoride→Gabeldorsche)。均带 Android14 源码路径。
+- 推送飞书成功：云空间 file_token `Rwn9bqI5KoGWHxxLVNTc6DGRnth`；bot 私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af)发链接成功。
+- 踩坑：user 身份无 `im:message.send_as_user` scope 无法私聊发消息，须用 `--as bot`；上传仍走 user 身份(drive:file:upload)。此为稳定组合，后续沿用「user 上传 + bot 发消息」。
+- 明日可轮换：Vulkan/ANGLE/HWUI Skia 后端深挖、Codec2 vendor plugin 开发、CarService/Automotive、NFC/SE、NNAPI/TFLite delegate、virtual A/B snapuserd 深水区。

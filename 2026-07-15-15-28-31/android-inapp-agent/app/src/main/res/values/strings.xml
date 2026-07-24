@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">设备内 Agent</string>
+    <string name="acc_desc">设备内 UI Agent：读取当前界面无障碍节点树，并以手势/节点动作代替用户操作，由本地或远程 LLM 驱动决策。</string>
+    <string name="hint_goal">任务目标，例如：打开设置并进入「关于手机」</string>
+    <string name="hint_base_url">LLM base url（默认 http://127.0.0.1:8081/v1，需 adb reverse）</string>
+    <string name="hint_model">模型名</string>
+    <string name="btn_start">启动 Agent</string>
+    <string name="btn_stop">停止</string>
+    <string name="btn_enable_acc">开启无障碍服务</string>
+    <string name="status_idle">空闲</string>
+    <string name="status_running">运行中…</string>
+    <string name="guide_enable_acc">请在「无障碍」设置中开启「设备内 Agent」，然后返回。\n截图(视觉 grounding)为可选，需点击授权。</string>
+</resources>

@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.fly.agent.app-debug-33:/xml_agent_accessibility_service_config.xml.flat",
+        "source": "com.fly.agent.app-main-35:/xml/agent_accessibility_service_config.xml"
+    },
+    {
+        "merged": "com.fly.agent.app-debug-33:/layout_activity_main.xml.flat",
+        "source": "com.fly.agent.app-main-35:/layout/activity_main.xml"
+    }
+]

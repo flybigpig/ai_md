@@ -1,0 +1,67 @@
+# ============================================================================
+# Patch 02 —— 给 AMS 加 `am myams` 子命令（运行时开关）
+# 文件: frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java
+# 作用: 通过 `adb shell am myams block <pkg>` / `unblock` / `status` 读写系统属性，
+#       与 Patch 01 的拦截逻辑联动，无需重编即可开关。
+#
+# 定位插入点 A: 在 onCommand(String cmd) 的 switch 里，找一个现有 case（如
+#              `case "trace-ipc":`）后面加一行 `case "myams": return runMyAms();`
+# 定位插入点 B: 在类里任意位置（如 runTraceIpc() 方法之后）贴下面的 runMyAms() 方法。
+#
+# 所需 import（ActivityManagerShellCommand 一般已具备）:
+#   import android.os.SystemProperties;   // 通常已 import
+#   （getOutPrintWriter() / getNextArg() 来自父类 ShellCommand，无需 import）
+# ============================================================================
+
+--- a/frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java
++++ b/frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java
+@@ -1,1 +1,1 @@
+         case "trace-ipc":
+             return runTraceIpc();
++        case "myams":
++            return runMyAms();
+         default:
+
+--- a/frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java
++++ b/frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java
+@@ -1,1 +1,1 @@
++    // === MyAMS: am myams 子命令，运行时开关拦截逻辑（配合 Patch 01） ===
++    private int runMyAms() {
++        String arg = getNextArg();
++        if (arg == null) {
++            getOutPrintWriter().println("usage: am myams [block <pkg> | unblock | status]");
++            return 0;
++        }
++        switch (arg) {
++            case "block": {
++                String pkg = getNextArg();
++                SystemProperties.set("persist.myams.block_pkg", pkg != null ? pkg : "");
++                SystemProperties.set("persist.myams.enable_block", "true");
++                getOutPrintWriter().println("MyAMS block enabled for " + pkg);
++                break;
++            }
++            case "unblock":
++                SystemProperties.set("persist.myams.enable_block", "false");
++                SystemProperties.set("persist.myams.block_pkg", "");
++                getOutPrintWriter().println("MyAMS block disabled");
++                break;
++            case "status":
++                getOutPrintWriter().println("enable_block="
++                        + SystemProperties.get("persist.myams.enable_block", "false")
++                        + " block_pkg=" + SystemProperties.get("persist.myams.block_pkg", ""));
++                break;
++            default:
++                getOutPrintWriter().println("unknown arg: " + arg);
++        }
++        return 0;
++    }
++    // === END MyAMS ===
+
+# ----------------------------------------------------------------------------
+# 验证:
+#   m services -j$(nproc)
+#   adb push out/.../system/framework/services.jar /system/framework/ && adb reboot
+#   adb shell am myams status
+#   adb shell am myams block com.example.target
+#   adb shell am myams unblock
+# ============================================================================

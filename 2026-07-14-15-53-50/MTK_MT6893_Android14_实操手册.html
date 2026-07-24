@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT6893 + Android 14 端到端实操手册</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{fontSize:'14px'}});</script>
+<style>
+  :root{--bg:#fafbfc;--card:#fff;--ink:#1f2933;--sub:#52606d;--line:#e4e7eb;--accent:#0b7285;--tag:#e6f4f6;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:36px 0 12px;padding-left:10px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--accent);}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f0f3f5;font-weight:600;}
+  code{background:#eef1f3;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:13px;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .mermaid{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin:14px 0;}
+  .note{background:var(--tag);border:1px solid #b7e0e6;border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .note b{color:var(--accent);}
+  .pill{display:inline-block;background:#eef2f4;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--sub);margin-right:6px;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:4px 0;}
+  .toc{font-size:14px;color:var(--sub);}
+  .toc a{color:var(--accent);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>MT6893 + Android 14（U / API 34）端到端实操手册</h1>
+<div class="meta">平台精确版 · 基于通用 MTK BSP 流程，以你拿到的 BSP Release Note 为准 · 原文由用户编写，图示由 WorkBuddy 渲染</div>
+
+<div class="note">
+<b>平台速查</b>
+<span class="pill">平台 mt6893</span><span class="pill">Android 14 / U / API 34</span><span class="pill">kernel-5.15</span><span class="pill">arm64</span><span class="pill">Ubuntu 22.04 + JDK17</span><br>
+天玑 1200/1100（6nm，Cortex-A78/A55 + Mali-G77）。Android 14 三大关键变化：<b>GKI 内核分离</b> + <b>动态分区(super)</b> + <b>AVB2</b> + <b>JDK17</b>。
+</div>
+
+<div class="card toc">
+<b>目录</b><br>
+<a href="#s1">① 主机环境</a> · <a href="#s2">② 源码与目录</a> · <a href="#s3">③ 编译</a> · <a href="#s4">④ 产出镜像</a> · <a href="#s5">⑤ 烧录</a> · <a href="#s6">⑥ 验证</a> · <a href="#s7">⑦ 特有分区</a> · <a href="#s8">⑧ Android14 专属坑</a> · <a href="#note">平台对齐注记</a>
+</div>
+
+<h2 id="s1">① 主机环境（Android 14 专用）</h2>
+<table>
+<tr><th>项</th><th>建议</th></tr>
+<tr><td>系统</td><td>Ubuntu 22.04（Android 14 推荐）</td></tr>
+<tr><td>内存</td><td>≥ 32GB（Android 14 全编更吃内存）</td></tr>
+<tr><td>磁盘</td><td>≥ 500GB SSD</td></tr>
+<tr><td>CPU</td><td>16 核+</td></tr>
+</table>
+<pre><code># Ubuntu 22.04
+sudo apt update
+sudo apt install -y git gnupg flex bison gperf build-essential \
+  zip curl zlib1g-dev libc6-dev libncurses5-dev x11proto-core-dev \
+  libx11-dev lib32z-dev ccache libgl1-mesa-dev libxml2-utils \
+  xsltproc unzip python3 python3-pip gcc-multilib g++-multilib \
+  libssl-dev lib32stdc++6
+
+# ★ Android 14 必须 JDK 17
+sudo apt install openjdk-17-jdk
+sudo update-alternatives --config java   # 选 17
+java -version   # 确认 17</code></pre>
+<div class="note">用 JDK 8/11 在 Android 14 上 <code>lunch</code> 直接报 <code>Unsupported class file major version</code>。</div>
+
+<h2 id="s2">② 源码与目录</h2>
+<pre><code>alps/                          # 主框架 (AOSP + MTK patch)
+├── kernel-5.15/               # ★ 内核 (MTK Android14 典型)
+├── device/mediatek/mt6893/    # 设备配置 ProjectConfig.mk / device.mk / *.rc
+├── vendor/mediatek/proprietary/   # ★ 闭源 BSP (HAL/frameworks/libs) 必须解压
+├── vendor/mediatek/mt6893/    # 设备 vendor overlay
+└── bootable/bootloader/lk/    # preloader + LK</code></pre>
+<div class="note">解压后务必确认 <code>vendor/mediatek/proprietary/hardware/</code> 非空。</div>
+
+<h2 id="s3">③ 编译</h2>
+<pre><code>cd alps
+source build/envsetup.sh
+lunch mt6893-userdebug          # 开发机建议 userdebug 或 eng
+
+# Android 14 用 Soong/Ninja，下面两种都行
+m -j$(nproc)                    # 推荐
+# 或传统
+make -j$(nproc) 2>&1 | tee build_mt6893.log
+
+# 只重编某层（调试常用）
+mmm vendor/mediatek/proprietary/hardware/mtkcam/</code></pre>
+
+<h2 id="s4">④ 产出镜像（Android 14 / GKI / 动态分区）</h2>
+<p><code>out/target/product/mt6893/</code>：</p>
+<pre><code>MT6893_Android_scatter.txt     # ★ 分区表
+DA_SWSEC.bin / DA_PL.bin       # ★ Download Agent
+preloader_mt6893.bin
+lk.bin  lk2.bin                # LK + 备份
+gz.bin                         # 安全/ATF 相关小分区
+# —— GKI 分离 (Android 12+ 强制) ——
+boot.img                       # ★ GKI 内核 + generic ramdisk
+vendor_boot.img                # ★ vendor ramdisk + DTB
+dtbo.img                       # DT overlay
+# —— 动态分区 ——
+super.img                      # ★ system+vendor+product+system_ext+odm 合一
+vbmeta.img  vbmeta_system.img  vbmeta_vendor.img   # AVB2 校验
+# —— 其余 ——
+recovery.img  userdata.img  cache.img
+md1img.img                     # modem
+tee.img  spmfw.img  mcupm.img  scp.img  sspm.img   # 协处理器固件
+logo.bin  expdb.img  frp.img  metadata.img
+nvdata.img  nvram.img  protect1.img  protect2.img  para.img</code></pre>
+
+<div class="mermaid">
+graph LR
+    LK["LK"] -->|加载| BOOT["boot.img<br/>(GKI kernel + ramdisk)"]
+    LK -->|加载| VB["vendor_boot.img<br/>(DTB + vendor ramdisk)"]
+    LK -->|加载| DTBO["dtbo.img"]
+    BOOT --> INIT["init (generic)"]
+    VB --> INIT
+    INIT --> VBM["vbmeta 校验 super"]
+    VBM --> SUPER["super.img 挂载"]
+</div>
+
+<div class="note">⚠️ Android 14 下 <b>boot.img 不再含 DTB</b>（DTB 移到 vendor_boot），烧录时 <code>boot</code>/<code>vendor_boot</code>/<code>dtbo</code> 三者要一起烧，缺一不可，否则内核起不来。</div>
+
+<h2 id="s5">⑤ 烧录（SP Flash Tool）</h2>
+<ul>
+<li><b>scatter</b> 用本次编译生成的 <code>MT6893_Android_scatter.txt</code>。</li>
+<li><b>Secure Boot</b>：量产机必须加载 <code>auth_sv.bin</code> / <code>da_auth</code>（SP Flash Tool → Auth 选项卡），否则 <code>BROM ERROR: STATUS_SEC_IMG_NOT_FOUND</code>。</li>
+<li><b>下载项</b>：勾选 <code>preloader, lk, gz, boot, vendor_boot, dtbo, vbmeta*, super, md1img, tee, spmfw, mcupm, scp, sspm, logo</code> 等（scatter 默认全选即可）。</li>
+<li>关机插 USB 触发 BROM → 自动加载 DA → 绿色 ✓。</li>
+</ul>
+
+<div class="mermaid">
+sequenceDiagram
+    participant T as SP Flash Tool
+    participant D as MT6893(关机)
+    T->>T: 加载 scatter + Auth 文件
+    T->>T: Download (全选)
+    T->>D: 插 USB → BROM 模式
+    D->>T: 握手 DA_SWSEC
+    T->>D: 烧 preloader/lk/gz/boot/vendor_boot/dtbo/vbmeta/super/md1img/tee/...
+    T->>T: 绿色 ✓
+    T->>D: 开机 → GKI kernel + 挂载 super
+</div>
+
+<h2 id="s6">⑥ 验证</h2>
+<pre><code>adb shell getprop ro.product.board        # mt6893
+adb shell getprop ro.build.version.release # 14
+adb shell getprop ro.boot.vbmeta.digest    # AVB 校验是否通过
+adb shell uname -a                         # kernel-5.15
+# 全日志(含 modem)
+# mtklogger App → /sdcard/mtklog/</code></pre>
+
+<h2 id="s7">⑦ MT6893 特有分区说明</h2>
+<table>
+<tr><th>分区</th><th>作用</th></tr>
+<tr><td><code>gz</code></td><td>早期启动/安全相关小镜像（部分平台用于 EL3 辅助）</td></tr>
+<tr><td><code>mcupm</code> / <code>spmfw</code></td><td>多核电源管理 / 系统电源管理固件</td></tr>
+<tr><td><code>scp</code> / <code>sspm</code></td><td>传感/低功耗协处理器</td></tr>
+<tr><td><code>tee</code></td><td>Trustonic TEE OS</td></tr>
+<tr><td><code>md1img</code></td><td>主 modem 基带</td></tr>
+<tr><td><code>lk2</code></td><td>LK 备份（双 LK 防变砖）</td></tr>
+</table>
+
+<h2 id="s8">⑧ Android 14 专属坑</h2>
+<ol>
+<li><b>JDK 必须是 17</b>，否则 <code>lunch</code> 直接挂。</li>
+<li><b>GKI</b>：<code>boot.img</code> 与 <code>vendor_boot.img</code> 分离，老习惯只烧 <code>boot</code> 会卡内核。</li>
+<li><b>动态分区</b>：别单独烧 <code>system/vendor/product</code>，烧 <code>super.img</code>；<code>fastboot flash system</code> 在动态分区上要用 <code>fastboot flash super</code> 或 <code>fastboot update</code>。</li>
+<li><b>AVB</b>：<code>vbmeta</code> 没烧或 key 不匹配 → 红字 <code>vbmeta</code> 校验失败，需 <code>fastboot --disable-verification</code> 或烧正确 vbmeta。</li>
+<li><b>16KB 页</b>（可选）：Android 14 起支持 16KB page，但 MT6893 仍用 4KB，别误开 <code>BOARD_KERNEL_PAGESIZE=16384</code>。</li>
+<li><b>内存</b>：Android 14 全编比 11/12 更吃内存，强烈建议 32GB+，否则 <code>m</code> 中途 OOM。</li>
+</ol>
+
+<h2 id="note">平台对齐注记（WorkBuddy 补充，不改原文）</h2>
+<div class="card">
+<p><b>与本系列文档的关系：</b>本文是第 4 份《MTK 编译烧录实操手册（通用）》的 <b>MT6893 + Android 14 精确版</b>。相对通用版的关键增量：</p>
+<ul>
+<li><b>GKI 分离</b>：boot.img（GKI kernel + generic ramdisk）与 vendor_boot.img（DTB + vendor ramdisk）拆开，DTB 不再在 boot.img。这是 Android 12+ 强制，本文的"三者同烧"是 Android 14 的硬约束。</li>
+<li><b>动态分区</b>：system/vendor/product/system_ext/odm 合并为 super.img；scatter 里这些子分区通常 <code>is_download:false</code> 或不存在，只烧 super。</li>
+<li><b>AVB2</b>：vbmeta 拆成 img / system / vendor 三张，校验粒度更细；量产机不开 <code>--disable-verification</code> 基本起不来。</li>
+<li><b>JDK17 + Ubuntu 22.04</b>：与通用版（Android 11/12 用 JDK11）形成明确分界。</li>
+</ul>
+<p><b>仍需以你 BSP 为准的点：</b></p>
+<ul>
+<li><code>kernel-5.15/</code> 是 MTK Android 14 BSP 的典型内核目录名，但最终以你解压后的真实目录名为准（可能 backport 到 5.10 或 6.1）。</li>
+<li><code>gz</code> 分区的语义在不同 release 有差异（EL3 辅助 vs 纯安全小镜像），以 Release Note 描述为准。</li>
+</ul>
+<p>相关文档：① 架构总览 · ② AOSP 代码级 · ③ 开发指南 · ④ 通用编译烧录 · ⑤ ProjectConfig 最小闭环 · ⑦ scatter 字段解读。</p>
+</div>
+
+</div>
+</body>
+</html>

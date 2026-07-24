@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <!-- 车辆信号权限：多为 signature / system 级，普通第三方应用拿不到，
+         需 OEM 系统签名或作为预装/特权应用。模拟器 mock 可绕过。 -->
+    <uses-permission android:name="android.car.permission.CAR_INFO" />
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <uses-permission android:name="android.car.permission.CAR_POWERTRAIN" />
+    <uses-permission android:name="android.car.permission.CAR_EXTERIOR_ENVIRONMENT" />
+
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Car8295">
+        <!-- 声明依赖系统 android.car 库（可选，缺则非车机环境不安装） -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".scan.CameraXScanActivity"
+            android:exported="false" />
+
+        <!-- 部分 OEM 要求显式声明该应用允许运行在副驾屏 -->
+        <meta-data
+            android:name="com.android.car.allowed_passenger_display"
+            android:value="true" />
+    </application>
+
+</manifest>

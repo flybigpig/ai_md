@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.fly.agent.app-mergeDebugResources-31:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\YTO-02231406\\.gradle\\caches\\8.10.2\\transforms\\48a83b40d0f1d7bb3b064d0a9a684b1f\\transformed\\appcompat-1.7.0\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "5",
+                        "endColumns": "12",
+                        "endOffsets": "223"
+                    }
+                }
+            ]
+        }
+    ]
+}

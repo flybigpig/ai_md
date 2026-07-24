@@ -1,0 +1,69 @@
+<svg viewBox="0 0 680 520" width="100%" role="img">
+<title>SurfaceFlinger 合成分工：HWC 硬件 OVERLAY vs GLES 客户端合成</title>
+<desc>图层经 HWC.prepare 逐层判定类型：Device 类型走 HWC 硬件叠加器直接上屏，SurfaceFlinger 不碰像素；Client 类型由 SurfaceFlinger 用 GLES 渲染进 framebuffer 后 present 给 HWC，二者在显示面板上合并。</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<text x="340" y="26" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="500" fill="#2C2C2A">SurfaceFlinger 合成：HWC OVERLAY vs GLES 客户端</text>
+<text x="340" y="46" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#5F5E5A">同一次刷新里，每层各走一条路，最终在显示面板汇合</text>
+
+<rect x="20" y="78" width="110" height="32" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="75" y="98" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#2C2C2A">Layer 1 (opaque)</text>
+<rect x="20" y="116" width="110" height="32" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="75" y="136" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#2C2C2A">Layer 2 (video)</text>
+<rect x="20" y="154" width="110" height="32" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="75" y="174" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#2C2C2A">Layer 3 (blur)</text>
+<rect x="20" y="192" width="110" height="32" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="75" y="212" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#2C2C2A">Layer 4 (rotate)</text>
+
+<rect x="150" y="100" width="150" height="128" rx="10" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+<text x="225" y="122" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="500" fill="#412402">HWC.prepare()</text>
+<text x="225" y="144" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#633806">setUpHWComposer</text>
+<text x="225" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#412402">逐 layer 打类型:</text>
+<text x="225" y="188" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#042C53">Device → OVERLAY</text>
+<text x="225" y="208" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#04342C">Client → GLES</text>
+
+<text x="435" y="70" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="500" fill="#042C53">路径 A · HWC 硬件叠加 (Overlay)</text>
+<rect x="330" y="82" width="212" height="58" rx="10" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="436" y="104" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="500" fill="#042C53">HWC 硬件叠加器</text>
+<text x="436" y="124" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0C447C">SurfaceFlinger 不碰像素</text>
+
+<text x="435" y="272" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="500" fill="#04342C">路径 B · GLES 客户端合成 (Client)</text>
+<rect x="330" y="288" width="212" height="56" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="436" y="308" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="500" fill="#04342C">SurfaceFlinger.doComposeSurfaces</text>
+<text x="436" y="328" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#085041">遍历 Client 层逐个绘制</text>
+<rect x="330" y="350" width="212" height="56" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="436" y="370" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="500" fill="#04342C">GLES 渲染进 Framebuffer</text>
+<text x="436" y="390" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#085041">合成一张离屏缓冲</text>
+<rect x="330" y="412" width="212" height="56" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="436" y="432" text-anchor="middle" font-family="sans-serif" font-size="13" font-weight="500" fill="#04342C">mHwc-&gt;present()</text>
+<text x="436" y="452" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#085041">交回 HWC 上屏</text>
+
+<rect x="556" y="158" width="84" height="296" rx="10" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text x="598" y="240" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="500" fill="#2C2C2A">显示面板</text>
+<text x="598" y="262" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444441">HWC present</text>
+<text x="598" y="282" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444441">↓ DRM/KMS</text>
+<text x="598" y="302" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444441">↓ 屏幕</text>
+<text x="598" y="330" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#444441">两路合并</text>
+
+<polyline points="130,98 150,118" fill="none" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
+<polyline points="130,136 150,140" fill="none" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
+<polyline points="130,174 150,170" fill="none" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
+<polyline points="130,212 150,200" fill="none" stroke="#5F5E5A" stroke-width="1" marker-end="url(#arrow)"/>
+
+<path d="M300,142 C320,128 318,118 330,111" fill="none" stroke="#185FA5" stroke-width="1.4" marker-end="url(#arrow)"/>
+<path d="M300,196 C320,280 318,300 330,316" fill="none" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+<line x1="540" y1="111" x2="556" y2="235" stroke="#185FA5" stroke-width="1.4" marker-end="url(#arrow)"/>
+<line x1="436" y1="344" x2="436" y2="350" stroke="#0F6E56" stroke-width="1.2" marker-end="url(#arrow)"/>
+<line x1="436" y1="406" x2="436" y2="412" stroke="#0F6E56" stroke-width="1.2" marker-end="url(#arrow)"/>
+<path d="M540,440 C552,420 552,360 556,330" fill="none" stroke="#0F6E56" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+<rect x="40" y="478" width="14" height="14" rx="3" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text x="60" y="489" font-family="sans-serif" font-size="11" fill="#2C2C2A">OVERLAY：硬件直接叠加，最省电</text>
+<rect x="360" y="478" width="14" height="14" rx="3" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="380" y="489" font-family="sans-serif" font-size="11" fill="#2C2C2A">GLES：CPU/GPU 软件合成，灵活但费电</text>
+</svg>

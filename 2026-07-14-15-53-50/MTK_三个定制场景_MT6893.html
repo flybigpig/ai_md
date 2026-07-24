@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT6893 三个定制场景：ProjectConfig / LCM / Camera</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{fontSize:'14px'}});</script>
+<style>
+  :root{--bg:#fafbfc;--card:#fff;--ink:#1f2933;--sub:#52606d;--line:#e4e7eb;--accent:#0b7285;--tag:#e6f4f6;--warn:#fff4e6;--warnbd:#f0a868;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:38px 0 12px;padding-left:10px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--accent);}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f0f3f5;font-weight:600;}
+  code{background:#eef1f3;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .note{background:var(--tag);border:1px solid #b7e0e6;border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .note b{color:var(--accent);}
+  .warn{background:var(--warn);border:1px solid var(--warnbd);border-left:4px solid var(--warnbd);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .pill{display:inline-block;background:#eef2f4;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--sub);margin-right:6px;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:4px 0;}
+  .who{font-size:12px;color:#9aa5b1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>MT6893 三个定制场景：照做的改法</h1>
+<div class="meta">路径按 MT6893 Android 14 BSP 常见布局 · 原文框架由用户编写，WorkBuddy 渲染图示并补对齐注记</div>
+
+<div class="note">
+<span class="pill">mt6893</span><span class="pill">Android 14</span><span class="pill">LCM</span><span class="pill">camera</span><span class="pill">ProjectConfig</span><br>
+<b>一句话定位：</b>这三类改动正好落在第 2/3 份报告讲过的「LK/bootloader → kernel → HAL」三层里。烧录时牢记第 6 份的 GKI/动态分区约束：<code>lk.bin</code> + <code>boot/vendor_boot</code> + <code>dtbo</code> 同烧，HAL 改动烧 <code>super</code>。
+</div>
+
+<h2>场景一：改 ProjectConfig 开关</h2>
+<p><code>ProjectConfig.mk</code> 是 MTK 所有 <code>MTK_*</code> 宏的"总开关"，改完会同时影响 Make 变量和 C/C++ 编译宏。</p>
+<p><b>位置（优先级从高到低）：</b></p>
+<pre><code>device/mediatek/mt6893/ProjectConfig.mk        # ★ 你主要改这里
+device/mediatek/common/ProjectConfig.mk        # 公共默认值
+vendor/mediatek/proprietary/build/...           # 部分宏来源</code></pre>
+<p><b>改法示例</b>（开一个功能宏）：</p>
+<pre><code># device/mediatek/mt6893/ProjectConfig.mk
+MTK_CAMERA_APP = yes
+MTK_GMO_RAM_OPTIMIZE = no
+MTK_MIRAVISION_SUPPORT = yes
+MY_CUSTOM_FEATURE = yes        # 自定义宏也能加</code></pre>
+<p><b>宏怎么传播：</b></p>
+<ul>
+<li><b>Make 层</b>：所有 <code>Android.mk</code> / <code>Android.bp</code> 可直接用 <code>$(MTK_CAMERA_APP)</code> 做条件编译。</li>
+<li><b>C/C++ 层</b>：MTK 在编译期生成配置头，典型在
+<pre><code>out/target/product/mt6893/obj/CONFIG/autoconfig.mk     # Make 变量全集
+out/target/product/mt6893/obj/CONFIG/ProjectConfig.h    # 部分 BSP 生成给 C 用</code></pre>
+代码里用 <code>#ifdef MTK_MIRAVISION_SUPPORT</code> 判断。具体生成头路径以你 BSP 的 <code>device/mediatek/build/</code> 下 gen 脚本为准（不同版本可能在 <code>out/.../include/</code>）。</li>
+</ul>
+<p><b>生效：</b></p>
+<pre><code>source build/envsetup.sh && lunch mt6893-userdebug
+mmm device/mediatek/mt6893/        # 或全编</code></pre>
+<div class="warn">坑：只改 <code>out/</code> 下的生成文件没用，下次编译会被覆盖；必须改 <code>device/mediatek/mt6893/ProjectConfig.mk</code> 源文件。</div>
+
+<h2>场景二：加一个 LCM（LCD）</h2>
+<p>LCM 驱动要<b>同时加 LK（开机 logo 阶段）和 kernel 两份</b>，且 DTS 里配 GPIO。面板初始化序列（DSI cmd）由屏厂提供。</p>
+
+<h3>2.1 LK 侧（开机即显示）</h3>
+<div class="mermaid">
+graph LR
+    A["新建 LK LCM 驱动文件夹"] --> B["注册到 lcm_list.c"]
+    B --> C["编译 lk.bin"]
+    C --> D["烧录 lk"]
+</div>
+<ul>
+<li>新建驱动目录：
+<pre><code>vendor/mediatek/proprietary/bootable/bootloader/lk/dev/lcm/&lt;vendor&gt;_&lt;model&gt;_lcm/
+├── lcm.c            # 实现 LCM_DRIVER
+├── lcm_drv.h
+└── lcm_params.h</code></pre></li>
+<li><code>lcm.c</code> 核心结构体：
+<pre><code>C
+LCM_DRIVER xxx_lcm_drv = {
+    .name           = "XXX_1080P_LCM",
+    .set_util_funcs = lcm_set_util_funcs,
+    .get_params     = lcm_get_params,   // 填分辨率/时序/接口(DSI/RGB)
+    .init           = lcm_init,         // 屏厂给的 DSI 初始化序列
+    .suspend        = lcm_suspend,
+    .resume         = lcm_resume,
+    .set_backlight  = lcm_set_backlight,
+};</code></pre></li>
+<li>注册到列表（<code>vendor/.../lk/dev/lcm/lcm_list.c</code>）：
+<pre><code>C
+extern LCM_DRIVER xxx_lcm_drv;
+LCM_DRIVER *lcm_driver_list[] = {
+    &xxx_lcm_drv,
+    // ...原有 LCM
+    NULL,
+};</code></pre></li>
+</ul>
+
+<h3>2.2 Kernel 侧</h3>
+<pre><code>kernel-5.15/drivers/misc/mediatek/lcm/&lt;vendor&gt;_&lt;model&gt;/
+├── &lt;vendor&gt;_&lt;model&gt;_lcm.c
+└── Makefile   # obj-y += &lt;vendor&gt;_&lt;model&gt;_lcm.o</code></pre>
+<p>同样实现 <code>LCM_DRIVER</code> 并加入 <code>lcm_list.c</code>（kernel 版）。</p>
+
+<h3>2.3 DTS（GPIO / 电源）</h3>
+<pre><code>// kernel-5.15/arch/arm64/boot/dts/mediatek/mt6893-&lt;board&gt;.dts
+&lcm {
+    lcm_name = "XXX_1080P_LCM";
+    lcm_width = &lt;1080&gt;;
+    lcm_height = &lt;2400&gt;;
+    reset-gpios = &lt;&pio 45 0&gt;;     // 屏 reset 脚
+    power-gpios = &lt;&pio 46 0&gt;;
+};</code></pre>
+
+<h3>2.4 编译烧录</h3>
+<pre><code>./mk mt6893 r lk          # 只重编 LK
+mmm kernel-5.15/drivers/misc/mediatek/lcm/   # 或整编
+# 烧录 lk.bin + boot/vendor_boot + dtbo</code></pre>
+<div class="warn">屏不亮先查：LK 和 kernel 的 LCM 名字必须一致；reset/power GPIO 与硬件原理图对得上；DSI 初始化序列是否完整。</div>
+
+<h2>场景三：调 camera 参数</h2>
+<p>MTK camera 调参分两层：<b>sensor 驱动（分辨率/上电/I2C）</b> 和 <b>tuning（3A：AE/AWB/AF 表）</b>。</p>
+
+<h3>3.1 Sensor 驱动与列表</h3>
+<pre><code>vendor/mediatek/proprietary/custom/mt6893/hal/imgsensor/
+├── &lt;sensor&gt;/
+│   ├── &lt;sensor&gt;_sensor.c          # 上电/I2C/分辨率表
+│   ├── &lt;sensor&gt;_sensor.h
+│   └── &lt;sensor&gt;_sensor_setting.c  # preview/capture 寄存器序列
+└── imgsensor_sensor_list.cpp      # ★ 把 sensor 注册进列表</code></pre>
+<p>注册（sensorlist.cpp）：</p>
+<pre><code>C
+MSDK_SENSOR_INIT_FUNCTION_STRUCT sensorList[] = {
+    {XXX_SENSOR_ID, SENSOR_DRVNAME_XXX, xxx_SensorInit},
+    // ...
+};</code></pre>
+
+<h3>3.2 Tuning（3A 参数）</h3>
+<pre><code>vendor/mediatek/proprietary/custom/mt6893/hal/imgsensor/&lt;sensor&gt;/
+├── &lt;sensor&gt;_tuning_ae.h     # 曝光/增益表、AE target
+├── &lt;sensor&gt;_tuning_awb.h    # 白平衡色温点
+└── &lt;sensor&gt;_tuning_af.h     # 对焦范围</code></pre>
+<p>常见"调参"改这里，例如调亮度（改 AE target / 曝光档位）：</p>
+<pre><code>C
+// &lt;sensor&gt;_tuning_ae.h (示意)
+static AE_SCENE_T g_AE_Scene[AE_SCENE_NUM] = {
+    {AE_SCENE_AUTO,  /* target */ 0x40, /* min */ 0, /* max */ 0xFF},
+};</code></pre>
+
+<h3>3.3 Kernel sensor 驱动 + DTS</h3>
+<pre><code>kernel-5.15/drivers/misc/mediatek/imgsensor/&lt;sensor&gt;/
+└── &lt;sensor&gt;_driver.c        # kd_imgsensor 注册、I2C、MCLK、reset</code></pre>
+<pre><code>// kernel-5.15/arch/arm64/boot/dts/mediatek/mt6893-&lt;board&gt;.dts
+&kd_camera_hw1 {
+    cam0_vcm_power_gpio = &lt;&pio 50 0&gt;;
+    cam0_rst_gpio       = &lt;&pio 51 0&gt;;
+    cam0_pnd_gpio       = &lt;&pio 52 0&gt;;
+    cam0_mclk_gpio      = &lt;&pio 53 0&gt;;
+    port {
+        camera0: endpoint { remote-endpoint = &lt;&imgsensor0&gt;; };
+    };
+};</code></pre>
+
+<h3>3.4 编译烧录</h3>
+<pre><code>mmm vendor/mediatek/proprietary/custom/mt6893/hal/imgsensor/
+mmm vendor/mediatek/proprietary/hardware/mtkcam/   # camera HAL
+# 重编 boot/vendor_boot + 烧录；HAL 改了还要重编 vendor</code></pre>
+<div class="warn">调参排障：黑屏先查 <code>imgsensor</code> 能否 <code>probe</code> 到 sensor ID（kernel log 搜 <code>imgsensor</code>）；偏色查 AWB 表；过曝/欠曝查 AE target。</div>
+
+<h2>三个场景的共性提醒</h2>
+<table>
+<tr><th>场景</th><th>必须重编</th><th>必须重烧</th></tr>
+<tr><td>ProjectConfig 开关</td><td>受影响的模块 / 全编</td><td>system/vendor（视宏影响范围）</td></tr>
+<tr><td>加 LCM</td><td><code>lk</code> + kernel</td><td><code>lk.bin</code> + <code>boot/vendor_boot</code> + <code>dtbo</code></td></tr>
+<tr><td>调 camera</td><td><code>mtkcam</code> + <code>imgsensor</code></td><td><code>vendor_boot</code> + <code>super</code>(vendor)</td></tr>
+</table>
+<ul>
+<li><b>LK 改动一定要重烧 <code>lk.bin</code></b>（开机最早阶段，不烧看不到 logo 也起不来）。</li>
+<li><b>kernel/DTS 改动</b>在 Android 14 走 <code>vendor_boot.img</code> + <code>dtbo.img</code>，别只烧 <code>boot</code>。</li>
+<li>改完用 <code>mtklogger</code> 抓 log 验证：搜 <code>lcm</code>、<code>imgsensor</code>、<code>ProjectConfig</code> 关键字。</li>
+</ul>
+
+<div class="card who">助理注记（不改原文）：本文件与第 5 份（ProjectConfig 最小闭环）、第 6 份（MT6893 Android14 手册）强关联——场景一的宏传播机制在第 5 份有端到端闭环示例；场景二/三的烧录项（lk.bin / vendor_boot / dtbo / super）须套用第 6 份的 GKI + 动态分区约束。建议三者对照阅读。</div>
+
+</div>
+</body>
+</html>

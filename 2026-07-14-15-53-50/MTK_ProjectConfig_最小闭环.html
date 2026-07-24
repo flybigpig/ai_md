@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK 定制最小闭环：改 ProjectConfig 开关并验证</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:"default", securityLevel:"loose"});</script>
+<style>
+  :root{--bg:#fff;--panel:#f7f9fc;--ink:#1f2430;--sub:#5b6472;--line:#d6dde8;
+        --blue:#2f6fed;--teal:#0fa3a3;--orange:#e8842a;--red:#d34343;--green:#2e9e63;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.75;font-size:15px}
+  header{background:linear-gradient(135deg,#7a5cc8,#2f6fed);color:#fff;padding:34px 40px}
+  header h1{margin:0 0 6px;font-size:23px}
+  header p{margin:0;opacity:.94;font-size:13.5px}
+  main{max-width:1080px;margin:0 auto;padding:24px 28px 90px}
+  h2{font-size:21px;margin:44px 0 12px;padding-left:12px;border-left:5px solid var(--purple,#7a5cc8)}
+  h3{font-size:17px;margin:28px 0 8px;color:var(--blue)}
+  h4{font-size:14.5px;margin:18px 0 6px;color:var(--sub)}
+  p{margin:9px 0}
+  code{background:#eef2f8;padding:1px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:13px;color:#b5346b}
+  pre{background:#0f1626;color:#e6edf7;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55}
+  pre .c{color:#7c8aa5} pre .k{color:#7fd1ff} pre .m{color:#ffd479}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--ink)}
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:16px 0;overflow:auto}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:16px 0}
+  .note{background:#fff7ec;border-left:4px solid var(--orange);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#6a4a1c}
+  .ok{background:#e9f7ee;border-left:4px solid var(--green);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#1f6b41}
+  .add{background:#eaf6ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:8px;margin:22px 0;font-size:13.8px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:26px}
+</style>
+</head>
+<body>
+<header>
+  <h1>MTK 定制最小闭环：改一个 ProjectConfig 开关并验证</h1>
+  <p>以 MT6765 + Android 11（eng）为例 · 宏 → 模块 → 编译 → 烧录/推送 → 验证 全链路 · 助理补充文档</p>
+</header>
+<main>
+
+<div class="note">本文是 MTK 知识文档集的第 5 份，作为用户「开发指南」第 ⑦ 节子项的<b>实操展开</b>。示例平台 <b>MT6765 + Android 11</b>（你对照表里"最常见低端 PDA"组合）；若你的机器是 MT6893/天玑或别的 Android 版本，只需替换 <code>platform</code> 名与 JDK/内核，流程不变。路径以通用 BSP 为准，务必对照你的 Release Note。</div>
+
+<h2>0. 为什么选这个开关</h2>
+<p>我们要挑一个<b>改动安全、结果可观察、且能体现"宏如何流向编译"</b>的开关。选 <code>MTK_ENGINEER_MODE_SUPPORT</code>：</p>
+<ul>
+<li>它控制 <b>EngineerMode</b> 工程 App（<code>com.mediatek.engineermode</code>）是否被编入并预装；</li>
+<li>开/关后 <code>adb shell pm list packages</code> 立刻可见差异，无需看画面；</li>
+<li>不涉及内核/驱动，不会变砖，适合"第一次"。</li>
+</ul>
+<p>完整链路如下：</p>
+
+<div class="mermaid">
+graph LR
+    A["ProjectConfig.mk<br/>MTK_ENGINEER_MODE_SUPPORT=yes"] --> B["device.mk / *.mk<br/>ifneq 包裹 PRODUCT_PACKAGES += EngineerMode"]
+    B --> C["packages/apps/EngineerMode/<br/>Android.mk (LOCAL_MODULE)"]
+    C --> D["编译产出<br/>out/.../system/priv-app/EngineerMode"]
+    D --> E["烧录/推送 system(super)"]
+    E --> F["验证: pm list packages<br/>grep engineer"]
+</div>
+
+<h2>1. 找到开关</h2>
+<pre><span class="c"># 路径（MT6765）</span>
+<span class="k">device/mediatek/mt6765/ProjectConfig.mk</span>
+<span class="c"># 搜索</span>
+grep -n "MTK_ENGINEER_MODE_SUPPORT" device/mediatek/mt6765/ProjectConfig.mk
+<span class="c"># 典型内容</span>
+MTK_ENGINEER_MODE_SUPPORT = yes</pre>
+<div class="note">注意：MTK 会把 <code>ProjectConfig.mk</code> 的宏"翻译"成 <code>device/mediatek/mt6765/ProjectConfig.mk</code> 里的最终值，部分 release 还会有一层 <code>vendor/mediatek/proprietary/build/...</code> 生成的 <code>alps_release_*.mk</code>。以 <code>device/mediatek/&lt;platform&gt;/ProjectConfig.mk</code> 里你实际编辑的那份为准。</div>
+
+<h2>2. 看它怎么被"消费"（关键：宏 → 模块）</h2>
+<p>MTK 的宏不会自动生效，必须在某个 <code>.mk</code> 里被 <code>ifneq/ifdef</code> 引用才会影响编译。EngineerMode 的引用通常在平台 <code>device.mk</code> 或其 include 链上：</p>
+<pre><span class="c"># 常见位置之一：device/mediatek/mt6765/device.mk 或</span>
+<span class="c"># device/mediatek/common/device.mk（被 platform device.mk inherit）</span>
+ifneq ($(strip $(MTK_ENGINEER_MODE_SUPPORT)),no)
+  PRODUCT_PACKAGES += EngineerMode
+endif</pre>
+<p>而 App 自身的 <code>Android.mk</code> 只声明模块名，不判宏：</p>
+<pre><span class="c"># packages/apps/EngineerMode/Android.mk（节选）</span>
+LOCAL_PATH := $(call my-dir)
+include $(CLEAR_VARS)
+LOCAL_MODULE := EngineerMode
+LOCAL_MODULE_TAGS := optional
+LOCAL_PRIVILEGED_MODULE := true
+LOCAL_CERTIFICATE := platform
+include $(BUILD_PACKAGE)</pre>
+<div class="card">
+<b>链路小结（这就是"宏如何变成 APK"）：</b><br>
+<code>ProjectConfig.mk</code> 的 <code>MTK_ENGINEER_MODE_SUPPORT=yes</code><br>
+→ 被 <code>device.mk</code> 的 <code>ifneq</code> 捕获 → <code>PRODUCT_PACKAGES += EngineerMode</code><br>
+→ 打包系统把 <code>packages/apps/EngineerMode</code> 编进 <code>system</code>（priv-app）<br>
+→ 烧录后 <code>/system/priv-app/EngineerMode/EngineerMode.apk</code> 存在。
+</div>
+
+<h2>3. 改开关</h2>
+<p>把 <code>MTK_ENGINEER_MODE_SUPPORT</code> 从 <code>yes</code> 改成 <code>no</code>（或反过来），保存。</p>
+<pre><span class="c"># 仅演示"关掉"，看 App 是否消失</span>
+MTK_ENGINEER_MODE_SUPPORT = no</pre>
+<div class="ok">安全点：只动这一个宏，不碰其他 <code>MTK_*</code>；这是非破坏性修改，最坏结果是少个工程 App。</div>
+
+<h2>4. 最小重编</h2>
+<p><b>坑预警</b>：<code>ProjectConfig.mk</code> 的改动有时不会自动触发，因为 MTK 会在 <code>out/</code> 里缓存生成的 <code>ProjectConfig</code> / <code>featureoption</code>。两种可靠做法：</p>
+<pre><span class="c"># 做法 A（推荐，干净）：MTK 自带 mk 重编</span>
+cd alps
+./mk mt6765 r          <span class="c"># remake，会重新解析 ProjectConfig</span>
+
+<span class="c"># 做法 B（只想重编 App 模块，快但不一定重解析宏）：</span>
+source build/envsetup.sh && lunch mt6765-eng
+mmm packages/apps/EngineerMode/     <span class="c"># 仅重编该 APK</span>
+<span class="c"># 注意：若 B 没生效（宏没被重读），回到 A</span></pre>
+<div class="note">经验法则：凡是改了 <code>ProjectConfig.mk</code> 的<b>新增/删除 PRODUCT_PACKAGES</b>，用 <code>./mk &lt;platform&gt; r</code> 最稳；只改 App 内部代码才用 <code>mmm</code>。</div>
+
+<h2>5. 烧录 / 推送</h2>
+<p>MT6765 + Android 11 大概率是<b>动态分区</b>（<code>super.img</code>）。两种落地方式：</p>
+<table>
+<tr><th>方式</th><th>命令</th><th>适用</th></tr>
+<tr><td>整包烧录（最稳）</td><td>SP Flash Tool 加载本次 <code>MT6765_Android_scatter.txt</code>，勾选 <code>super</code> + <code>boot</code> + <code>vbmeta</code> 等，Download</td><td>所有情况</td></tr>
+<tr><td>eng 版免烧录（快）</td><td><code>adb root &amp;&amp; adb remount &amp;&amp; adb sync system</code> 或 <code>adb push out/.../EngineerMode.apk /system/priv-app/EngineerMode/</code></td><td>仅 eng build，且未锁</td></tr>
+</table>
+<pre><span class="c"># eng 快速验证路径（推荐先走这条，省去烧录）</span>
+adb root
+adb remount
+adb sync system          <span class="c"># 把 out/ 里 system 变更同步到设备</span>
+adb reboot</pre>
+
+<h2>6. 验证（看结果）</h2>
+<pre><span class="c"># 开关=yes 时应能看到：</span>
+adb shell pm list packages | grep -i engineer
+<span class="c"># → package:com.mediatek.engineermode</span>
+
+<span class="c"># 开关=no 后应看不到（或仅残留 data 区，需恢复出厂/清 data）：</span>
+adb shell pm list packages | grep -i engineer
+<span class="c"># → 无输出</span>
+
+<span class="c"># 顺带确认宏是否进系统属性（很多 MTK_* 会映射成 ro.mtk_*）</span>
+adb shell getprop | grep -i mtk | grep -i engineer</pre>
+<div class="ok">闭环完成：改一个宏 → 重编 → 设备上的包列表随之变化。这就是 MTK 定制最基础的"可观测最小回路"。</div>
+
+<h2>7. 进阶：自定义一个 MTK_* 宏控制你自己的 App</h2>
+<p>想让你自己的 PDA 应用随宏预装/剔除，照葫芦画瓢：</p>
+<pre><span class="c"># 1) device/mediatek/mt6765/ProjectConfig.mk 末尾加</span>
+MTK_MY_PDA_FEATURE = yes
+
+<span class="c"># 2) device/mediatek/mt6765/device.mk 加</span>
+ifneq ($(strip $(MTK_MY_PDA_FEATURE)),no)
+  PRODUCT_PACKAGES += MyPdaApp
+endif
+
+<span class="c"># 3) packages/apps/MyPdaApp/Android.mk 里</span>
+LOCAL_MODULE := MyPdaApp
+<span class="c">#   （正常 BUILD_PACKAGE）</span>
+
+<span class="c"># 4) ./mk mt6765 r  → 验证 pm list packages | grep MyPdaApp</span></pre>
+
+<h2>8. 常见坑</h2>
+<div class="card">
+<ol>
+<li><b>改了宏没反应</b>：<code>out/</code> 缓存了旧的 <code>ProjectConfig</code>，用 <code>./mk &lt;platform&gt; r</code> 或删 <code>out/target/product/&lt;platform&gt;/obj/</code> 下对应缓存后再编。</li>
+<li><b>user 版不能 remount</b>：<code>adb remount</code> 失败 → 改用 SP Flash Tool 烧 <code>super.img</code>，或改用 <code>userdebug/eng</code>。</li>
+<li><b>动态分区烧错</b>：改了 system 内容却只烧 <code>system.img</code> 而设备是 <code>super</code> → 不生效；务必烧 <code>super.img</code>。</li>
+<li><b>宏名拼错</b>：<code>MTK_ENGINEER_MODE_SUPPORT</code> 大小写敏感，<code>ifneq</code> 比对的是字符串，写错即恒等不匹配。</li>
+</ol>
+</div>
+
+<div class="add">
+<b>〔助理注〕这份闭环与你前面文档的衔接</b>
+<ul>
+<li>第 ④ 步重编用到的 <code>./mk mt6765 r</code> 来自你《开发指南》第 1 节；<code>super.img</code> / 动态分区来自《编译烧录手册》第 ⑦ 节踩坑 7。</li>
+<li>EngineerMode 本身属于你《开发指南》里提到的 MTK 预装工程 App——这里演示了"它为什么会被编进去"。</li>
+<li>下一步可衔接：① <b>scatter 文件字段逐项解读</b>（看 <code>super</code> 分区的 <code>linear_start_address</code> / <code>partition_size</code> / <code>is_download</code>）；② <b>变砖后 BROM 强刷</b>（当 preloader 也坏时）。告诉我芯片型号，我把路径精确到那台机器。</li>
+</ul>
+</div>
+
+</main>
+<footer>MTK 定制最小闭环（ProjectConfig → 验证）· 示例 MT6765 + Android 11 · 路径以实际 BSP Release Note 为准</footer>
+</body>
+</html>

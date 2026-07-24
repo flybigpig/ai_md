@@ -1,0 +1,67 @@
+# ============================================================================
+# Patch 03 —— §14 示例 B：新增隐藏系统 API myCustomCheck（可直接 apply 的 diff）
+# 涉及 3 个文件:
+#   (a) frameworks/base/core/java/android/app/IActivityManager.aidl        —— 加接口方法
+#   (b) frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java —— 实现
+#   (c) frameworks/base/core/java/android/app/ActivityManager.java         —— 客户端壳
+# 注意: 改了 (a)(c) 属于 frameworks/base/core，编完要 `m framework`（或全 m），
+#       仅 (b) 改了才只需 `m services`。三者一起改时建议直接 `m`。
+#
+# 行号是参考 hunk，按你 tag 微调；若 git apply 失败用 `patch -p1 --fuzz=3` 或手动贴。
+# ============================================================================
+
+# ---- (a) IActivityManager.aidl ----
+--- a/frameworks/base/core/java/android/app/IActivityManager.aidl
++++ b/frameworks/base/core/java/android/app/IActivityManager.aidl
+@@ -1,1 +1,1 @@
++    // === MyAMS: 自定义隐藏 API ===
++    boolean myCustomCheck(String pkg, int uid);
++    // === END MyAMS ===
+
+# ---- (b) ActivityManagerService.java 实现 ----
+--- a/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java
++++ b/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java
+@@ -1,1 +1,1 @@
++    // === MyAMS: 实现隐藏 API myCustomCheck ===
++    @Override
++    public boolean myCustomCheck(String pkg, int uid) {
++        Slog.d(TAG, "MyAMS myCustomCheck pkg=" + pkg + " uid=" + uid);
++        // 这里写你的判定逻辑，返回 boolean 即可
++        return true;
++    }
++    // === END MyAMS ===
+
+# ---- (c) ActivityManager.java 客户端壳 ----
+--- a/frameworks/base/core/java/android/app/ActivityManager.java
++++ b/frameworks/base/core/java/android/app/ActivityManager.java
+@@ -1,1 +1,1 @@
++    // === MyAMS: 客户端暴露 myCustomCheck ===
++    public static boolean myCustomCheck(String pkg, int uid) {
++        try {
++            return getService().myCustomCheck(pkg, uid);
++        } catch (RemoteException e) {
++            throw e.rethrowFromSystemServer();
++        }
++    }
++    // === END MyAMS ===
+
+# ----------------------------------------------------------------------------
+# 定位插入点说明:
+#   (a) IActivityManager.aidl: 在 interface IActivityManager { ... } 体内任意已有方法附近插入
+#       （该 .aidl 改了方法签名，所有实现类必须同步实现，否则 system_server 启动报
+#        AbstractMethodError）。
+#   (b) ActivityManagerService.java: 类内任意位置（建议靠近其它 @Override 接口方法）贴实现。
+#   (c) ActivityManager.java: 在 public static 工具方法区（如 getMyMemoryState 附近）贴壳。
+#
+# hiddenapi 处理（仅当想让普通系统 app 调用此 @SystemApi 时）:
+#   若方法想暴露给带 platform 签名的系统 app，可在 frameworks/base 里给方法加
+#   @SystemApi 注解，并在对应 hiddenapi 列表（frameworks/base/config/hiddenapi-*.txt）
+#   处理；若仅 framework 内部 / 同进程 LocalServices 调用，加 @hide 即可，无需处理。
+#
+# 验证:
+#   m -j$(nproc)                                   # 连带重打 framework + services
+#   adb push out/.../system/framework/framework.jar /system/framework/   # 若改了 (a)(c)
+#   adb push out/.../system/framework/services.jar /system/framework/    # 若改了 (b)
+#   adb reboot
+#   在系统 app / shell 里调用 ActivityManager.myCustomCheck("x", uid) 看返回与 logcat MyAMS
+# ============================================================================

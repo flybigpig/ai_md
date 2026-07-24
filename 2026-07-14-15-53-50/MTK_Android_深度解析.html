@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK Android 深度解析（AOSP 代码级）</title>
+<style>
+  :root{
+    --bg:#ffffff; --panel:#f7f9fc; --ink:#1f2430; --sub:#5b6472;
+    --line:#d6dde8; --blue:#2f6fed; --teal:#0fa3a3; --orange:#e8842a;
+    --purple:#7a5cc8; --red:#d34343; --green:#2e9e63;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.7;font-size:15px}
+  header{background:linear-gradient(135deg,#2f6fed,#0fa3a3);color:#fff;padding:36px 40px}
+  header h1{margin:0 0 8px;font-size:26px}
+  header p{margin:0;opacity:.92;font-size:14px}
+  main{max-width:1080px;margin:0 auto;padding:24px 28px 80px}
+  h2{font-size:20px;margin:42px 0 12px;padding-left:12px;border-left:5px solid var(--blue)}
+  h3{font-size:16px;margin:26px 0 8px;color:var(--blue)}
+  h4{font-size:14px;margin:18px 0 6px;color:var(--sub)}
+  p{margin:8px 0}
+  code{background:#eef2f8;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;color:#b5346b}
+  pre{background:#0f1626;color:#e6edf7;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55}
+  pre .c{color:#7c8aa5} /* comment */
+  pre .k{color:#7fd1ff} /* keyword/path */
+  pre .m{color:#ffd479} /* method */
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--ink)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:16px 0}
+  .note{background:#fff7ec;border-left:4px solid var(--orange);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#6a4a1c}
+  .tag{display:inline-block;background:#eaf1ff;color:var(--blue);border-radius:6px;padding:1px 8px;font-size:12px;margin:2px 3px}
+  svg{display:block;margin:18px auto;max-width:100%;background:#fff;border:1px solid var(--line);border-radius:12px}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.twocol{grid-template-columns:1fr}}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:24px}
+</style>
+</head>
+<body>
+<header>
+  <h1>MTK Android 深度解析</h1>
+  <p>从 preloader → LK → ATF → Kernel → Framework → HAL 的 AOSP 代码级拆解，并对比高通平台 · 适用于 MT67xx / MT68xx (Dimensity) / Android 11–14</p>
+</header>
+<main>
+
+<div class="note">说明：MTK 代码分两类 —— ① <b>AOSP 直接 patch</b>（在 <code>frameworks/base</code> 等上游目录里改）；② <b>独立仓库</b>（在 <code>vendor/mediatek/proprietary/</code> 下）。文中路径以常见 MT68xx + Android 12/13 布局为准，不同芯片/版本会有差异。</div>
+
+<h2>0. 总览：MTK 软件栈分层</h2>
+<p>MTK 在 AOSP 之上叠加了大量「<code>Mtk</code>」前缀的系统服务与 HAL，并把 modem（MD）作为独立核通过 CCCI 与 AP 通信。整体栈如下：</p>
+
+<svg viewBox="0 0 680 540" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <!-- 应用层 -->
+  <rect x="40" y="20" width="600" height="64" rx="10" fill="#eaf1ff" stroke="#2f6fed" stroke-width="1.5"/>
+  <text x="56" y="44" font-size="14" font-weight="bold" fill="#1f2430">① 应用层 (App)</text>
+  <text x="56" y="66" font-size="12" fill="#5b6472">SystemUI · MtkSettings · MtkTelephony/Phone · Launcher3(MTK) · 工厂 Meta App</text>
+
+  <!-- Framework Java -->
+  <rect x="40" y="100" width="600" height="74" rx="10" fill="#e7f7f1" stroke="#0fa3a3" stroke-width="1.5"/>
+  <text x="56" y="124" font-size="14" font-weight="bold" fill="#1f2430">② Framework (Java) — 被 patch / 扩展</text>
+  <text x="56" y="146" font-size="12" fill="#5b6472">MtkSystemServer · MtkActivityManagerService · MtkPowerManagerService · MtkPhoneWindowManager</text>
+  <text x="56" y="164" font-size="12" fill="#5b6472">AEE(aee) · PerfService · MtkSettingsProvider · MtkTelephonyRegistry</text>
+
+  <!-- HAL / native -->
+  <rect x="40" y="190" width="600" height="74" rx="10" fill="#fff3e6" stroke="#e8842a" stroke-width="1.5"/>
+  <text x="56" y="214" font-size="14" font-weight="bold" fill="#1f2430">③ HAL / 原生服务 (C/C++ · HIDL→AIDL)</text>
+  <text x="56" y="236" font-size="12" fill="#5b6472">mtkcam · audio · gps · hwcomposer · gralloc · vdec/venc · ccci_client · nvram_daemon</text>
+  <text x="56" y="254" font-size="12" fill="#5b6472">meta_daemon · aed · surfaceflinger_ext · libshowlogo</text>
+
+  <!-- Kernel -->
+  <rect x="40" y="280" width="600" height="74" rx="10" fill="#f0ecfa" stroke="#7a5cc8" stroke-width="1.5"/>
+  <text x="56" y="304" font-size="14" font-weight="bold" fill="#1f2430">④ Linux 内核 (kernel-5.10 / 5.15 …)</text>
+  <text x="56" y="326" font-size="12" fill="#5b6472">drivers/misc/mediatek · drivers/soc/mediatek · drivers/gpu/drm/mediatek</text>
+  <text x="56" y="344" font-size="12" fill="#5b6472">EINT · PMIC(pmic) · SCP(sensor) · CCCI(ccci) · CMDQ · M4U/IOMMU · mdla</text>
+
+  <!-- Bootloader -->
+  <rect x="40" y="370" width="600" height="64" rx="10" fill="#fdeaea" stroke="#d34343" stroke-width="1.5"/>
+  <text x="56" y="394" font-size="14" font-weight="bold" fill="#1f2430">⑤ Bootloader</text>
+  <text x="56" y="416" font-size="12" fill="#5b6472">preloader(SRAM) · LK(Little Kernel) · TEE/ATF(EL3) · logo/充电/ fastboot(meta)</text>
+
+  <!-- HW -->
+  <rect x="40" y="450" width="600" height="64" rx="10" fill="#e9f7ee" stroke="#2e9e63" stroke-width="1.5"/>
+  <text x="56" y="474" font-size="14" font-weight="bold" fill="#1f2430">⑥ 硬件 SoC</text>
+  <text x="56" y="496" font-size="12" fill="#5b6472">AP(Cortex-A) · MD(Modem, 独立核, Nucleus/ThreadX) · PMIC · DSP/NPU · 外设</text>
+</svg>
+
+<h2>1. Boot / 内核 / 驱动</h2>
+
+<h3>1.1 启动链全景</h3>
+<p>上电后依次经过 preloader → LK →（加载 TEE/ATF）→ 内核 → init → zygote → system_server。流程图：</p>
+
+<svg viewBox="0 0 680 700" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <!-- boxes -->
+  <g font-size="13" fill="#1f2430">
+    <!-- 1 -->
+    <rect x="170" y="20" width="340" height="46" rx="9" fill="#eaf1ff" stroke="#2f6fed" stroke-width="1.4"/>
+    <text x="340" y="44" text-anchor="middle" font-weight="bold">POR 上电复位 (PMIC 供电)</text>
+    <text x="340" y="60" text-anchor="middle" font-size="11" fill="#5b6472">ROM 固定跳转至 preloader 入口</text>
+    <!-- 2 -->
+    <rect x="170" y="92" width="340" height="46" rx="9" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+    <text x="340" y="116" text-anchor="middle" font-weight="bold">preloader (运行于 SRAM)</text>
+    <text x="340" y="132" text-anchor="middle" font-size="11" fill="#5b6472">platform_init → 初始化时钟/DRAM/PMIC/UART</text>
+    <!-- 3 -->
+    <rect x="170" y="164" width="340" height="46" rx="9" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+    <text x="340" y="188" text-anchor="middle" font-weight="bold">LK (Little Kernel)</text>
+    <text x="340" y="204" text-anchor="middle" font-size="11" fill="#5b6472">platform_early_init → 显示 logo / 充电 / 读分区</text>
+    <!-- 4 -->
+    <rect x="170" y="236" width="340" height="46" rx="9" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+    <text x="340" y="260" text-anchor="middle" font-weight="bold">加载 TEE + ATF 镜像</text>
+    <text x="340" y="276" text-anchor="middle" font-size="11" fill="#5b6472">跳入 ATF(EL3) 建立安全世界</text>
+    <!-- 5 -->
+    <rect x="170" y="308" width="340" height="46" rx="9" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+    <text x="340" y="332" text-anchor="middle" font-weight="bold">ATF 完成 → 回到 LK(EL1)</text>
+    <text x="340" y="348" text-anchor="middle" font-size="11" fill="#5b6472">secure world 就绪，LK 继续</text>
+    <!-- 6 -->
+    <rect x="170" y="380" width="340" height="46" rx="9" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+    <text x="340" y="404" text-anchor="middle" font-weight="bold">LK: boot_linux() 加载内核</text>
+    <text x="340" y="420" text-anchor="middle" font-size="11" fill="#5b6472">读 boot/vendor_boot + dtbo + ramdisk → 跳 kernel</text>
+    <!-- 7 -->
+    <rect x="170" y="452" width="340" height="46" rx="9" fill="#f0ecfa" stroke="#7a5cc8" stroke-width="1.4"/>
+    <text x="340" y="476" text-anchor="middle" font-weight="bold">Linux Kernel 启动 (PID 0 → init)</text>
+    <text x="340" y="492" text-anchor="middle" font-size="11" fill="#5b6472">start_kernel → rest_init → kernel_init → /init</text>
+    <!-- 8 -->
+    <rect x="170" y="524" width="340" height="46" rx="9" fill="#e7f7f1" stroke="#0fa3a3" stroke-width="1.4"/>
+    <text x="340" y="548" text-anchor="middle" font-weight="bold">init → zygote64 → system_server</text>
+    <text x="340" y="564" text-anchor="middle" font-size="11" fill="#5b6472">rc 解析 · surfaceflinger · 关键 native 服务</text>
+    <!-- 9 -->
+    <rect x="170" y="596" width="340" height="46" rx="9" fill="#e7f7f1" stroke="#0fa3a3" stroke-width="1.4"/>
+    <text x="340" y="620" text-anchor="middle" font-weight="bold">MTK 系统服务上线</text>
+    <text x="340" y="636" text-anchor="middle" font-size="11" fill="#5b6472">AEE · PerfService · MtkAMS · MtkWMS · aed</text>
+  </g>
+  <!-- arrows -->
+  <g stroke="#9aa6b8" stroke-width="1.6" fill="none">
+    <path d="M340,66 L340,90"/>
+    <path d="M340,138 L340,162"/>
+    <path d="M340,210 L340,234"/>
+    <path d="M340,282 L340,306"/>
+    <path d="M340,354 L340,378"/>
+    <path d="M340,426 L340,450"/>
+    <path d="M340,498 L340,522"/>
+    <path d="M340,570 L340,594"/>
+  </g>
+  <g fill="#9aa6b8">
+    <path d="M334,90 L346,90 L340,98 Z"/>
+    <path d="M334,162 L346,162 L340,170 Z"/>
+    <path d="M334,234 L346,234 L340,242 Z"/>
+    <path d="M334,306 L346,306 L340,314 Z"/>
+    <path d="M334,378 L346,378 L340,386 Z"/>
+    <path d="M334,450 L346,450 L340,458 Z"/>
+    <path d="M334,522 L346,522 L340,530 Z"/>
+    <path d="M334,594 L346,594 L340,602 Z"/>
+  </g>
+</svg>
+
+<h3>1.2 preloader（源码在 vendor 仓库）</h3>
+<p>路径：<code>vendor/mediatek/proprietary/bootable/bootloader/preloader/</code></p>
+<pre><span class="c"># 平台相关初始化入口（以 MT6983 为例）</span>
+platform/<span class="k">{chip}/src/{chip}.c</span>        <span class="c">→ platform_init(), platform_early_init()</span>
+platform/<span class="k">{chip}/src/uart.c</span>          <span class="c">→ 早期串口</span>
+platform/<span class="k">{chip}/src/emi.c</span>          <span class="c">→ DRAM 初始化（最关键，写满 timing 表）</span>
+platform/<span class="k">{chip}/src/pmic.c</span>         <span class="c">→ PMIC 上电时序</span>
+<span class="c"># 主流程</span>
+<span class="m">main()</span> → platform_early_init() → platform_init() →
+<span class="m">boot_linux_from_storage()</span>  <span class="c">// 把 LK 从 storage 读到 DRAM 并跳转</span></pre>
+<div class="note">preloader 运行在<b>片内 SRAM</b>（容量极小，~百 KB），只做「能跑起 LK」的最小初始化；DRAM 没起来之前连 C 运行时栈都受限，所以代码高度汇编/手写。</div>
+
+<h3>1.3 LK（Little Kernel）</h3>
+<p>路径：<code>vendor/mediatek/proprietary/bootable/bootloader/lk/</code>。关键应用与流程：</p>
+<pre><span class="k">app/mt_boot/mt_boot.c</span>      <span class="c">→ mt_boot_init() 注册 aboot 命令</span>
+<span class="k">app/mt_boot/bootimg.c</span>      <span class="c">→ 解析 Android boot image (vendor_boot + boot)</span>
+<span class="k">app/mt_boot/mt_boot.c</span>:
+  <span class="m">boot_linux_from_storage()</span>  <span class="c">// 读 boot/vendor_boot 分区</span>
+  <span class="m">boot_linux()</span>              <span class="c">// 准备 DTB、cmdline，最终 entry() 跳内核</span>
+<span class="k">app/meta/</span>                  <span class="c">→ 工厂 Meta 模式入口（adb reboot meta 进此分支）</span>
+<span class="k">app/charger/</span>              <span class="c">→ 关机充电</span>
+<span class="k">platform/{chip}/</span>           <span class="c">→ 平台早期外设、LCM(屏) 初始化、显示 logo</span></pre>
+<p>LK 通过 <code>libptgen</code> 读取<b>分区表</b>（来自 <code>partition_table</code> / <code>pgpt</code> 镜像），按名取分区偏移，再把内核/ramdisk/dtbo 载入内存。</p>
+
+<h3>1.4 TEE / ATF（ARMv8 安全启动）</h3>
+<p>路径：<code>vendor/mediatek/proprietary/trustzone/</code> 与 ATF（<code>trusted-firmware-a</code> 的 MTK 分支）。preloader 把 TEE + ATF 镜像载入，先跳 ATF(EL3) 建立安全世界，再返回 LK(EL1)。MTK 既支持 Google <b>Trusty</b>，也有自研 TEE；keypair / drm / 指纹等安全 TA 跑在 EL3/SEL0。</p>
+
+<h3>1.5 Linux 内核里的 MTK 痕迹</h3>
+<p>MTK 几乎把所有 SoC 驱动放进 <code>drivers/misc/mediatek/</code> 与 <code>drivers/soc/mediatek/</code>，而不是像上游那样分散。常用子系统：</p>
+<table>
+<tr><th>子系统</th><th>路径</th><th>作用</th></tr>
+<tr><td>EINT</td><td><code>drivers/misc/mediatek/eint/</code></td><td>外部中断控制器（按键/TP 唤醒）</td></tr>
+<tr><td>PMIC</td><td><code>drivers/misc/mediatek/pmic/</code></td><td>电源管理 IC 寄存器中继</td></tr>
+<tr><td>SCP</td><td><code>drivers/misc/mediatek/scp/</code></td><td>Sensor Control Processor（协处理器，跑传感器算法）</td></tr>
+<tr><td>CCCI</td><td><code>drivers/misc/mediatek/ccci/</code></td><td>AP ↔ MD(modem) 跨核通信（见 §3.4）</td></tr>
+<tr><td>CMDQ / M4U</td><td><code>drivers/misc/mediatek/cmdq/</code> · <code>m4u/</code></td><td>显示命令队列 / IOMMU</td></tr>
+<tr><td>DRM 显示</td><td><code>drivers/gpu/drm/mediatek/</code></td><td>DRM/KMS 显示管线（替代旧 fbdev）</td></tr>
+<tr><td>Vcodec</td><td><code>drivers/media/platform/mediatek/</code></td><td>视频编解码硬件（VDEC / VENC）</td></tr>
+</table>
+<p>设备树：<code>arch/arm64/boot/dts/mediatek/</code>（如 <code>mt6983.dts</code> / <code>mt6878.dts</code>），与 QCOM 的 <code>arch/arm64/boot/dts/qcom/</code> 同属一脉但节点命名完全不同。</p>
+
+<h2>2. Framework 层定制（MTK 的核心差异点）</h2>
+<p>MTK 不像高通那样「尽量用原生 + 独立 HIDL」，而是<b>大量直接 patch AOSP 的 Java 框架</b>，并用 <code>Mtk</code> 前缀类做扩展。两个来源：</p>
+<div class="twocol">
+<div class="card">
+<h4>① AOSP 直接 patch</h4>
+<p>在 <code>frameworks/base/</code> 里改原文件，例如 <code>ActivityManagerService</code>、<code>PowerManagerService</code>、<code>PhoneWindowManager</code> 被就地插入 MTK 逻辑（双卡、游戏模式、分屏增强等）。</p>
+</div>
+<div class="card">
+<h4>② 独立 proprietary 仓库</h4>
+<p><code>vendor/mediatek/proprietary/frameworks/</code> 下新建 <code>Mtk*</code> 类与服务，由 <code>MtkSystemServer</code> 统一拉起。</p>
+</div>
+</div>
+
+<h3>2.1 系统服务如何被拉起</h3>
+<pre><span class="c"># 入口被 patch 过：frameworks/base/services/java/com/android/server/SystemServer.java</span>
+<span class="m">run()</span> → <span class="m">startBootstrapServices()</span> / <span class="m">startCoreServices()</span> / <span class="m">startOtherServices()</span>
+   └─ 调用 <span class="k">vendor/mediatek/proprietary/frameworks/base/services/.../MtkSystemServer.java</span>
+         <span class="m">startMtkBootstrapServices()</span>
+         <span class="m">startMtkCoreServices()</span>        <span class="c">// e.g. MtkTelephonyRegistry</span>
+         <span class="m">startMtkOtherServices()</span>       <span class="c">// e.g. MtkBatteryService, PerfService</span></pre>
+<table>
+<tr><th>原生类（AOSP）</th><th>MTK 扩展类</th><th>路径</th></tr>
+<tr><td>ActivityManagerService</td><td>MtkActivityManagerService</td><td><code>vendor/.../frameworks/base/services/core/java/com/mediatek/am/</code></td></tr>
+<tr><td>PowerManagerService</td><td>MtkPowerManagerService</td><td><code>vendor/.../frameworks/base/services/core/java/com/mediatek/power/</code></td></tr>
+<tr><td>PhoneWindowManager</td><td>MtkPhoneWindowManager</td><td><code>vendor/mediatek/proprietary/frameworks/base/policy/</code></td></tr>
+<tr><td>WindowManagerService</td><td>MtkWindowManagerService</td><td><code>vendor/.../frameworks/base/services/core/java/com/mediatek/wm/</code></td></tr>
+<tr><td>SystemUI</td><td>MtkSystemUI</td><td><code>vendor/mediatek/proprietary/packages/apps/SystemUI/</code></td></tr>
+</table>
+
+<h3>2.2 AEE —— MTK 的「崩溃总管」</h3>
+<p>路径：<code>vendor/mediatek/proprietary/external/aee/</code> + 内核侧 <code>kernel-*/drivers/misc/mediatek/aee/</code>。</p>
+<pre><span class="c"># 关键组件</span>
+libaed        <span class="c">→ 异常捕获库（native/kernel 崩溃时写 db）</span>
+aed           <span class="c">→ /system/bin/aed 守护进程，收集 kernel/modem/native exception</span>
+expdb 分区    <span class="c">→ 异常数据库持久化</span>
+/data/aee_exp/  <span class="c">→ 落盘的 db 文件（手机关机重启前可抓）</span></pre>
+<p>当发生 <b>KE（Kernel Exception）</b>、<b>NE（Native Exception）</b>、<b>JE（Java Exception）</b>、<b>EE（Modem Exception）</b> 时，AEE 会触发 reboot 并把现场存进 <code>/data/aee_exp/</code>。调试时这是第一手材料 —— 比单纯 logcat 强太多。</p>
+
+<h3>2.3 PerfService —— 性能调度接口</h3>
+<p>路径：<code>vendor/mediatek/proprietary/frameworks/base/perfservice/</code>。App 通过 <code>PerfServiceWrapper</code> 申请「锁频/锁核」，典型用于游戏与相机预览防卡顿：</p>
+<pre><span class="k">android.util.PerfServiceWrapper</span>
+  <span class="m">perfLockAcquire(int duration, int[] resource)</span>  <span class="c">// 拉满 CPU/GPU 频率</span>
+  <span class="m">perfLockRelease()</span></pre>
+
+<h3>2.4 通信/电话（MTK 重灾区）</h3>
+<p>MTK 双卡双待 historically 大量 patch 了 telephony 栈：</p>
+<pre><span class="k">vendor/mediatek/proprietary/frameworks/opt/telephony/</span>   <span class="c">→ MtkGsmCdmaPhone, MtkRIL</span>
+<span class="k">packages/services/Telephony/</span>                            <span class="c">→ MtkPhone / 双卡 UI</span>
+<span class="k">frameworks/opt/telephony/</span>                               <span class="c">→ 被 Mtk 补丁注入多卡逻辑</span></pre>
+
+<h2>3. HAL / vendor 架构</h2>
+
+<h3>3.1 目录结构</h3>
+<p>几乎所有 MTK HAL 都在 <code>vendor/mediatek/proprietary/hardware/</code> 与 <code>vendor/mediatek/proprietary/libs/</code>：</p>
+<table>
+<tr><th>模块</th><th>路径</th><th>说明</th></tr>
+<tr><td>Camera</td><td><code>vendor/mediatek/proprietary/hardware/mtkcam/</code></td><td>相机 HAL（Pipeline + 3A + ISP 配置），非常庞大</td></tr>
+<tr><td>Audio</td><td><code>vendor/mediatek/proprietary/hardware/audio/</code></td><td>音频 HAL（Speaker/Headset/VOIP）</td></tr>
+<tr><td>Display</td><td><code>vendor/mediatek/proprietary/hardware/hwcomposer/</code> · <code>gralloc/</code></td><td>HWC / 图形内存分配</td></tr>
+<tr><td>Video</td><td><code>vendor/mediatek/proprietary/hardware/vcodec/</code></td><td>硬编硬解</td></tr>
+<tr><td>GPS</td><td><code>vendor/mediatek/proprietary/hardware/gps/</code></td><td>定位 HAL</td></tr>
+<tr><td>Sensor</td><td><code>vendor/mediatek/proprietary/hardware/sensor/</code></td><td>传感器 HAL（接 SCP）</td></tr>
+</table>
+<p>接口形态：Android 8–11 主要用 <b>HIDL</b>（<code>vendor.mediatek.hardware.*</code>），Android 12+ 逐步迁移到 <b>AIDL</b>。与高通的 <code>vendor.qti.hardware.*</code> 命名空间不同。</p>
+
+<h3>3.2 NVRAM —— MTK 的「参数保险箱」</h3>
+<p>路径：<code>vendor/mediatek/proprietary/external/nvram/</code>。存 IMEI、RF 校准、网络参数等，落盘在 <code>nvram</code> 分区，由 <code>nvram_daemon</code> 管理。刷机/写号工具（SN Writer、Meta）本质上就是在改这里。</p>
+
+<h3>3.3 Meta 模式</h3>
+<p><code>vendor/mediatek/proprietary/external/meta/</code> + <code>meta_daemon</code>。工厂校准/写号/RF 测试专用模式，<code>adb reboot meta</code> 或组合键进入，与普通 <code>recovery</code> / <code>fastboot</code> 完全独立。</p>
+
+<h3>3.4 CCCI —— AP 与 Modem 的「桥梁」</h3>
+<p>内核：<code>kernel-*/drivers/misc/mediatek/ccci/</code>；用户态：<code>vendor/mediatek/proprietary/hardware/ccci/</code>。MTK 把 modem（MD）做成<b>独立核</b>（常跑 Nucleus/ThreadX），AP 通过 CCCI 字符设备 + 共享内存与其通信（AT 命令、数据传输、异常上报）。这是 MTK 与高通「外挂/集成 modem」路线差异的核心（见 §4）。</p>
+
+<h2>4. MTK vs 高通（Qualcomm）对比</h2>
+<svg viewBox="0 0 680 470" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <!-- header -->
+  <rect x="20" y="14" width="320" height="34" rx="8" fill="#eaf1ff" stroke="#2f6fed" stroke-width="1.4"/>
+  <text x="180" y="36" text-anchor="middle" font-weight="bold" font-size="14" fill="#1f2430">MediaTek (MTK)</text>
+  <rect x="360" y="14" width="300" height="34" rx="8" fill="#fdeaea" stroke="#d34343" stroke-width="1.4"/>
+  <text x="510" y="36" text-anchor="middle" font-weight="bold" font-size="14" fill="#1f2430">Qualcomm (QCOM)</text>
+
+  <!-- rows -->
+  <g font-size="12" fill="#1f2430">
+    <!-- bootloader -->
+    <text x="20" y="84" font-weight="bold" fill="#5b6472">Bootloader</text>
+    <rect x="20" y="92" width="320" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="32" y="116">preloader + LK(Little Kernel) + ATF/TEE</text>
+    <rect x="360" y="92" width="300" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="372" y="116">XBL + ABL(UEFI/edk2) + TZ(QSEE)</text>
+
+    <!-- TEE -->
+    <text x="20" y="156" font-weight="bold" fill="#5b6472">安全世界</text>
+    <rect x="20" y="164" width="320" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="32" y="188">Trusty / 自研 TEE</text>
+    <rect x="360" y="164" width="300" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="372" y="188">QSEE (QTEE)</text>
+
+    <!-- kernel drivers -->
+    <text x="20" y="228" font-weight="bold" fill="#5b6472">内核驱动布局</text>
+    <rect x="20" y="236" width="320" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="32" y="260">drivers/misc/mediatek/ 集中式</text>
+    <rect x="360" y="236" width="300" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="372" y="260">drivers/soc/qcom/ 分散式</text>
+
+    <!-- modem -->
+    <text x="20" y="300" font-weight="bold" fill="#5b6472">Modem 架构</text>
+    <rect x="20" y="308" width="320" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="32" y="332">MD 独立核 + CCCI 通信</text>
+    <rect x="360" y="308" width="300" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="372" y="332">Modem 子系统 + glink/smem IPC</text>
+
+    <!-- camera HAL -->
+    <text x="20" y="372" font-weight="bold" fill="#5b6472">Camera HAL</text>
+    <rect x="20" y="380" width="320" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="32" y="404">mtkcam (Pipeline/3A/ISP)</text>
+    <rect x="360" y="380" width="300" height="40" rx="7" fill="#fff" stroke="#cdd6e3"/>
+    <text x="372" y="404">CamX-CHI</text>
+
+    <!-- flashing -->
+    <text x="20" y="444" font-weight="bold" fill="#5b6472">刷机/救砖</text>
+    <rect x="20" y="452" width="320" height="0" fill="#fff"/>
+    <text x="32" y="452">SP Flash Tool / Meta / Download</text>
+    <text x="372" y="452">QFIL / EDL / fastboot</text>
+  </g>
+</svg>
+
+<table>
+<tr><th>维度</th><th>MediaTek</th><th>Qualcomm</th></tr>
+<tr><td>Bootloader</td><td>preloader + LK(Little Kernel，源自早期 LK) + ATF</td><td>XBL(PBL→XBL) + ABL(UEFI/edk2) + TZ</td></tr>
+<tr><td>Framework 改造</td><td>大量直接 patch AOSP（Mtk* 类就地注入）</td><td>尽量原生 + <code>vendor.qti.*</code> HIDL/AIDL 扩展</td></tr>
+<tr><td>Modem</td><td>集成 MD 独立核，CCCI 通信</td><td>Modem 子系统，glink/smem IPC</td></tr>
+<tr><td>Camera</td><td>mtkcam</td><td>CamX-CHI</td></tr>
+<tr><td>显示驱动</td><td><code>drivers/gpu/drm/mediatek/</code></td><td><code>drivers/gpu/drm/msm/</code></td></tr>
+<tr><td>工具链</td><td>SP Flash Tool / SN Writer / Meta</td><td>QFIL / EDL / QPST</td></tr>
+<tr><td>分区命名</td><td>lk, preloader, md1img, nvram, protect1/2, seccfg, secro, tee1, expdb</td><td>xbl, tz, rpm, modem, dsp, cmnlib, keymaster, devcfg</td></tr>
+</table>
+
+<h2>5. 调试与抓 log 的 MTK 特色</h2>
+<div class="card">
+<h4>mtklog（Mobile Log）</h4>
+<p>路径：<code>vendor/mediatek/proprietary/external/mtklog/</code>。工程版可通过 <code>*#*#3646633#*#*</code> 进入 EngineerMode 开启 mtklog，分多路：</p>
+<pre>mobilelog/   <span class="c">→ logcat + kernel log</span>
+modemlog/    <span class="c">→ MD 侧 AT/协议栈日志（CCCI 抓取）</span>
+metaplog/    <span class="c">→ AEE / aed 异常日志</span>
+netlog/      <span class="c">→ 网络层</span></pre>
+</div>
+<div class="card">
+<h4>AEE / aed 抓死机</h4>
+<p>死机重启后第一时间去 <code>/data/aee_exp/</code> 取 <code>db.*.zip</code>；内核 panic 还能配合 <code>ram_console</code> / <code>pstore</code> 看 last_kmsg。</p>
+</div>
+
+<h2>附录：典型 MTK 分区表（节选，具体因芯片而异）</h2>
+<table>
+<tr><th>分区</th><th>作用</th></tr>
+<tr><td>preloader</td><td>一级引导（SRAM 运行）</td></tr>
+<tr><td>lk / lk2</td><td>Little Kernel 主/备份</td></tr>
+<tr><td>boot</td><td>kernel + ramdisk（Android 12 后拆出 vendor_boot）</td></tr>
+<tr><td>vendor_boot</td><td>vendor ramdisk + dtbo（GKI 后）</td></tr>
+<tr><td>dtbo</td><td>设备树叠加</td></tr>
+<tr><td>tee1 / tee2</td><td>可信执行环境镜像</td></tr>
+<tr><td>md1img / md_udc</td><td>Modem 软件</td></tr>
+<tr><td>nvram</td><td>IMEI/校准参数（nvram_daemon）</td></tr>
+<tr><td>protect1 / protect2</td><td>出厂保护（写一次/防回滚）</td></tr>
+<tr><td>seccfg / secro</td><td>安全配置 / 安全区域</td></tr>
+<tr><td>expdb</td><td>AEE 异常数据库</td></tr>
+<tr><td>logo</td><td>开机 logo（boot_logo_updater 写入）</td></tr>
+<tr><td>persist / vbmeta / misc / cache</td><td>通用 Android 分区</td></tr>
+</table>
+
+<div class="note">想继续深入哪一块？比如我可以单拆一节讲 <b>mtkcam 的 Pipeline/3A 流程</b>、<b>CCCI 的 AP-MD 通信协议与异常上报</b>、或者<b>LK 里 boot_linux() 跳内核的完整寄存器约定</b>。告诉我方向即可。</div>
+
+</main>
+<footer>MTK Android 深度解析 · 基于 AOSP 代码级梳理 · 路径随芯片/Android 版本有差异，以实际代码仓为准</footer>
+</body>
+</html>

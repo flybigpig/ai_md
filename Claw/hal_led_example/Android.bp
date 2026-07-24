@@ -1,0 +1,15 @@
+aidl_interface {
+    name: "android.hardware.led",
+    vendor_available: true,
+    srcs: ["android/hardware/led/*.aidl"],
+    stability: "vintf",
+
+    backend: {
+        cpp: { enabled: true },
+        java: { enabled: true },
+        ndk: { enabled: true },
+    },
+
+    // 冻结 API 后（m android.hardware.led-update-api）再补：
+    // versions_with_info: [{ version: "1", imports: [] }],
+}

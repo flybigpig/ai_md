@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK 编译烧录端到端实操手册</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:"default", securityLevel:"loose"});</script>
+<style>
+  :root{--bg:#fff;--panel:#f7f9fc;--ink:#1f2430;--sub:#5b6472;--line:#d6dde8;
+        --blue:#2f6fed;--teal:#0fa3a3;--orange:#e8842a;--red:#d34343;--green:#2e9e63;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.75;font-size:15px}
+  header{background:linear-gradient(135deg,#0fa3a3,#2f6fed);color:#fff;padding:34px 40px}
+  header h1{margin:0 0 6px;font-size:24px}
+  header p{margin:0;opacity:.94;font-size:13.5px}
+  main{max-width:1080px;margin:0 auto;padding:24px 28px 90px}
+  h2{font-size:21px;margin:44px 0 12px;padding-left:12px;border-left:5px solid var(--teal)}
+  h3{font-size:17px;margin:28px 0 8px;color:var(--teal)}
+  h4{font-size:14.5px;margin:18px 0 6px;color:var(--sub)}
+  p{margin:9px 0}
+  code{background:#eef2f8;padding:1px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:13px;color:#b5346b}
+  pre{background:#0f1626;color:#e6edf7;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--ink)}
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:16px 0;overflow:auto}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:16px 0}
+  .note{background:#fff7ec;border-left:4px solid var(--orange);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#6a4a1c}
+  .warn{background:#fdeaea;border-left:4px solid var(--red);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#8a2b2b}
+  .add{background:#eaf6ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:8px;margin:22px 0;font-size:13.8px}
+  .add b{color:var(--blue)}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:26px}
+</style>
+</head>
+<body>
+<header>
+  <h1>MTK 编译烧录端到端实操手册</h1>
+  <p>主机环境 → 获取源码 → 编译 → 烧录 → 验证 · 含芯片×Android×内核对照表与新手踩坑 · 以 BSP Release Note 为准</p>
+</header>
+<main>
+
+<div class="note">本文由用户撰写，覆盖 MTK 端到端实操。所有命令/路径基于<b>通用 MTK BSP 流程</b>，但<b>以你拿到的那份 BSP 的 Release Note 为准</b>——MTK 闭源层每台机器/每个 release 细节会有差异。</div>
+
+<h2>总览流程图</h2>
+<div class="mermaid">
+graph TD
+    A["① 主机环境<br/>Ubuntu + JDK + 依赖"] --> B["② 获取源码<br/>MTK Partner 门户<br/>alps-*.tar.gz + kernel + proprietary"]
+    B --> C["③ 解压 & repo sync<br/>vendor/mediatek/proprietary 必须到位"]
+    C --> D["④ 编译<br/>envsetup → lunch → make / ./mk"]
+    D --> E["⑤ 产出<br/>out/target/product/&lt;platform&gt;/<br/>scatter + img + DA"]
+    E --> F["⑥ 烧录<br/>SP Flash Tool + VCOM + DA"]
+    F --> G["⑦ 验证<br/>adb / mtklogger"]
+</div>
+
+<h2>① 主机环境</h2>
+<table>
+<tr><th>项</th><th>建议</th></tr>
+<tr><td>系统</td><td>Ubuntu 18.04 / 20.04 / 22.04（按 Android 版本选，见末尾表）</td></tr>
+<tr><td>内存</td><td><b>≥ 32GB</b>（MTK 全编非常大，16GB 容易 OOM）</td></tr>
+<tr><td>磁盘</td><td><b>≥ 500GB SSD</b>（源码 + <code>out/</code> 轻松占 300GB+）</td></tr>
+<tr><td>CPU</td><td>多核越多越快（建议 16 核+）</td></tr>
+</table>
+
+<p><b>安装编译依赖（Ubuntu 20.04 示例）：</b></p>
+<pre>sudo apt update
+sudo apt install -y git gnupg flex bison gperf build-essential \
+  zip curl zlib1g-dev libc6-dev libncurses5-dev x11proto-core-dev \
+  libx11-dev lib32z-dev ccache libgl1-mesa-dev libxml2-utils \
+  xsltproc unzip python3 python3-pip gcc-multilib g++-multilib \
+  libssl-dev lib32stdc++6</pre>
+
+<p><b>JDK（按 Android 版本，关键！）：</b></p>
+<pre># Android 9/10  → OpenJDK 8
+sudo apt install openjdk-8-jdk
+# Android 11/12 → OpenJDK 11
+sudo apt install openjdk-11-jdk
+# Android 13/14 → OpenJDK 17
+sudo apt install openjdk-17-jdk</pre>
+<p>配置默认 JDK：<code>sudo update-alternatives --config java</code></p>
+
+<p><b>repo 工具：</b></p>
+<pre>mkdir -p ~/bin && curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+chmod +x ~/bin/repo && export PATH=~/bin:$PATH</pre>
+
+<h2>② 获取源码（MTK 特有，不是 AOSP）</h2>
+<p>MTK 源码<b>不在公开 AOSP</b>，来自 <b>MTK Partner Portal</b>（https://online.mediatek.com ，需授权账号 + NDA）。典型交付物：</p>
+<pre>alps-release-&lt;version&gt;-&lt;chip&gt;-&lt;date&gt;.tar.gz   # 主框架（分卷 alps-*.tar.gz.aa/.ab...）
+kernel-&lt;ver&gt;-&lt;chip&gt;.tar.gz                     # 内核
+vendor-mediatek-proprietary-&lt;chip&gt;.tar.gz      # 闭源 BSP（最大，常单独给）</pre>
+<p>拿到后合并解压：</p>
+<pre>cat alps-*.tar.gz.* | tar -xzvf -        # 分卷合并解压
+tar -xzf kernel-4.19-mt6765.tar.gz
+tar -xzf vendor-mediatek-proprietary.tar.gz</pre>
+<div class="warn">⚠️ <b>最常见的新手坑</b>：<code>vendor/mediatek/proprietary/</code> 没解压到位 → 编译时 HAL 全找不到。解压后务必确认 <code>vendor/mediatek/proprietary/hardware/</code> 有内容。</div>
+
+<h2>③ 编译</h2>
+<pre>cd alps            # 你的源码根目录
+source build/envsetup.sh
+
+# lunch 目标格式：&lt;platform&gt;-&lt;variant&gt;
+#   variant: eng(开发/root) / userdebug(接近量产可调试) / user(量产)
+lunch mt6765-userdebug
+# 或 MT6893:
+lunch mt6893-eng
+
+# 方式 A：标准 AOSP make（推荐，可控）
+make -j$(nproc) 2>&1 | tee build.log
+
+# 方式 B：MTK 自带 mk 脚本（部分 BSP 推荐）
+./mk mt6765 n        # new，全编
+./mk mt6765 r        # remake
+./mk mt6765 r pl lk  # 只重编 preloader + lk</pre>
+
+<h4>编译产物（关键文件，烧录用）</h4>
+<pre>out/target/product/mt6765/
+├── MT6765_Android_scatter.txt     # ★ scatter 分区表（烧录必需）
+├── DA_SWSEC.bin / DA_PL.bin       # ★ Download Agent（烧录握手）
+├── preloader_mt6765.bin
+├── lk.bin
+├── boot.img
+├── recovery.img
+├── vbmeta.img
+├── system.img / vendor.img / product.img
+├── md1img.img                     # modem
+├── super.img                      # (动态分区时 system+vendor+product 合一)
+└── userdata.img</pre>
+
+<h2>④ 烧录（SP Flash Tool）</h2>
+<p>MTK 烧录用 <b>SP Flash Tool</b>（Windows 为主，也有 Linux 版）。</p>
+<p><b>前置（Windows）：</b></p>
+<ol>
+<li>装 <b>MTK VCOM 驱动</b>（<code>MTK_All_In_One_DA_USB_Driver</code> / <code>MTK USB Port</code>）。</li>
+<li>下载 <b>SP Flash Tool</b>（如 <code>SP_Flash_Tool_v5.xx</code>）。</li>
+</ol>
+
+<div class="mermaid">
+sequenceDiagram
+    participant PC as SP Flash Tool (Win)
+    participant DEV as MTK 设备(关机)
+    PC->>PC: 选 Download 模式
+    PC->>PC: 加载 scatter.txt
+    PC->>PC: 勾选要烧的分区(默认全选)
+    PC->>PC: 点 "Download"
+    PC->>DEV: 提示插入设备 → 关机连 USB
+    Note over DEV: 触发 BROM( preloader ) 模式<br/>自动握手 DA
+    DEV->>PC: 开始下载各 img
+    PC->>PC: 显示绿色 ✓ Download OK
+    PC->>DEV: 断开, 开机
+</div>
+
+<p><b>要点：</b></p>
+<ul>
+<li><b>进 download 模式</b>：关机状态下插 USB（部分机型需先拔电池/不插电池），工具会自动走 BROM → 加载 DA。</li>
+<li><b>Secure Boot 设备</b>：必须加载 <code>auth_sv.bin</code> / <code>da_auth</code> 授权文件（在 SP Flash Tool 的 "Auth" 选项卡），否则报 <code>SECURE BOOT: DL image not signed</code> 或 <code>BROM ERROR: STATUS_SEC_IMG_NOT_FOUND</code>。</li>
+<li><b>scatter 必须匹配</b>：用本次编译生成的 scatter，不能用别的机型/版本的，否则分区错位变砖。</li>
+</ul>
+
+<p><b>替代：Fastboot（需解锁）</b></p>
+<pre>adb reboot bootloader
+fastboot flash boot boot.img
+fastboot flash vendor vendor.img
+fastboot reboot</pre>
+<div class="note">MTK 很多量产机 bootloader 锁死，Fastboot 不可用，只能走 SP Flash Tool。</div>
+
+<h2>⑤ 验证</h2>
+<pre>adb shell getprop ro.build.flavor      # 确认 build variant
+adb shell getprop ro.hardware          # 确认平台 mt6765/mt6893
+adb shell cat /proc/kmsg | head        # 内核日志
+# 抓全日志（含 modem）
+# 打开 mtklogger App → 开始记录 → /sdcard/mtklog/</pre>
+
+<h2>⑥ 芯片型号 × Android 版本 × 内核对照表</h2>
+<table>
+<tr><th>芯片</th><th>系列</th><th>典型 Android</th><th>内核</th><th>lunch platform</th><th>备注</th></tr>
+<tr><td><b>MT6765</b></td><td>Helio P35 / G37</td><td>9 / 10 / 11（部分 12）</td><td>kernel-4.9 / 4.14</td><td><code>mt6765</code></td><td>12nm，入门级，最常见低端 PDA</td></tr>
+<tr><td><b>MT6893</b></td><td>Dimensity 1100/1200</td><td>11 / 12 / 13</td><td>kernel-4.19 / 5.10</td><td><code>mt6893</code></td><td>6nm，中高端</td></tr>
+<tr><td>MT6873</td><td>Dimensity 700/800</td><td>10 / 11 / 12</td><td>kernel-4.19 / 5.4</td><td><code>mt6873</code></td><td></td></tr>
+<tr><td>MT6877</td><td>Dimensity 900/1100</td><td>11 / 12 / 13</td><td>kernel-5.4 / 5.10</td><td><code>mt6877</code></td><td></td></tr>
+<tr><td>MT6983</td><td>Dimensity 9000</td><td>12 / 13</td><td>kernel-5.10 / 5.15</td><td><code>mt6983</code></td><td>旗舰</td></tr>
+<tr><td>MT6985</td><td>Dimensity 9200</td><td>13 / 14</td><td>kernel-5.15</td><td><code>mt6985</code></td><td></td></tr>
+<tr><td>MT6991</td><td>Dimensity 9300</td><td>14</td><td>kernel-6.1</td><td><code>mt6991</code></td><td>最新旗舰</td></tr>
+</table>
+<div class="note">内核版本是<b>经验值</b>，最终以你 BSP 里 <code>kernel-*</code> 目录名为准（有的 release 会 backport）。</div>
+<p><b>Ubuntu / JDK 搭配建议：</b></p>
+<ul>
+<li>Android 9/10 → Ubuntu 18.04 + JDK8</li>
+<li>Android 11/12 → Ubuntu 20.04 + JDK11</li>
+<li>Android 13/14 → Ubuntu 22.04 + JDK17</li>
+</ul>
+
+<h2>⑦ 新手最常踩的坑</h2>
+<div class="card">
+<ol>
+<li><b><code>vendor/mediatek/proprietary</code> 没解压</b> → HAL 编译失败。先确认目录非空。</li>
+<li><b>JDK 版本错</b> → <code>lunch</code> 或 <code>make</code> 直接报 <code>Unsupported class file major version</code>。</li>
+<li><b>内存不够</b> → <code>make</code> 中途 OOM 被杀，建议加 <code>export USE_CCACHE=1</code> 并设大 <code>ccache</code>，或减 <code>-j</code> 线程数。</li>
+<li><b>Secure Boot 没加 auth 文件</b> → 烧录报安全错误。量产机几乎都开了。</li>
+<li><b>scatter 版本不匹配</b> → 分区错位，轻则起不来，重则变砖（需 BROM 强刷）。</li>
+<li><b>Python 版本</b>：老 BSP（Android 9 及更早）脚本可能要 <code>python</code> 指向 python2；新版要 python3，用 <code>update-alternatives</code> 切。</li>
+<li><b>动态分区（Android 10+）</b>：<code>system/vendor/product</code> 合并成 <code>super.img</code>，SP Flash Tool 里烧 <code>super</code> 而不是单独烧三个。</li>
+</ol>
+</div>
+
+<div class="add">
+<b>〔助理注，不改原文〕</b>
+<ul>
+<li><b>对你 ERP PDA 的落点</b>：你表里点名 MT6765 是"最常见低端 PDA"——若你的 PDA 正是 MT6765，这份手册的环境/编译/烧录步骤可直接套用（Android 11 配 Ubuntu 20.04 + JDK11 最稳）。但作为 App 开发，你<b>不需要自己编全系统</b>；产线/FAE 编好整包后你拿 <code>out/</code> 里的 <code>system.img</code>/<code>super.img</code> 烧录验证即可。</li>
+<li><b>动态分区实操提醒</b>：Android 10+ 烧 <code>super.img</code> 时，SP Flash Tool 的 scatter 里 <code>super</code> 分区通常标记 <code>is_download: true</code> 且含 <code>linear_size</code>，不要手工去改 <code>system/vendor/product</code> 三个老分区的偏移，否则与 <code>super</code> 冲突。</li>
+<li><b>BROM 强刷 vs 普通 Download</b>：普通 Download 走 preloader→DA；"变砖"后若 preloader 也坏了，需要真正的 BROM 模式（强制进 BL 阶段握手），这对应你下一个可选主题"变砖后 BROM 强刷救机"。</li>
+</ul>
+</div>
+
+</main>
+<footer>MTK 编译烧录端到端实操手册 · 已渲染 mermaid 图示 · 命令/路径/版本以实际 BSP Release Note 为准</footer>
+</body>
+</html>

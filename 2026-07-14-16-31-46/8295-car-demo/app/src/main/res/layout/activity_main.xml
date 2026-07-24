@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/space_m">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="@dimen/text_title"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/btnMultiScreen"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/btn_height"
+        android:text="@string/title_multi_screen"
+        android:textSize="@dimen/text_body"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/space_m" />
+
+    <Button
+        android:id="@+id/btnScan"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/btn_height"
+        android:text="@string/title_scan"
+        android:textSize="@dimen/text_body"
+        app:layout_constraintTop_toBottomOf="@id/btnMultiScreen"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/space_m" />
+
+    <Button
+        android:id="@+id/btnVehicle"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/btn_height"
+        android:text="@string/title_vehicle"
+        android:textSize="@dimen/text_body"
+        app:layout_constraintTop_toBottomOf="@id/btnScan"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/space_m" />
+
+    <TextView
+        android:id="@+id/tvSpeed"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/hint_speed"
+        android:textSize="@dimen/text_body"
+        app:layout_constraintTop_toBottomOf="@id/btnVehicle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/space_m" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

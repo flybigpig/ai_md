@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.fly.agent.app-mergeDebugResources-31:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\YTO-02231406\\.gradle\\caches\\8.10.2\\transforms\\b72953c24d1dd4b8441e53f753b97d2a\\transformed\\material-1.12.0\\res\\values-ldrtl-v17\\values-ldrtl-v17.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,191",
+                        "endColumns": "135,140",
+                        "endOffsets": "186,327"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MT6893 scatter 文件字段逐项解读</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{fontSize:'14px'}});</script>
+<style>
+  :root{--bg:#fafbfc;--card:#fff;--ink:#1f2933;--sub:#52606d;--line:#e4e7eb;--accent:#0b7285;--tag:#e6f4f6;--warn:#fff4e6;--warnbd:#f0a868;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:36px 0 12px;padding-left:10px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--accent);}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f0f3f5;font-weight:600;}
+  code{background:#eef1f3;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.5;}
+  pre code{background:none;color:inherit;padding:0;}
+  .note{background:var(--tag);border:1px solid #b7e0e6;border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .note b{color:var(--accent);}
+  .warn{background:var(--warn);border:1px solid var(--warnbd);border-left:4px solid var(--warnbd);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .pill{display:inline-block;background:#eef2f4;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--sub);margin-right:6px;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:4px 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>MT6893 scatter 文件字段逐项解读</h1>
+<div class="meta">以 <code>MT6893_Android_scatter.txt</code> 为例 · 回应「scatter 不匹配就变砖」的硬约束 · 原文框架由 WorkBuddy 编写</div>
+
+<div class="note">
+<span class="pill">平台 mt6893</span><span class="pill">Android 14</span><span class="pill">EMMC</span><span class="pill">动态分区</span><br>
+<b>核心认知：</b>scatter 就是 SP Flash Tool 的"分区地图"。每个分区的 <code>linear_start_addr</code> 和 <code>partition_size</code> 一旦和镜像实际布局对不上，烧录要么直接报错，要么把邻区覆盖成砖。
+</div>
+
+<h2>一、文件头部（General Setting）</h2>
+<p>SP Flash Tool 先读这段，确认平台/存储匹配，不匹配会直接拒绝加载：</p>
+<pre><code>- general: MTK_PLATFORM_CFG
+  INFO:
+    - config_version: V1.1.2
+    - platform: MT6893
+    - project: mt6893
+    - storage: EMMC
+    - boot_channel: MSDC_0
+    - kernel: linux
+    - wifi:
+    ...</code></pre>
+<table>
+<tr><th>字段</th><th>含义</th><th>注意</th></tr>
+<tr><td><code>config_version</code></td><td>scatter 格式版本</td><td>V1.x 为 MTK 私有格式；换大版本工具可能不认</td></tr>
+<tr><td><code>platform: MT6893</code></td><td>芯片平台</td><td>必须和你要烧的机器一致，写错直接拒</td></tr>
+<tr><td><code>storage: EMMC</code></td><td>存储介质</td><td>也有 UFS（<code>UFS</code>）；混用必 brick</td></tr>
+<tr><td><code>boot_channel: MSDC_0</code></td><td>启动通道</td><td>eMMC 走 MSDC 控制器，一般不动</td></tr>
+</table>
+
+<h2>二、分区条目字段逐项解读</h2>
+<p>每个分区是一个 <code>- partition_index:</code> 块。下面用 MT6893 上一个真实形态的分区做样例（数值为示意，以你 BSP 实际为准）：</p>
+
+<pre><code>- partition_index: SYS0
+  partition_name: preloader
+  file_name: preloader_mt6893.bin
+  is_download: true
+  type: SV5_BL_BIN
+  linear_start_addr: 0x0
+  physical_start_addr: 0x0
+  partition_size: 0x80000
+  region: EMMC_BOOT_1
+  storage: HW_STORAGE_EMMC
+  boundary_check: true
+  is_reserved: false
+  operation_type: BOOTLOADERS
+  d_type: FALSE
+  reserved: 0x00
+
+- partition_index: SYS1
+  partition_name: recovery
+  file_name: recovery.img
+  is_download: true
+  type: NORMAL_ROM
+  linear_start_addr: 0x400000
+  physical_start_addr: 0x400000
+  partition_size: 0x2000000
+  region: EMMC_USER
+  storage: HW_STORAGE_EMMC
+  boundary_check: true
+  is_reserved: false
+  operation_type: UPDATE
+  d_type: FALSE
+  reserved: 0x00
+
+- partition_index: SYSx
+  partition_name: super
+  file_name: super.img
+  is_download: true
+  type: SUPER_IMG
+  linear_start_addr: 0x....
+  partition_size: 0x.....
+  region: EMMC_USER
+  storage: HW_STORAGE_EMMC
+  boundary_check: true
+  operation_type: UPDATE
+  d_type: FALSE
+  reserved: 0x00</code></pre>
+
+<table>
+<tr><th>字段</th><th>含义</th><th>Android 14 / MT6893 注意点</th></tr>
+<tr><td><code>partition_index</code></td><td>条目序号 SYS0..SYSn</td><td>必须连续，工具按序处理；乱序可能导致布局解析错</td></tr>
+<tr><td><code>partition_name</code></td><td>分区名</td><td>与 fstab、avb 对应；如 <code>preloader</code> <code>recovery</code> <code>super</code> <code>vbmeta</code></td></tr>
+<tr><td><code>file_name</code></td><td>要烧的镜像文件名</td><td>相对 <code>out/target/product/mt6893/</code>；留空则只擦除不烧</td></tr>
+<tr><td><code>is_download</code></td><td>是否烧录</td><td><code>false</code> 工具跳过；动态分区的 system/vendor/product 常设为 <code>false</code>（在 super 内）</td></tr>
+<tr><td><code>type</code></td><td>镜像类型</td><td><code>SV5_BL_BIN</code>(preloader) / <code>NORMAL_ROM</code> / <code>EXT4_IMG</code> / <code>SUPER_IMG</code> / <code>FB_IMG</code>(fastboot) 等；类型错工具拒烧</td></tr>
+<tr><td><code>linear_start_addr</code></td><td>逻辑起始地址</td><td>★ 错配→覆盖邻区变砖；必须用本次编译生成的值</td></tr>
+<tr><td><code>physical_start_addr</code></td><td>物理起始地址</td><td>EMMC 上一般等于 linear；BOOT_1/BOOT_2 区域不同</td></tr>
+<tr><td><code>partition_size</code></td><td>分区大小（hex）</td><td>★ 必须 ≥ img 实际大小；不足则烧录截断/失败</td></tr>
+<tr><td><code>region</code></td><td>存储区域</td><td><code>EMMC_BOOT_1</code> / <code>EMMC_BOOT_2</code> / <code>EMMC_USER</code>；preloader 在 BOOT_1</td></tr>
+<tr><td><code>storage</code></td><td>存储介质</td><td><code>HW_STORAGE_EMMC</code>（或 UFS）</td></tr>
+<tr><td><code>boundary_check</code></td><td>边界检查</td><td><code>true</code> 时工具校验不越界；关掉等于自找砖</td></tr>
+<tr><td><code>operation_type</code></td><td>操作类型</td><td><code>BOOTLOADERS</code>(preloader/lk) / <code>UPDATE</code> / <code>PROTECTED</code>(protect1/2)</td></tr>
+<tr><td><code>d_type</code></td><td>是否数据分区</td><td><code>TRUE</code>=裸数据分区（如 userdata）；<code>FALSE</code>=镜像</td></tr>
+<tr><td><code>reserved</code></td><td>保留字节</td><td>一般 <code>0x00</code>，勿改</td></tr>
+</table>
+
+<h2>三、为什么"不匹配就变砖"</h2>
+<div class="warn">
+<b>三个致命点：</b>
+<ol>
+<li><b>linear_start_addr 重叠</b>：A 分区的起始落进了 B 分区的区间，烧 A 直接把 B 覆盖。典型是手改了某个地址却没同步相邻分区。</li>
+<li><b>partition_size &lt; img 实际大小</b>：镜像写不下，工具报错或静默截断，开机即挂。</li>
+<li><b>region 错挂</b>：把本该在 <code>EMMC_USER</code> 的镜像指到 <code>EMMC_BOOT_1</code>，preloader 区被冲，连 BROM 都救不回（需外部强刷）。</li>
+</ol>
+</div>
+<div class="note">结论：<b>永远用本次编译生成的 scatter</b>，不要拿别的机型/版本的 scatter 来烧 MT6893；跨 Android 大版本（11→14）分区表几乎必然变（多了 vendor_boot、super、多张 vbmeta），更不能混用。</div>
+
+<h2>四、Android 14 动态分区在 scatter 里的体现</h2>
+<p>动态分区下，<code>system</code> / <code>vendor</code> / <code>product</code> / <code>system_ext</code> / <code>odm</code> 不再是独立物理分区，而是 <b>super 内部的逻辑分区</b>。scatter 里通常表现为：</p>
+<ul>
+<li>有一个大 <code>super</code> 分区（<code>type: SUPER_IMG</code>），<code>is_download: true</code>；</li>
+<li>system/vendor/product 等条目要么<b>不出现</b>，要么 <code>is_download: false</code>，仅作占位；</li>
+<li>烧录时只勾 <code>super.img</code>，不要单独烧 system/vendor。</li>
+</ul>
+<pre><code># 动态分区场景：system 在 super 内，scatter 里一般这样
+- partition_index: SYSn
+  partition_name: system
+  file_name:
+  is_download: false        # ★ 不单独烧
+  type: EXT4_IMG
+  ...
+
+- partition_index: SYSm
+  partition_name: super
+  file_name: super.img
+  is_download: true         # ★ 只烧这个
+  type: SUPER_IMG
+  ...</code></pre>
+
+<h2>五、与 SP Flash Tool 的对应关系</h2>
+<div class="mermaid">
+graph TD
+    SC["scatter.txt<br/>(分区地图)"] --> PF["SP Flash Tool 读取"]
+    PF --> CHK["校验 platform/storage 匹配"]
+    CHK --> LIST["列出分区 + is_download 过滤"]
+    LIST --> DL["按 linear_start_addr 顺序烧录"]
+    DL --> BR["boundary_check 防越界"]
+    BR --> OK["绿色 ✓ Download OK"]
+</div>
+
+<div class="note">
+<b>排障速记：</b>
+<ul>
+<li><code>BROM ERROR: STATUS_SEC_IMG_NOT_FOUND</code> → 没加载 auth 文件（Secure Boot）。</li>
+<li><code>linear_start_addr</code> 报错 → scatter 与镜像版本不符，换本次编译的。</li>
+<li>烧完不开机但能进 BROM → 多半是 boot/vendor_boot/dtbo 没同烧（GKI 分离坑）。</li>
+</ul>
+</div>
+
+<div class="card">
+<b>关联文档：</b>本文是第 6 份《MT6893 + Android 14 实操手册》的配套深挖。结合手册 ④ 的镜像清单与 ⑧ 的 GKI / 动态分区坑一起看，能完整理解"为什么 boot、vendor_boot、dtbo、super、vbmeta 必须一起烧"。
+</div>
+
+</div>
+</body>
+</html>

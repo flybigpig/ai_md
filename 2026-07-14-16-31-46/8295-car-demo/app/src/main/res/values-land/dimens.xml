@@ -1,0 +1,8 @@
+<!-- 横屏车机：沿用中屏尺寸基准（与 sw600dp 一致即可，按需微调） -->
+<resources>
+    <dimen name="text_title">24sp</dimen>
+    <dimen name="text_body">18sp</dimen>
+    <dimen name="space_m">24dp</dimen>
+    <dimen name="btn_height">72dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+</resources>

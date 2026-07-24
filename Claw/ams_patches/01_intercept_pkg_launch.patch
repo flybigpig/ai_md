@@ -1,0 +1,53 @@
+# ============================================================================
+# Patch 01 —— 拦截指定包名启动（运行时开关）
+# 文件: frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java
+# 作用: 当 persist.myams.enable_block=true 且 intent 目标包 == persist.myams.block_pkg
+#       时，直接返回 START_CANCELED，阻止该包被启动（如埋点/管控/演示拦截）。
+# 依赖: Patch 02 提供 `am myams block <pkg>` / `am myams unblock` 来设置这两个属性。
+#
+# 定位插入点: 找到 public final int startActivityAsUser(IApplicationThread caller, ...)
+#             方法体最开头（return startActivityAsUser(... validateIncomingUser) 之前），
+#             把下面 + 行贴进去即可。
+#
+# 所需 import（AMS 一般已具备，若编译报找不到再补）:
+#   import android.os.SystemProperties;   // 通常已 import
+#   import android.os.Binder;             // 通常已 import
+#   import android.app.ActivityManager;   // 通常已 import，提供 START_CANCELED
+# ============================================================================
+
+--- a/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java
++++ b/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java
+@@ -1,1 +1,1 @@
+     public final int startActivityAsUser(IApplicationThread caller, String callingPackage,
+             String callingFeatureId, Intent intent, String resolvedType,
+             IBinder resultTo, String resultWho, int requestCode, int startFlags,
+             ProfilerInfo profilerInfo, Bundle bOptions, int userId) {
++
++        // === MyAMS: 拦截指定包名启动（运行时开关） ===
++        if (SystemProperties.getBoolean("persist.myams.enable_block", false)) {
++            final String blockPkg = SystemProperties.get("persist.myams.block_pkg", "");
++            final String targetPkg = intent.getComponent() != null
++                    ? intent.getComponent().getPackageName() : null;
++            if (!blockPkg.isEmpty() && blockPkg.equals(targetPkg)) {
++                Slog.w(TAG, "MyAMS blocked launch of " + targetPkg
++                        + " (caller=" + callingPackage
++                        + " uid=" + Binder.getCallingUid() + ")");
++                return ActivityManager.START_CANCELED;
++            }
++        }
++        // === END MyAMS ===
++
+         return startActivityAsUser(caller, callingPackage, callingFeatureId, intent, resolvedType,
+                 resultTo, resultWho, requestCode, startFlags, profilerInfo, bOptions,
+                 userId, true /*validateIncomingUser*/);
+     }
+
+# ----------------------------------------------------------------------------
+# 验证:
+#   m services -j$(nproc)
+#   adb push out/.../system/framework/services.jar /system/framework/ && adb reboot
+#   adb shell am myams block com.example.target      # 开拦截, 指定包
+#   adb shell am start -n com.example.target/.MainActivity   # 应被拦, logcat 见 MyAMS
+#   adb shell am myams unblock                        # 关拦截
+#   adb logcat -b all | grep MyAMS
+# ============================================================================

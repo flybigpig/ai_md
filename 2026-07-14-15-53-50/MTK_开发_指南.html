@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK Android 开发指南（工程视角）</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:"default", securityLevel:"loose"});</script>
+<style>
+  :root{--bg:#fff;--panel:#f7f9fc;--ink:#1f2430;--sub:#5b6472;--line:#d6dde8;
+        --blue:#2f6fed;--teal:#0fa3a3;--orange:#e8842a;--red:#d34343;--green:#2e9e63;}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.75;font-size:15px}
+  header{background:linear-gradient(135deg,#e8842a,#d34343);color:#fff;padding:34px 40px}
+  header h1{margin:0 0 6px;font-size:25px}
+  header p{margin:0;opacity:.94;font-size:13.5px}
+  main{max-width:1080px;margin:0 auto;padding:24px 28px 90px}
+  h2{font-size:21px;margin:44px 0 12px;padding-left:12px;border-left:5px solid var(--orange)}
+  h3{font-size:17px;margin:28px 0 8px;color:var(--orange)}
+  h4{font-size:14.5px;margin:18px 0 6px;color:var(--sub)}
+  p{margin:9px 0}
+  code{background:#eef2f8;padding:1px 6px;border-radius:4px;font-family:Consolas,monospace;font-size:13px;color:#b5346b}
+  pre{background:#0f1626;color:#e6edf7;padding:14px 16px;border-radius:10px;overflow:auto;font-size:13px;line-height:1.55}
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--panel);color:var(--ink)}
+  .mermaid{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:16px 0;overflow:auto}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:16px 0}
+  .note{background:#fff7ec;border-left:4px solid var(--orange);padding:10px 14px;border-radius:8px;margin:14px 0;font-size:13.5px;color:#6a4a1c}
+  .add{background:#eaf6ff;border-left:4px solid var(--blue);padding:12px 16px;border-radius:8px;margin:22px 0;font-size:13.8px}
+  .add b{color:var(--blue)}
+  .tags{margin:10px 0}
+  .tag{display:inline-block;background:#eaf1ff;color:var(--blue);border-radius:6px;padding:2px 9px;font-size:12.5px;margin:3px 4px}
+  footer{text-align:center;color:var(--sub);font-size:12px;padding:26px}
+</style>
+</head>
+<body>
+<header>
+  <h1>MTK Android 开发指南（工程视角）</h1>
+  <p>编译打包 · 烧录工具链 · 日志体系 · 定制入口 · 安全启动 · 高通工具对比 · 真实工具名 / 命令 / 路径</p>
+</header>
+<main>
+
+<div class="note">本文由用户撰写，按<b>实际工程视角</b>拆分 MTK Android 平台开发。MTK 源码来自 partner 门户（<code>alps-release-*</code>），非公开 AOSP；命令/路径随芯片（MT67xx / MT68xx / 天玑）与 Android 版本会变化。</div>
+
+<h2>MTK 开发的整体分类</h2>
+<div class="mermaid">
+graph TD
+    DEV["MTK Android 开发"] --> BSP["BSP / 底层<br/>(需 partner 源码)"]
+    DEV --> FW["Framework / 系统定制<br/>(vendor/mediatek + device/)"]
+    DEV --> APP["App 层开发<br/>(普通 APK, 与机型无关)"]
+    DEV --> FAC["工厂 / 产线<br/>(校准, 写号)"]
+
+    BSP --> K["Kernel / 驱动<br/>kernel-5.15/drivers/misc/mediatek"]
+    BSP --> BL["Bootloader<br/>preloader + LK"]
+    BSP --> HAL["HAL<br/>vendor/mediatek/proprietary/hardware"]
+    FAC --> FLASH["SP Flash Tool / SP Meta / SN Writer"]
+</div>
+
+<div class="note">你之前的 ERP PDA 是 <b>App 层</b>，基本不碰下面三层；但如果 PDA 是 MTK 平台，产线烧录/校准就会用到下面工具。</div>
+
+<h2>1. 编译与打包</h2>
+<p>MTK 源码不走公开 AOSP，来自 <b>MTK partner 门户</b>（<code>alps-release-*</code> 包），编译框架沿用 AOSP 但多了 MTK 自己的 <code>mk</code> 工具。</p>
+<pre># 标准 AOSP 流程（MTK 同样适用）
+source build/envsetup.sh
+lunch mt68xx-eng          # 或 mt6765-userdebug
+make -j$(nproc)
+
+# 单模块编译（最常用）
+mmm vendor/mediatek/proprietary/hardware/mtkcam/
+mmm frameworks/base/      # 改了 framework 后重编
+
+# MTK 自有打包脚本（生成可烧录镜像）
+# vendor/mediatek/proprietary/build/ 下的 mk 工具
+./mk mt68xx n            # new build
+./mk mt68xx r pl lk      # 只重编 preloader + lk</pre>
+
+<h4>关键配置文件</h4>
+<ul>
+<li><code>device/mediatek/mt68xx/ProjectConfig.mk</code> — <b>MTK 功能总开关</b>，几千个 <code>MTK_*</code> 宏（<code>MTK_CAMERA_APP</code>、<code>MTK_GMO_RAM_OPTIMIZE</code>、<code>MTK_TC1_FEATURE</code>…），定制几乎都从这里改。</li>
+<li><code>device/mediatek/mt68xx/device.mk</code> — 模块/包选择。</li>
+<li><code>vendor/mediatek/proprietary/trustzone/</code> 与 <code>scripts/sign-image/</code> — 签名。</li>
+</ul>
+
+<h2>2. 烧录工具链（最核心的"开发外设"）</h2>
+<div class="mermaid">
+graph LR
+    PC["PC 端工具"] -->|USB VCOM| DEV["MTK 设备(Download 模式)"]
+    PC --> SF["SP Flash Tool<br/>(scatter 烧录)"]
+    PC --> SM["SP Meta Tool<br/>(RF/ sensor 校准)"]
+    PC --> SN["SN Writer<br/>(IMEI/SN 写号)"]
+    SF -->|DA 握手| DEV
+</div>
+<ul>
+<li><b>SP Flash Tool</b>：基于 <code>MT68xx_Android_scatter.txt</code>（scatter 文件，描述各分区偏移/大小）烧录。进入 download 模式：关机后 USB 拔插触发 VCOM，或特定组合键。</li>
+<li><b>Download Agent (DA)</b>：<code>DA_SWSEC.bin</code> / <code>DA_PL.bin</code>，preloader 阶段握手用的小程序。</li>
+<li><b>SP Meta Tool</b>：工厂校准（RF、camera sensor、touch、电池）。</li>
+<li><b>SN Writer / WWR</b>：写 IMEI、SN、MAC。</li>
+</ul>
+<h4>常见分区（scatter 里能看到）</h4>
+<p><code>preloader, lk, boot, recovery, vbmeta, system, vendor, product, userdata, md1img(modem), spmfw, mcupm, scp, sspm, tee, nvdata, nvram, protect1/2, para, logo, expdb, frp, metadata</code></p>
+
+<h2>3. 调试 / 日志体系（MTK 特色）</h2>
+<p>MTK 的日志比原生 AOSP 多一套 <b>AEE + mtklogger</b> 体系：</p>
+<table>
+<tr><th>工具 / 路径</th><th>用途</th></tr>
+<tr><td><code>/data/aee_exp/</code> , <code>/sdcard/mtklog/</code></td><td>AEE 崩溃 dump（KE/HW/NE/JE/SWT）</td></tr>
+<tr><td><code>mtklogger</code> App（<code>vendor/.../apps/MTKLogger</code>）</td><td>一键抓取 kernel+android+modem 日志</td></tr>
+<tr><td><b>GAT</b>（桌面端）</td><td>实时抓取 + 解析 mtklog</td></tr>
+<tr><td><b>MTK Catcher / ELT</b></td><td>Modem（MD）层日志，分析掉网/通话</td></tr>
+<tr><td><code>dmesg</code> / <code>/proc/kmsg</code></td><td>内核日志</td></tr>
+<tr><td><code>expdb</code> 分区</td><td>存放异常数据库，配合 <code>aee</code> 解析</td></tr>
+</table>
+<div class="note">调试 MTK 设备第一件事通常是先开 <code>mtklogger</code> 抓一份全日志，再拿 AEE 的 <code>db</code> 文件用 GAT 解析。</div>
+
+<h2>4. 常见定制入口</h2>
+<table>
+<tr><th>定制项</th><th>位置</th></tr>
+<tr><td>功能开关</td><td><code>device/mediatek/mt68xx/ProjectConfig.mk</code>（<code>MTK_*</code> 宏）</td></tr>
+<tr><td>资源 overlay</td><td><code>device/mediatek/mt68xx/overlay/</code>、<code>vendor/.../frameworks/base/res/</code></td></tr>
+<tr><td><b>NVRAM</b>（校准/IMEI 等非易失数据）</td><td><code>vendor/mediatek/proprietary/custom/</code> 下 <code>cgen</code> 生成</td></tr>
+<tr><td><b>LCM（LCD）</b></td><td><code>vendor/.../bootable/bootloader/lk/target/mt68xx/</code> + <code>custom/mt68xx/lk/lcm/</code></td></tr>
+<tr><td><b>Camera sensor 参数</b></td><td><code>vendor/mediatek/proprietary/custom/mt68xx/hal/imgsensor/</code></td></tr>
+<tr><td>开机 logo</td><td><code>vendor/mediatek/proprietary/external/libshowlogo/</code>（图片转 <code>logo.bin</code>）</td></tr>
+</table>
+
+<h2>5. 安全启动 / 签名</h2>
+<ul>
+<li><b>Secure Boot</b>：MTK 用 <code>da_auth</code> / <code>auth_sv</code> 授权文件 + <code>vbmeta</code>(AVB) 或自有 <code>sec</code> 签名。</li>
+<li>签名脚本：<code>vendor/mediatek/proprietary/scripts/sign-image/sign.py</code>（对 boot/recovery/preloader 签名）。</li>
+<li>未授权 DA 无法烧录开启了 Secure Boot 的设备——这是产线防刷机的关键。</li>
+</ul>
+
+<h2>6. 与高通开发工具对比（速查）</h2>
+<table>
+<tr><th>用途</th><th>MTK</th><th>高通</th></tr>
+<tr><td>烧录</td><td>SP Flash Tool（scatter）</td><td>QFIL / Fastboot（firehose <code>prog_*.elf</code>）</td></tr>
+<tr><td>校准/写号</td><td>SP Meta / SN Writer</td><td>QXDM / QPST</td></tr>
+<tr><td>日志</td><td>mtklogger / GAT / ELT</td><td>QXDM / Logcat / Trepn</td></tr>
+<tr><td>Modem 调试</td><td>MTK Catcher</td><td>QXDM + DM capture</td></tr>
+<tr><td>编译</td><td>AOSP + <code>mk</code> 脚本</td><td>AOSP + <code>build.sh</code></td></tr>
+</table>
+
+<div class="add">
+<b>〔助理注，不改原文〕</b>
+<ul>
+<li><b>关于你的 ERP PDA 定位</b>：如文中所说 PDA 属 App 层，正常开发不碰 BSP/Framework/产线。但有两个实际接触点值得记：① 设备上若预装了 MTK 工程 App（EngineerMode / MTKLogger），可在 PDA 侧触发日志收集辅助排障；② 产线首次烧录/写号由 SP Flash Tool + SN Writer 完成，PDA 出厂前 IMEI/SN 已落 NVRAM，App 层读 <code>imei</code>/<code>serial</code> 即可，不要试图在 App 层写。</li>
+<li><b>scatter 与 firehose 的本质差异</b>：MTK 用文本 <code>scatter.txt</code> 描述分区表（人类可读、易改），高通用 <code>prog_*.elf</code> firehose 程序在设备端解析——前者 PC 端逻辑重，后者设备端逻辑重。</li>
+<li><b>DA 与安全</b>：<code>DA_SWSEC.bin</code> 是带安全校验的 Download Agent；Secure Boot 开启后必须用授权 DA，否则握手失败，这正是防非法刷机的第一道闸。</li>
+</ul>
+</div>
+
+</main>
+<footer>MTK Android 开发指南（工程视角）· 已渲染 mermaid 图示 · 工具名/命令/路径随平台与版本变化</footer>
+</body>
+</html>

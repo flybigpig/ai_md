@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Android 14 HAL 架构深度解析</title>
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f6f7fb; --bg3:#eef0f6;
+    --text:#1c1e21; --text2:#5b6070; --text3:#8a8f9c;
+    --border:#d8dbe4; --border2:#e6e8f0;
+    --purple:#534AB7; --purple-bg:#EEEDFE;
+    --teal:#0F6E56; --teal-bg:#E1F5EE;
+    --amber:#854F0B; --amber-bg:#FAEEDA;
+    --pink:#72243E; --pink-bg:#FBEAF0;
+    --code-bg:#f3f4f8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg2);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.65;font-size:15px}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 24px 64px}
+  header{background:linear-gradient(135deg,#534AB7,#3C3489);color:#fff;
+    border-radius:16px;padding:28px 32px;margin-bottom:28px}
+  header h1{margin:0 0 8px;font-size:24px;font-weight:600}
+  header p{margin:0;opacity:.85;font-size:14px}
+  .tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+    border-radius:6px;padding:2px 10px;font-size:12px;margin:8px 8px 0 0}
+  section{background:var(--bg);border:1px solid var(--border2);border-radius:14px;
+    padding:22px 26px;margin-bottom:20px}
+  h2{font-size:18px;font-weight:600;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  h2 .bar{width:4px;height:18px;background:var(--purple);border-radius:2px}
+  h3{font-size:15px;font-weight:600;margin:18px 0 8px;color:var(--text)}
+  p{margin:10px 0;color:var(--text)}
+  .muted{color:var(--text2)}
+  .lead{color:var(--text2);font-size:14px}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0}
+  code{background:var(--code-bg);border:1px solid var(--border2);border-radius:5px;
+    padding:1px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
+  pre{background:var(--code-bg);border:1px solid var(--border2);border-radius:10px;
+    padding:16px 18px;overflow:auto;font-size:13px;line-height:1.55;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  pre .c{color:var(--text3)}
+  pre .k{color:var(--purple);font-weight:600}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:9px 12px;text-align:left;vertical-align:top}
+  th{background:var(--bg3);font-weight:600;color:var(--text)}
+  tr:nth-child(even) td{background:#fafbfd}
+  .card{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin:12px 0}
+  .pill{display:inline-block;border-radius:6px;padding:2px 9px;font-size:12px;font-weight:500}
+  .pill-p{background:var(--purple-bg);color:var(--purple)}
+  .pill-t{background:var(--teal-bg);color:var(--teal)}
+  .pill-a{background:var(--amber-bg);color:var(--amber)}
+  .pill-pk{background:var(--pink-bg);color:var(--pink)}
+  .diagram-box{background:var(--bg);border:1px solid var(--border2);border-radius:12px;
+    padding:8px;margin:14px 0;text-align:center}
+  .diagram-box svg{width:100%;max-width:720px;height:auto}
+  .note{border-left:4px solid var(--amber);background:var(--amber-bg);
+    border-radius:0 8px 8px 0;padding:12px 16px;margin:14px 0;font-size:14px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.grid2{grid-template-columns:1fr}}
+  .footer{text-align:center;color:var(--text3);font-size:12px;margin-top:30px}
+  a{color:var(--purple);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Android 14 HAL 架构深度解析</h1>
+  <p>Hardware Abstraction Layer · AIDL HAL · Treble 边界 · VINTF 契约</p>
+  <div>
+    <span class="tag">AOSP android-14.0.0_r*</span>
+    <span class="tag">API 34 / UpsideDownCake</span>
+    <span class="tag">GKI android14-6.1</span>
+    <span class="tag">Project Treble</span>
+  </div>
+</header>
+
+<!-- 架构图 -->
+<section>
+  <h2><span class="bar"></span>1. 整体架构与 Treble 边界</h2>
+  <p class="lead">四层结构:Framework(system 分区) ↔ Treble 接口边界(AIDL HAL + VINTF) ↔ HAL 实现(vendor 分区) ↔ Linux 内核(GKI)。Framework 与 HAL 分属不同分区、不同 SELinux 域、不同进程,经 <code>servicemanager</code> + binder 桥接。</p>
+  <div class="diagram-box">
+    <svg viewBox="0 0 680 560" width="100%" role="img">
+      <title>Android 14 HAL 架构与 Treble 边界</title>
+      <desc>展示 system 分区、HIDL/AIDL 接口边界、vendor 分区、内核驱动的分层结构及调用链</desc>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <g>
+        <rect x="32" y="28" width="616" height="92" rx="12" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+        <text x="48" y="48" font="500 12px sans-serif" font-weight="500" font-size="12" fill="#3C3489">system 分区 — Framework 侧</text>
+        <g>
+          <rect x="48" y="58" width="170" height="48" rx="8" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+          <text x="133" y="76" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">System services</text>
+          <text x="133" y="94" text-anchor="middle" font-size="12" fill="#3C3489">AudioFlinger / SurfaceFlinger</text>
+        </g>
+        <g>
+          <rect x="238" y="58" width="170" height="48" rx="8" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+          <text x="323" y="76" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">AIDL 客户端桩</text>
+          <text x="323" y="94" text-anchor="middle" font-size="12" fill="#3C3489">getService&lt;IFoo&gt;()</text>
+        </g>
+        <g>
+          <rect x="428" y="58" width="200" height="48" rx="8" fill="#CECBF6" stroke="#534AB7" stroke-width="0.5"/>
+          <text x="528" y="76" text-anchor="middle" font-size="14" font-weight="500" fill="#26215C">servicemanager</text>
+          <text x="528" y="94" text-anchor="middle" font-size="12" fill="#3C3489">libvintf 校验 + 路由</text>
+        </g>
+      </g>
+      <line x1="320" y1="128" x2="320" y2="168" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="340" y="152" font-size="11" fill="#8a8f9c">Binder IPC (hwbinder → binder)</text>
+      <g>
+        <rect x="32" y="172" width="616" height="40" rx="8" fill="#FBEAF0" stroke="#993556" stroke-width="0.5"/>
+        <text x="48" y="196" font-size="12" font-weight="500" fill="#72243E">Treble 接口边界 — AIDL HAL 接口定义 (hardware/interfaces/*) + VINTF manifest</text>
+      </g>
+      <line x1="320" y1="216" x2="320" y2="248" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+      <g>
+        <rect x="32" y="252" width="616" height="148" rx="12" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+        <text x="48" y="272" font-size="12" font-weight="500" fill="#085041">vendor 分区 — HAL 实现侧</text>
+        <g>
+          <rect x="48" y="282" width="170" height="48" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+          <text x="133" y="300" text-anchor="middle" font-size="14" font-weight="500" fill="#04342C">HAL server 进程</text>
+          <text x="133" y="318" text-anchor="middle" font-size="12" fill="#085041">android.hardware.*.service</text>
+        </g>
+        <g>
+          <rect x="238" y="282" width="170" height="48" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+          <text x="323" y="300" text-anchor="middle" font-size="14" font-weight="500" fill="#04342C">AIDL 服务端实现</text>
+          <text x="323" y="318" text-anchor="middle" font-size="12" fill="#085041">IFoo impl + addService()</text>
+        </g>
+        <g>
+          <rect x="428" y="282" width="200" height="48" rx="8" fill="#9FE1CB" stroke="#0F6E56" stroke-width="0.5"/>
+          <text x="528" y="300" text-anchor="middle" font-size="14" font-weight="500" fill="#04342C">init + vintf manifest</text>
+          <text x="528" y="318" text-anchor="middle" font-size="12" fill="#085041">vendor/*.rc + vintf.xml</text>
+        </g>
+        <g>
+          <rect x="48" y="342" width="580" height="44" rx="8" fill="#B4B2A9" stroke="#5F5E5A" stroke-width="0.5"/>
+          <text x="338" y="368" text-anchor="middle" font-size="14" font-weight="500" fill="#2C2C2A">libhidlbase (legacy HIDL 兼容) / libbinder (AIDL)</text>
+        </g>
+      </g>
+      <line x1="320" y1="404" x2="320" y2="436" stroke="#888780" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="340" y="424" font-size="11" fill="#8a8f9c">ioctl / sysfs / 字符设备</text>
+      <g>
+        <rect x="32" y="440" width="616" height="88" rx="12" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+        <text x="48" y="460" font-size="12" font-weight="500" fill="#633806">Linux 内核 (GKI android14-6.1)</text>
+        <g>
+          <rect x="48" y="470" width="180" height="44" rx="8" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+          <text x="138" y="496" text-anchor="middle" font-size="14" font-weight="500" fill="#412402">字符设备驱动</text>
+        </g>
+        <g>
+          <rect x="248" y="470" width="180" height="44" rx="8" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+          <text x="338" y="496" text-anchor="middle" font-size="14" font-weight="500" fill="#412402">binder / ashmem</text>
+        </g>
+        <g>
+          <rect x="448" y="470" width="180" height="44" rx="8" fill="#FAC775" stroke="#854F0B" stroke-width="0.5"/>
+          <text x="538" y="496" text-anchor="middle" font-size="14" font-weight="500" fill="#412402">vendor 内核模块</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<!-- 核心变化 -->
+<section>
+  <h2><span class="bar"></span>2. Android 14 HAL 的核心变化</h2>
+
+  <h3><span class="pill pill-pk">变化 1</span> HIDL 基本退场,AIDL HAL 成为唯一新增标准</h3>
+  <p class="muted">老的 <code>hardware/interfaces/*</code> 下的 <code>.hal</code> 文件仍存在但冻结,新接口全部走 <code>aidl_interface</code>(Soong)。</p>
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-top:0">HIDL(冻结)</h3>
+      <ul>
+        <li>接口定义 <code>hardware/interfaces/foo/1.0/IFoo.hal</code></li>
+        <li>生成 <code>IFoo.hal → hwbinder</code> 桩</li>
+        <li>走独立的 <code>hwservicemanager</code>(Android 11 起已并入 <code>servicemanager</code>,但 binder 域仍是 <code>hwbinder</code>)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">AIDL HAL(现行)</h3>
+      <ul>
+        <li>接口定义 <code>hardware/interfaces/foo/aidl/android/hardware/foo/IFoo.aidl</code></li>
+        <li>Soong 模块声明 <code>vendor_available: true</code> + <code>vndk.enabled</code>(或 <code>stability:"vintf"</code>)</li>
+        <li>生成走 <code>libbinder</code> 的稳定桩</li>
+      </ul>
+    </div>
+  </div>
+  <p>Android 14 绝大多数新 HAL(audio、camera、vibrator、gnss、sensors、rebootescrow 等)都是 <strong>AIDL</strong>。</p>
+
+  <h3><span class="pill pill-pk">变化 2</span> <code>hwservicemanager</code> 仍在,但新 HAL 不再走它</h3>
+  <p><code>hwservicemanager</code> 进程在 Android 14 <strong>依然存在</strong>(<code>init.rc</code> 中 <code>start servicemanager</code> / <code>start hwservicemanager</code> / <code>start vndservicemanager</code> 三者都在),负责管理 <strong>HIDL</strong> HAL 服务(binder 域 <code>/dev/hwbinder</code>,独立二进制 <code>/vendor/bin/hwservicemanager</code>)。</p>
+  <p>但从 Android 11(<code>R</code>)起,<strong>新 HAL 一律用 Stable AIDL,注册到标准 <code>servicemanager</code>(域 <code>/dev/binder</code>)</strong>——所谓"不再有 hwservicemanager"指的是<strong>新 AIDL HAL 不经过它</strong>,而非该进程被删除。<code>servicemanager</code> 与 <code>vndservicemanager</code> 在 Android 12 起合并为同一二进制(<code>system/bin/servicemanager</code>,参数区分),<code>hwservicemanager</code> 仍是独立二进制,仅服务于遗留 HIDL。VINTF 校验由 <code>libvintf</code> 在 <code>servicemanager::addService</code> 路径上完成。</p>
+
+  <h3><span class="pill pill-pk">变化 3</span> VINTF(Vendor Interface)是 Treble 的契约</h3>
+  <p>定义在 <code>system/libvintf/</code>,分两类清单:</p>
+  <ul>
+    <li><strong>vendor manifest</strong>:<code>vendor/etc/vintf/manifest.xml</code>(或 <code>manifest/manifest.xml</code> 拆分)—— vendor 声明"我提供哪些 HAL"。</li>
+    <li><strong>framework compatibility matrix</strong>:<code>system/libvintf/</code> 编译产物 + <code>system/etc/vintf/compatibility_matrix.xml</code> —— framework 声明"我需要哪些 HAL"。</li>
+  </ul>
+  <div class="note">启动时 <code>libvintf</code> 做匹配检查,不匹配的 HAL 会被 <code>servicemanager</code> 拒绝注册 → HAL server 进程 crash/退出。这就是"OTA 换了 framework 但 vendor 没动"不会崩的根因。</div>
+</section>
+
+<!-- 源码路径 -->
+<section>
+  <h2><span class="bar"></span>3. 关键源码路径(android-14.0.0_r*)</h2>
+  <table>
+    <thead><tr><th style="width:32%">角色</th><th>路径</th></tr></thead>
+    <tbody>
+      <tr><td>AIDL HAL 接口定义总目录</td><td><code>hardware/interfaces/</code></td></tr>
+      <tr><td>参考默认实现</td><td><code>hardware/interfaces/&lt;mod&gt;/aidl/default/</code><br>如 <code>hardware/interfaces/vibrator/aidl/default/Vibrator.cpp</code></td></tr>
+      <tr><td>HIDL(冻结)工具链</td><td><code>system/tools/hidl/</code></td></tr>
+      <tr><td>AIDL 编译器</td><td><code>system/tools/aidl/</code></td></tr>
+      <tr><td>servicemanager</td><td><code>system/core/servicemanager/</code>(<code>service-manager.c</code>、<code>binder.c</code>)</td></tr>
+      <tr><td>VINTF 库</td><td><code>system/libvintf/</code>(<code>VintfObject.cpp</code>、<code>parse_string.cpp</code>)</td></tr>
+      <tr><td>libhidlbase</td><td><code>system/libhidl/transport/</code></td></tr>
+      <tr><td>libbinder(vendor 用)</td><td><code>frameworks/native/libs/binder/</code></td></tr>
+      <tr><td>init + rc 解析</td><td><code>system/core/init/</code>(<code>service.cpp</code>、<code>parser.cpp</code>)</td></tr>
+      <tr><td>SELinux 策略</td><td><code>system/sepolicy/</code> + <code>device/&lt;oem&gt;/&lt;device&gt;/sepolicy/</code></td></tr>
+      <tr><td>音频 HAL(server)</td><td><code>frameworks/av/services/audioflinger/</code>(client) + vendor 侧 <code>android.hardware.audio</code></td></tr>
+      <tr><td>相机 HAL</td><td><code>hardware/interfaces/camera/</code> + <code>frameworks/av/services/camera/</code></td></tr>
+      <tr><td>图形 / SurfaceFlinger</td><td><code>frameworks/native/services/surfaceflinger/</code> + <code>hardware/interfaces/graphics/</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 启动链 -->
+<section>
+  <h2><span class="bar"></span>4. HAL server 启动链(init.rc → servicemanager → 注册)</h2>
+  <pre><span class="c">1. init 读取 vendor 分区的 *.rc</span>
+   例:device/google/pixel/aoc.rc 或
+      vendor/etc/init/android.hardware.vibrator-service.example.rc
+   声明:
+     service vendor.vibrator-aidl /vendor/bin/hw/android.hardware.vibrator-service.example
+         class hal
+         user system
+         group system
+         capabilities WAKE_ALARM
+
+<span class="c">2. init 拉起该进程 → main() 调用 ABinderProcess_setThreadPoolMaxThreadCount(1)</span>
+   → 实例化 Vibrator impl(android::hardware::vibrator::Vibrator)
+   → AIBinder* b = AIBinder_from_Vibrator(this)   <span class="c">// 或 C++ aidl 类</span>
+   → AIBinder_registerService(b, "android.hardware.vibrator.IVibrator/default")
+
+<span class="c">3. servicemanager::addService 路径:</span>
+   → svcmgr_handler → do_add_service()
+   → 调 libvintf: 检查该 service name 是否在 manifest.xml 声明
+   → 检查 SELinux: caller 进程的 type 是否有 "add" 权限到对应 service_contexts
+   → 通过则写入 svclist,map[name] = binder handle
+
+<span class="c">4. framework 侧(如 VibratorService.java in frameworks/base):</span>
+   → IVibrator.Stub.asInterface(
+         ServiceManager.getService("android.hardware.vibrator.IVibrator/default"))
+   → 拿到代理,后续调用走 binder transaction 到 vendor 进程</pre>
+</section>
+
+<!-- 调用链 -->
+<section>
+  <h2><span class="bar"></span>5. 具体调用链(vibrator 为例:framework → kernel)</h2>
+  <pre><span class="k">VibratorService.vibrate(...)</span>                  <span class="c">// frameworks/base/.../VibratorService.java</span>
+  → mVibrator.vibrate(...)                          <span class="c">// IVibrator AIDL proxy</span>
+    → <span class="k">Binder.transact</span>(TRANSACTION_vibrate)          <span class="c">// libbinder</span>
+      → <span class="k">servicemanager</span> 路由 → vendor 进程           <span class="c">// binder driver ioctl</span>
+        → <span class="k">Vibrator::vibrate()</span>                       <span class="c">// .../vibrator/aidl/default/Vibrator.cpp</span>
+          → writeEffectNode() / ioctl(/sys/...)     <span class="c">// 操作字符设备</span>
+            → 内核驱动                              <span class="c">// drivers/*/vibrator 或 leds-class</span></pre>
+</section>
+
+<!-- 衔接 -->
+<section>
+  <h2><span class="bar"></span>6. 与你已学内容的衔接</h2>
+  <div class="card">
+    <p style="margin-top:0"><strong>Settings / DeviceConfig(之前分析)是 framework 侧配置;HAL 是 vendor 侧硬件接口。</strong>二者通过 <code>servicemanager</code> + binder 桥接,但属于不同分区、不同 SELinux 域、不同进程。framework 改 Settings 不会直接动 HAL,但某些 Settings 键(如音频路由、屏幕亮度)的监听会间接调用 HAL。</p>
+  </div>
+  <div class="card">
+    <p style="margin-top:0"><strong>binder 驱动本身是 HAL 的"地下层"。</strong><code>drivers/android/binder.c</code>(GKI android14-6.1)同时服务 framework binder 和 vndbinder/hwbinder。Android 14 起 vndbinder 与 binder 共用同一驱动实例,但不同 <code>/dev</code> 节点(<code>binder</code>、<code>hwbinder</code>、<code>vndbinder</code>)。</p>
+  </div>
+</section>
+
+<!-- 下一步 -->
+<section>
+  <h2><span class="bar"></span>7. 可继续深挖的方向</h2>
+  <ul>
+    <li><strong>VINTF manifest 逐字段拆解</strong> + <code>libvintf</code> 校验流程源码</li>
+    <li><strong>从零写一个 AIDL HAL</strong>(接口定义 → Soong → 默认实现 → init.rc → sepolicy → 编译进 vendor 镜像),给可 apply 的 patch</li>
+    <li><strong>binder 在 HAL 场景的三个域</strong>(<code>binder</code>/<code>hwbinder</code>/<code>vndbinder</code>)在 Android 14 的实际现状</li>
+    <li><strong><code>servicemanager</code> 源码逐行拆解</strong>(<code>do_add_service</code> → VINTF + SELinux 双重检查)</li>
+  </ul>
+</section>
+
+<div class="footer">Android 14 HAL 架构解析 · 基于 AOSP android-14.0.0_r* · 配合 Binder / Settings 分析食用</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,5 @@
+service vendor.led-aidl /vendor/bin/hw/android.hardware.led-service.example
+    class hal
+    user system
+    group system
+    capabilities WAKE_ALARM

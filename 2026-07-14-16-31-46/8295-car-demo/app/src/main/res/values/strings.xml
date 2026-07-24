@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">8295 Car Demo</string>
+    <string name="title_multi_screen">多屏 / 响应式</string>
+    <string name="title_scan">相机扫码 (ML Kit)</string>
+    <string name="title_vehicle">读取车辆信号</string>
+    <string name="hint_speed">车速：-- km/h</string>
+    <string name="passenger_title">副驾屏 (Passenger Display)</string>
+    <string name="scan_result">识别结果：--</string>
+</resources>

@@ -1,0 +1,26 @@
+R_DEF: Internal format may change without notice
+local
+id btnEnableAcc
+id btnStart
+id btnStop
+id chkMock
+id chkVision
+id editBaseUrl
+id editGoal
+id editModel
+id txtLog
+id txtStatus
+layout activity_main
+string acc_desc
+string app_name
+string btn_enable_acc
+string btn_start
+string btn_stop
+string guide_enable_acc
+string hint_base_url
+string hint_goal
+string hint_model
+string status_idle
+string status_running
+style Theme.Material3.DayNight
+xml agent_accessibility_service_config

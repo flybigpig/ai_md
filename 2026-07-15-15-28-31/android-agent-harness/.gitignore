@@ -1,0 +1,7 @@
+.gradle/
+build/
+agent-out/
+*.png
+.idea/
+*.iml
+local.properties

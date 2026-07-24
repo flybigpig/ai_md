@@ -1,0 +1,8 @@
+type hal_led_default, domain;
+type hal_led_default_exec, exec_type, vendor_file_type, file_type;
+
+hal_server_domain(hal_led_default, hal_led)
+init_daemon_domain(hal_led_default)
+
+# 允许访问字符设备（真实设备按需放开）
+allow hal_led_default led_device:chr_file rw_file_perms;

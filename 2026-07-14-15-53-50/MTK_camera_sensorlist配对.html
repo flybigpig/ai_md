@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MTK Camera: sensorlist.cpp ↔ kd_imgsensor 配对流程</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true, theme:'base', themeVariables:{fontSize:'14px'}});</script>
+<style>
+  :root{--bg:#fafbfc;--card:#fff;--ink:#1f2933;--sub:#52606d;--line:#e4e7eb;--accent:#0b7285;--tag:#e6f4f6;--warn:#fff4e6;--warnbd:#f0a868;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;line-height:1.7;}
+  .wrap{max-width:1060px;margin:0 auto;padding:32px 24px 64px;}
+  h1{font-size:26px;margin:0 0 4px;}
+  h2{font-size:20px;margin:38px 0 12px;padding-left:10px;border-left:4px solid var(--accent);}
+  h3{font-size:16px;margin:22px 0 8px;color:var(--accent);}
+  .meta{color:var(--sub);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin:14px 0;box-shadow:0 1px 2px rgba(16,24,40,.04);}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:#f0f3f5;font-weight:600;}
+  code{background:#eef1f3;padding:1px 6px;border-radius:4px;font-family:"SFMono-Regular",Consolas,monospace;font-size:13px;}
+  pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow:auto;font-size:12.5px;line-height:1.55;}
+  pre code{background:none;color:inherit;padding:0;}
+  .note{background:var(--tag);border:1px solid #b7e0e6;border-left:4px solid var(--accent);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .note b{color:var(--accent);}
+  .warn{background:var(--warn);border:1px solid var(--warnbd);border-left:4px solid var(--warnbd);border-radius:8px;padding:14px 18px;margin:18px 0;font-size:14px;}
+  .pill{display:inline-block;background:#eef2f4;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:12px;color:var(--sub);margin-right:6px;}
+  ul{margin:8px 0;padding-left:22px;} li{margin:4px 0;}
+  .who{font-size:12px;color:#9aa5b1;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Camera: <code>sensorlist.cpp</code> ↔ <code>kd_imgsensor</code> 配对流程</h1>
+<div class="meta">代码级 · 核心：两端靠同一个 <code>XXX_SENSOR_ID</code> 配对，kernel 实测 I2C chip ID 确认硬件在板 · 原文框架由用户编写，WorkBuddy 渲染图示</div>
+
+<div class="note">
+<span class="pill">MT6893</span><span class="pill">Android 14</span><span class="pill">imgsensor</span><span class="pill">HAL↔Kernel</span><br>
+<b>一句话：</b>HAL 列表给"软件函数表"，kernel 列表做"硬件 I2C 探测 + 驱动分发"。两边用同一个 <code>XXX_SENSOR_ID</code> 对齐；真正"有没有这块 sensor"由 kernel <code>xxx_open()</code> 里读 I2C chip ID 决定。本文是第 8 份"场景三：调 camera"的底层机制展开。
+</div>
+
+<h2>一、两份列表的对应关系</h2>
+<div class="mermaid">
+graph LR
+    subgraph HAL["HAL 层 (userspace)"]
+        SL["imgsensor_sensor_list.cpp<br/>sensorList[] = {ID, NAME, Init}"]
+    end
+    subgraph K["Kernel 层"]
+        KL["kd_imgsensor.c<br/>g_pstSensorList[] = {ID, NAME, Init, pSensorList}"]
+        SD["xxx_sensor.c<br/>SENSOR_FUNCTION_STRUCT 实现"]
+    end
+    SL -->|同名 ID 配对| KL
+    KL --> SD
+    SD -->|I2C 读 chip ID| HW["Sensor 硬件"]
+</div>
+<table>
+<tr><th></th><th>HAL (<code>imgsensor_sensor_list.cpp</code>)</th><th>Kernel (<code>kd_imgsensor.c</code>)</th></tr>
+<tr><td>数组</td><td><code>sensorList[]</code></td><td><code>g_pstSensorList[]</code></td></tr>
+<tr><td>元素类型</td><td><code>MSDK_SENSOR_INIT_FUNCTION_STRUCT</code></td><td><code>KD_IMGSENSOR_INIT_FUNCTION_STRUCT</code></td></tr>
+<tr><td>作用</td><td>给 HAL 提供函数表 + 软件识别</td><td>真正做 I2C 探测 + 驱动分发</td></tr>
+<tr><td><code>Init</code> 行为</td><td>纯软件，填充函数指针</td><td>触发 sensor 驱动读 I2C chip ID</td></tr>
+</table>
+
+<h2>二、结构体定义（两端都要一致）</h2>
+<p><b>HAL 侧</b>（<code>kd_imgsensor.h</code> / <code>imgsensor_sensor_list.cpp</code>）：</p>
+<pre><code>C
+typedef struct {
+    MUINT32 sensorId;                              // ★ 配对键
+    char   *driverName;
+    MUINT32 (*Init)(PSENSOR_FUNCTION_STRUCT *pfFunc);
+} MSDK_SENSOR_INIT_FUNCTION_STRUCT;</code></pre>
+<p><b>Kernel 侧</b>（<code>kernel-5.15/drivers/misc/mediatek/imgsensor/kd_imgsensor.h</code>）：</p>
+<pre><code>C
+typedef struct {
+    UINT32 sensorId;                              // ★ 配对键(必须 == HAL 的)
+    char  *driverName;
+    UINT32 (*Init)(PSENSOR_FUNCTION_STRUCT *pfFunc);
+    struct SENSOR_FUNCTION_STRUCT *pSensorList;   // kernel 实际函数表
+} KD_IMGSENSOR_INIT_FUNCTION_STRUCT;</code></pre>
+<p><b>函数表</b>（sensor 驱动实现，两端 <code>Init</code> 都返回它）：</p>
+<pre><code>C
+typedef struct {
+    UINT32 (*SensorOpen)(void);
+    UINT32 (*SensorGetInfo)(...);
+    UINT32 (*SensorGetResolution)(...);
+    UINT32 (*SensorFeatureControl)(MUINT32 *pFeatureCtl);
+    UINT32 (*SensorControl)(UINT32 FeatureId, MUINT8 *pFeaturePara);
+    UINT32 (*SensorClose)(void);
+} SENSOR_FUNCTION_STRUCT;</code></pre>
+
+<h2>三、HAL 列表注册（<code>imgsensor_sensor_list.cpp</code>）</h2>
+<pre><code>C
+// vendor/mediatek/proprietary/custom/mt6893/hal/imgsensor/imgsensor_sensor_list.cpp
+#include "xxx_sensor.h"          // 里面定义 XXX_SENSOR_ID / SENSOR_DRVNAME_XXX
+
+MSDK_SENSOR_INIT_FUNCTION_STRUCT sensorList[] = {
+#if defined(XXX_MIPI_RAW)
+    { XXX_SENSOR_ID, SENSOR_DRVNAME_XXX, xxx_SensorInit },   // ★ ID 与 kernel 必须相同
+#endif
+#if defined(YYY_MIPI_RAW)
+    { YYY_SENSOR_ID, SENSOR_DRVNAME_YYY, yyy_SensorInit },
+#endif
+    { 0, NULL, NULL }            // 哨兵结束项
+};</code></pre>
+<div class="warn">坑：<code>XXX_SENSOR_ID</code>（如 <code>0x1234</code>）通常定义在 <code>xxx_sensor.h</code>，<b>HAL 和 kernel 必须 include 同一个值</b>。公司里常见错误就是两份头没同步改，导致 HAL 起不来。</div>
+
+<h2>四、Kernel 列表注册（<code>kd_imgsensor.c</code>）</h2>
+<pre><code>C
+// kernel-5.15/drivers/misc/mediatek/imgsensor/kd_imgsensor.c
+#include "xxx_sensor.h"
+
+KD_IMGSENSOR_INIT_FUNCTION_STRUCT g_pstSensorList[MAX_NUM_OF_SUPPORT_SENSOR] = {
+#if defined(XXX_MIPI_RAW)
+    { XXX_SENSOR_ID, SENSOR_DRVNAME_XXX, xxx_SensorInit, NULL },
+#endif
+#if defined(YYY_MIPI_RAW)
+    { YYY_SENSOR_ID, SENSOR_DRVNAME_YYY, yyy_SensorInit, NULL },
+#endif
+    { 0, NULL, NULL }
+};</code></pre>
+<p><b>sensor 驱动里的 <code>Init</code> + 函数表</b>（<code>xxx_sensor.c</code>）：</p>
+<pre><code>C
+static SENSOR_FUNCTION_STRUCT sensor_func = {
+    .SensorOpen          = xxx_open,
+    .SensorGetInfo       = xxx_get_info,
+    .SensorGetResolution = xxx_get_resolution,
+    .SensorFeatureControl= xxx_feature_control,
+    .SensorControl       = xxx_control,
+    .SensorClose         = xxx_close,
+};
+
+MSDK_SENSOR_RETURN_CODE_ENUM xxx_SensorInit(PSENSOR_FUNCTION_STRUCT *pfFunc)
+{
+    if (pfFunc != NULL)
+        *pfFunc = &sensor_func;     // 把函数表交给调用者
+    return ERROR_NONE;
+}</code></pre>
+<p><b>kernel 侧 <code>xxx_open</code> 里实测 chip ID（配对真正的硬件依据）：</b></p>
+<pre><code>C
+static kal_uint32 xxx_open(void)
+{
+    // 读 sensor 的 chip ID 寄存器 (地址随 sensor 而定, 如 0x0000/0x300A)
+    readReg(XXX_CHIP_ID_REG, &chip_id);
+    if (chip_id != XXX_SENSOR_ID)     // ★ 与列表里的 ID 比较
+        return ERROR_SENSOR_CONNECT_FAIL;   // 不匹配 → 该 sensor 不在板
+    return ERROR_NONE;
+}</code></pre>
+
+<h2>五、配对机制（关键）</h2>
+<div class="mermaid">
+graph TD
+    A["xxx_sensor.h 中 #define XXX_SENSOR_ID 0x1234"] --> B["HAL sensorList[].sensorId = 0x1234"]
+    A --> C["Kernel g_pstSensorList[].sensorId = 0x1234"]
+    A --> D["Sensor 硬件 I2C chip ID = 0x1234"]
+    B --> E["HAL 用 0x1234 找到函数表"]
+    C --> F["Kernel 用 0x1234 找到驱动"]
+    D --> F
+    E --> G["两端通过 ID 对齐 → 配对成功"]
+    F --> G
+</div>
+<ul>
+<li><code>Init</code> 函数名（HAL 的 <code>xxx_SensorInit</code> vs kernel 的 <code>xxx_SensorInit</code>）<b>可以不同名</b>，但 <code>XXX_SENSOR_ID</code> 必须完全一致。</li>
+<li>真正"有没有这个硬件"由 kernel <code>xxx_open()</code> 里的 I2C 读 ID 决定；读不到/不匹配 → 该槽位 sensor 视为不存在。</li>
+</ul>
+
+<h2>六、ioctl 通信链（HAL ↔ Kernel）</h2>
+<p>HAL 通过 <code>/dev/kd_camera_hw</code> 与 kernel 对话：</p>
+<pre><code>C
+// HAL (ImgSensorDrv::init 简化)
+fd = open("/dev/kd_camera_hw", O_RDWR);
+ioctl(fd, KDIMGSENSORIOC_X_SET_DRIVER, &position);  // 指定前/后摄
+ioctl(fd, KDIMGSENSORIOC_T_OPEN);                   // 触发 kernel 探测
+// 之后 HAL 自己遍历 sensorList 取函数表
+for (i=0; sensorList[i].sensorId; i++)
+    sensorList[i].Init(&pFunc[i]);</code></pre>
+<p>Kernel 侧分发（<code>kd_imgsensor.c</code>）：</p>
+<pre><code>C
+static long kdSensorIoctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+    switch (cmd) {
+    case KDIMGSENSORIOC_T_OPEN:
+        kdModuleInit();                 // 遍历 g_pstSensorList[], 调各 Init → I2C 探测
+        break;
+    case KDIMGSENSORIOC_X_SET_DRIVER:   // 设定当前 sensor
+        g_sensorIdx = arg;
+        break;
+    case KDIMGSENSORIOC_X_FEATURECONCTROL:
+        pSensorFunc->SensorFeatureControl(...);   // 转发到 sensor 驱动
+        break;
+    case KDIMGSENSORIOC_X_CONTROL:
+        pSensorFunc->SensorControl(...);
+        break;
+    }
+    return 0;
+}</code></pre>
+<p><b><code>kdModuleInit()</code> 探测逻辑：</b></p>
+<pre><code>C
+for (i = 0; i < MAX_NUM_OF_SUPPORT_SENSOR; i++) {
+    g_pstSensorList[i].Init(&g_pstSensorFunc[i]);  // 每个 sensor Init 内部读 I2C ID
+    // 读到的 ID == sensorId 的, 标记为已连接
+}</code></pre>
+
+<h2>七、DTS 桥接（告诉 kernel 槽位信息）</h2>
+<pre><code>// kernel-5.15/arch/arm64/boot/dts/mediatek/mt6893-&lt;board&gt;.dts
+&kd_camera_hw1 {
+    cam0_i2c_addr   = &lt;0x20&gt;;          // sensor 7-bit I2C 地址
+    cam0_sensor_id  = &lt;0x1234&gt;;        // ★ 必须等于 XXX_SENSOR_ID
+    cam0_sensor_name= "xxx_mipi_raw";
+    cam0_mclk       = &lt;0&gt;;             // MCLK 通道
+    cam0_rst_gpio   = &lt;&pio 51 0&gt;;
+    cam0_pnd_gpio   = &lt;&pio 52 0&gt;;
+    cam0_i2c_channel= &lt;0&gt;;             // i2c adapter
+};</code></pre>
+<p>kernel <code>kd_imgsensor</code> probe 时解析这些属性，决定在哪个 I2C 总线上、用什么地址去读 <code>cam0_sensor_id</code>。</p>
+
+<h2>八、完整时序图</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant HAL as HAL(sensorList.cpp)
+    participant K as kd_imgsensor.c
+    participant S as xxx_sensor.c
+    participant HW as Sensor(I2C)
+
+    Note over HAL,HW: 编译期: 同一 XXX_SENSOR_ID (0x1234)
+    HAL->>K: open("/dev/kd_camera_hw")
+    HAL->>K: ioctl KDIMGSENSORIOC_T_OPEN
+    K->>S: g_pstSensorList[i].Init(&func)
+    S->>HW: I2C 读 chip ID 寄存器
+    HW-->>S: 0x1234
+    S->>S: 0x1234 == XXX_SENSOR_ID ✓
+    S-->>K: 记录 index = i (在板)
+    K-->>HAL: OPEN 成功
+    HAL->>HAL: sensorList[i].Init(&pFunc) 取函数表
+    Note over HAL,S: 运行时
+    HAL->>K: ioctl KDIMGSENSORIOC_X_CONTROL
+    K->>S: pFunc->SensorControl()
+    S->>HW: I2C 写寄存器(曝光/对焦...)
+    HW-->>S: ack
+</div>
+
+<h2>九、加一个新 sensor 的 Checklist</h2>
+<ol>
+<li><code>xxx_sensor.h</code> 定义 <code>XXX_SENSOR_ID</code> 和 <code>SENSOR_DRVNAME_XXX</code>（HAL/kernel 共用）。</li>
+<li>HAL：<code>imgsensor_sensor_list.cpp</code> 加一项 <code>{ID, NAME, xxx_SensorInit}</code>。</li>
+<li>Kernel：<code>kd_imgsensor.c</code> 的 <code>g_pstSensorList[]</code> 加同 ID 一项。</li>
+<li>Kernel：<code>xxx_sensor.c</code> 实现 <code>xxx_SensorInit</code> + <code>SENSOR_FUNCTION_STRUCT</code>（open 里读 chip ID 校验）。</li>
+<li>DTS：<code>cam0_sensor_id = &lt;XXX_SENSOR_ID&gt;</code> + I2C 地址/GPIO/MCLK。</li>
+<li><code>ProjectConfig.mk</code> 开 <code>XXX_MIPI_RAW = yes</code>（宏控制 <code>#if defined</code>）。</li>
+<li>编译：
+<pre><code>mmm vendor/mediatek/proprietary/custom/mt6893/hal/imgsensor/
+mmm vendor/mediatek/proprietary/hardware/mtkcam/
+# kernel 侧整编或单独编 imgsensor</code></pre></li>
+<li>烧录：<code>vendor_boot.img</code> + <code>dtbo.img</code> + <code>super.img</code>（vendor）。</li>
+</ol>
+
+<h2>十、排障</h2>
+<table>
+<tr><th>现象</th><th>原因</th></tr>
+<tr><td>kernel log 搜不到 <code>imgsensor</code> probe</td><td>DTS <code>cam0_i2c_addr</code>/<code>cam0_sensor_id</code> 错或 GPIO 没电</td></tr>
+<tr><td><code>ERROR_SENSOR_CONNECT_FAIL</code></td><td>sensor 实际 chip ID ≠ <code>XXX_SENSOR_ID</code>（型号/地址错）</td></tr>
+<tr><td>HAL 起不来但 kernel 检测到</td><td>HAL <code>sensorList</code> 与 kernel <code>g_pstSensorList</code> 的 ID 不一致</td></tr>
+<tr><td>预览黑屏</td><td><code>xxx_open</code> 通过但 <code>SensorControl</code> 没下发正确初始化序列</td></tr>
+<tr><td>前后摄颠倒</td><td>DTS <code>cam0/cam1</code> 与 <code>KDIMGSENSORIOC_X_SET_DRIVER</code> 位置不对应</td></tr>
+</table>
+<div class="note">抓 log：<code>dmesg | grep imgsensor</code> 看 kernel 探测；<code>mtklogger</code> 看 HAL 层 sensor 枚举。</div>
+
+<div class="card who">助理注记（不改原文）：本篇是第 8 份"场景三"的底层机制展开，与第 9 份"LCM lcm.c 模板"同属「HAL↔Kernel 配对」范式（LCM 靠名字、camera 靠 sensor ID）。烧录项（vendor_boot / dtbo / super）套用第 6 份 GKI+动态分区约束。</div>
+
+</div>
+</body>
+</html>
