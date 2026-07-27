@@ -31,3 +31,9 @@
 - 推送飞书成功：云空间 file_token `Rwn9bqI5KoGWHxxLVNTc6DGRnth`；bot 私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af)发链接成功。
 - 踩坑：user 身份无 `im:message.send_as_user` scope 无法私聊发消息，须用 `--as bot`；上传仍走 user 身份(drive:file:upload)。此为稳定组合，后续沿用「user 上传 + bot 发消息」。
 - 明日可轮换：Vulkan/ANGLE/HWUI Skia 后端深挖、Codec2 vendor plugin 开发、CarService/Automotive、NFC/SE、NNAPI/TFLite delegate、virtual A/B snapuserd 深水区。
+
+### 2026-07-27（第六篇·系统基建·安全存储·可观测性与版本演进篇）
+- 按轮换规划覆盖此前完全未涉及的角度，产出 `Android_Framework面试题_系统基建与可观测性篇_2026-07-27.md`（11 大专题+查缺补漏）：16KB 页面(Android15/16 强制+兼容模式,近期热点)、ClassLoader/插件化(DexPathList.dexElements 插桩)、权限全链路(PermissionManagerService/AppOps)、Keystore2/Keymint HAL、Verified Boot/AVB/dm-verity/fscrypt、Vold/FUSE 存储(sdcardfs 退场)、logd/liblog 日志、性能可观测性(Looper Printer/Choreographer/BlockCanary/Matrix)、RRO/Overlay(idmap)、Doze/AppStandby/JobScheduler/WakeLock(含 A16 JobScheduler 配额变更)、Android15/16 行为变更串讲。均带 Android14 源码路径。
+- 飞书推送成功：user 身份上传云空间 file_token `Q83YbMIBdokkTexiKJ9cb4fJn0f`(url https://my.feishu.cn/file/Q83YbMIBdokkTexiKJ9cb4fJn0f)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b695ef77288b0b1a4c14de56578f)。
+- 状态/踩坑：本次 user 身份 token 需 refresh 但自动刷新成功(expiresAt 已过、refreshExpiresAt 2026-07-31 仍有效)；bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合，均一次成功。用户 openId ou_9bb9a536eb5ca6ec98914b4982e2bafb。
+- 六篇至此闭环：主篇(16)/拓展篇(10)/深挖篇(11)/图形多媒体通信篇(12)/本篇(11)。后续仍可轮换：CarService/Automotive、NFC/SE、NNAPI/TFLite、Vulkan/ANGLE/HWUI-Skia 后端、Codec2 vendor plugin、virtual A/B snapuserd、ART 镜像 odex 布局深水区。
