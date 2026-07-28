@@ -955,6 +955,310 @@ adb shell vintf status | grep vehiclebody
 | SELinux 域 | `device/<vendor>/sepolicy/private/hal_vehiclebody_default.te` | HAL 进程域 |
 | 服务上下文 | `device/<vendor>/sepolicy/private/service_contexts` | binder 名→type |
 
+#### 1.6.12 Android 10（HIDL）下的等价实现
+
+> **核心结论**：1.6.7 的 `CanBusReader`（PF_CAN / SOCK_RAW / CAN_RAW）是**纯 Linux SocketCAN 代码，与 Android 版本无关**，Android 10 与 14 完全一致，原样照搬即可。真正变化的是**承载它的 HAL 容器**——Android 10 用的是 **HIDL**（不是 AIDL），因此接口定义、返回类型、服务注册、SELinux 类型、Framework 侧调用 API 全部不同。
+
+##### 版本差异速查
+
+| 维度 | Android 14（原 1.6） | Android 10（本节） |
+|------|------------------------|---------------------|
+| HAL 描述语言 | AIDL（`.aidl`） | HIDL（`.hal`） |
+| 接口编译模块 | `aidl_interface` | `hidl_interface` |
+| 传输后端 | binder（NDK） | **hwbinder** |
+| 服务端基类 | `BnVehicleBody` | `BnHwVehicleBody` / 或 passthrough |
+| 方法返回类型 | `ndk::ScopedAStatus` + out 参数 | `Return<float>` / `Return<void>` + 回调 |
+| 服务注册 | `AServiceManager_addService` | `registerAsService()` 或 `defaultPassthroughServiceImplementation` |
+| SELinux 服务类型 | `service_manager_type` | **`hwservice_manager_type`** |
+| Framework 侧获取 | `ServiceManager.getService()` + `Stub.asInterface` | `IVehicleBody.getService()`（静态方法） |
+| 内核 | GKI（仅 `.ko` / DTO 改动） | 4.9/4.14，**可直接改内核源码** |
+
+##### Step A：HIDL 接口定义（替代 1.6.2）
+
+**文件路径**: `hardware/interfaces/vehiclebody/1.0/IVehicleBody.hal`
+
+```hal
+// IVehicleBody.hal
+// ============================================================
+// HIDL 接口定义（注意扩展名 .hal，不是 .aidl）
+// 包名带版本后缀 @1.0
+// 传输：hwbinder（自动，无需像 AIDL 那样指定 backend）
+// ============================================================
+
+package android.hardware.vehiclebody@1.0;
+
+// 结构化返回体（HIDL 用 struct，AIDL 用 parcelable）
+struct VehicleBodyInfo {
+    float    speed;       // 车速 km/h
+    int32_t  fuelLevel;   // 油量 0~100
+    int32_t  doorStatus;  // 位掩码 bit0=左前 bit1=右前 ...
+    float    engineTemp;   // 发动机温度 ℃
+};
+
+interface IVehicleBody {
+    // 返回用 generates(<type>) 声明（AIDL 是裸返回类型）
+    getSpeed() generates (float speed);
+    getFuelLevel() generates (int32_t fuel);
+    getDoorStatus() generates (int32_t status);
+    // 返回 struct 时用回调：getAllInfo_cb（AIDL 是 out 参数）
+    getAllInfo() generates (VehicleBodyInfo info);
+};
+```
+
+**HIDL 编译模块** — `hardware/interfaces/vehiclebody/1.0/Android.bp`：
+
+```blueprint
+hidl_interface {
+    name: "android.hardware.vehiclebody@1.0",
+    root: "android.hardware",
+    vintf: {
+        // HIDL 同样受 VINTF 冻结约束
+    },
+    srcs: ["IVehicleBody.hal"],
+    interfaces: [
+        "android.hidl.base@1.0",
+    ],
+    gen_java: true,              // 生成 Java 侧代理（Framework 调用用）
+}
+```
+
+##### Step B：HIDL 服务端实现（替代 1.6.4 / 1.6.5）
+
+**头文件** — `hardware/interfaces/vehiclebody/1.0/default/VehicleBody.h`：
+
+```cpp
+// VehicleBody.h
+// ============================================================
+// HIDL 服务端：继承生成的 IVehicleBody（注意命名空间带 V1_0）
+// 生成的基类位于：
+//   out/soong/.intermediates/hardware/interfaces/vehiclebody/.../
+//       android/hardware/vehiclebody/1.0/IVehicleBody.h
+// 基类类型：IHwVehicleBody / BnHwVehicleBody / BsVehicleBody
+// ============================================================
+
+#pragma once
+#include <android/hardware/vehiclebody/1.0/IVehicleBody.h>
+#include <hidl/MQDescriptor.h>
+#include <hidl/Status.h>
+#include "CanBusReader.h"
+
+using ::android::hardware::Return;
+using ::android::hardware::Void;
+using ::android::hardware::vehiclebody::V1_0::IVehicleBody;
+using ::android::hardware::vehiclebody::V1_0::VehicleBodyInfo;
+
+namespace android {
+namespace hardware {
+namespace vehiclebody {
+namespace V1_0 {
+namespace implementation {
+
+struct VehicleBody : public IVehicleBody {
+    // HIDL 返回类型是 Return<T>，不是 ndk::ScopedAStatus
+    Return<float> getSpeed() override;
+    Return<int32_t> getFuelLevel() override;
+    Return<int32_t> getDoorStatus() override;
+    // 返回 struct 用回调 _hidl_cb（AIDL 用 out 参数）
+    Return<void> getAllInfo(getAllInfo_cb _hidl_cb) override;
+
+    std::unique_ptr<CanBusReader> mCanReader;  // ← 1.6.7 的代码原样复用
+};
+
+}  // namespace implementation
+}  // namespace V1_0
+}  // namespace vehiclebody
+}  // namespace hardware
+}  // namespace android
+```
+
+**实现文件** — `.../default/VehicleBody.cpp`（节选，注意返回类型差异）：
+
+```cpp
+// VehicleBody.cpp（节选）
+#include "VehicleBody.h"
+#include <android-base/logging.h>
+
+namespace android {
+namespace hardware {
+namespace vehiclebody {
+namespace V1_0 {
+namespace implementation {
+
+VehicleBody::VehicleBody() {
+    // CanBusReader 的 init() 与 Android 14 完全一致（PF_CAN 代码不变）
+    mCanReader = std::make_unique<CanBusReader>("/dev/can0");
+    if (!mCanReader->init()) {
+        LOG(WARNING) << "CAN 初始化失败";
+    }
+}
+
+// HIDL 返回用 Return<float>，无 out 参数
+Return<float> VehicleBody::getSpeed() {
+    if (!mCanReader || !mCanReader->isReady()) return -1.0f;
+    auto frame = mCanReader->readFrame(0x0C9);
+    if (!frame) return -1.0f;
+    uint16_t raw = (frame->data[1] << 8) | frame->data[2];
+    return raw / 10.0f;
+}
+
+// 返回 struct：通过回调 _hidl_cb 把结果传回
+Return<void> VehicleBody::getAllInfo(getAllInfo_cb _hidl_cb) {
+    VehicleBodyInfo info;
+    info.speed      = getSpeed();
+    info.fuelLevel = getFuelLevel();
+    info.doorStatus = getDoorStatus();
+    info.engineTemp = 95.5f;
+    _hidl_cb(info);          // ← 关键：HIDL 用回调而非 return struct
+    return Void();
+}
+
+}  // namespace implementation
+}  // namespace V1_0
+}  // namespace vehiclebody
+}  // namespace hardware
+}  // namespace android
+```
+
+##### Step C：服务注册（替代 1.6.6，hwbinder 而非 binder）
+
+**`.../default/service.cpp`**：
+
+```cpp
+// service.cpp（HIDL 版）
+// ============================================================
+// 两种注册方式：
+//   方式 A passthrough：运行在调用方进程内（最简单，但 CAN socket 开在调用进程）
+//   方式 B binderized：独立 daemon（CAN 场景推荐，权限/生命周期隔离清晰）
+// ============================================================
+
+#include <android-base/logging.h>
+#include <hidl/LegacySupport.h>    // HIDL 旧式注册辅助
+#include "VehicleBody.h"
+
+using android::hardware::vehiclebody::V1_0::IVehicleBody;
+using android::hardware::defaultPassthroughServiceImplementation;
+
+// ===== 方式 A：passthrough（uncomment 即可，main 直接返回）=====
+// int main() {
+//     // 在调用方（如 system_server）进程内实例化，无需独立 daemon
+//     // 代价：SELinux 要让 system_server 能访问 /dev/can0
+//     return defaultPassthroughServiceImplementation<IVehicleBody>("default");
+// }
+
+// ===== 方式 B：binderized（推荐，独立进程）=====
+int main() {
+    // 1. 配置 hwbinder 线程池（HIDL 用 hwbinder，不是 binder）
+    android::hardware::configureRpcThreadpool(4, true);
+
+    // 2. 实例化并注册到 hwservicemanager
+    android::sp<VehicleBody> impl = new VehicleBody();
+    // registerAsService 第二个参数是实例名（对应 "/default"）
+    impl->registerAsService("default");  // HIDL 的注册 API
+
+    // 3. 进入线程池（阻塞）
+    android::hardware::joinRpcThreadpool();
+    return 1;  // 不会到这里
+}
+```
+
+##### Step D：编译 / init / SELinux（HIDL 专属差异）
+
+**`.../default/Android.bp`**（HIDL 用 `cc_binary` + `init_rc`，无 `vintf_fragments`，VINTF 由 `.hal` 的 `vintf` 字段生成）：
+
+```blueprint
+cc_binary {
+    name: "android.hardware.vehiclebody@1.0-service",
+    vendor: true,
+    relative_install_path: "hw",
+    srcs: ["service.cpp", "VehicleBody.cpp", "CanBusReader.cpp"],
+    shared_libs: [
+        "libhidlbase",
+        "libhidltransport",
+        "libhwbinder",                 // HIDL 传输库（hwbinder）
+        "libbase",
+        "android.hardware.vehiclebody@1.0",
+    ],
+    init_rc: ["android.hardware.vehiclebody@1.0-service.rc"],
+}
+```
+
+**`.../default/android.hardware.vehiclebody@1.0-service.rc`**：
+
+```
+service vendor.vehiclebody-hal /vendor/bin/hw/android.hardware.vehiclebody@1.0-service
+    class hal
+    user system
+    group system can
+    capabilities NET_ADMIN
+```
+
+**SELinux — 关键差异：HIDL 用 `hwservice_manager_type` 而非 `service_manager_type`**：
+
+```selinux
+# hal_vehiclebody.te（HIDL 版）
+# 注意类型名后缀 _hwservice，对应 hwbinder 服务管理器
+type hal_vehiclebody_hwservice, hwservice_manager_type;
+
+# hal_vehiclebody_default.te
+type hal_vehiclebody_default, domain;
+type hal_vehiclebody_default_exec, exec_type, file_type;
+hal_server_domain(hal_vehiclebody_default, hal_vehiclebody)
+init_daemon_domain(hal_vehiclebody_default)
+
+# ★ HIDL 必须用 hwbinder_use（AIDL 用 binder 不需要这句）
+hwbinder_use(hal_vehiclebody_default)
+
+# hwbinder 服务管理器的 add/find 权限
+allow hal_vehiclebody_default hal_vehiclebody_hwservice:hwservice_manager { add find };
+
+# CAN 设备访问（与 14 相同）
+allow hal_vehiclebody_default can_device:chr_file { read write open ioctl };
+allow hal_vehiclebody_default sysfs_net:file { read write open };
+
+# system_server 侧查找该 HIDL 服务
+allow system_server hal_vehiclebody_hwservice:hwservice_manager find;
+```
+
+**`hwservice_contexts`**（不是 `service_contexts`）：
+
+```
+# HIDL 的服务名映射写 hwservice_contexts
+android.hardware.vehiclebody::IVehicleBody/default u:object_r:hal_vehiclebody_hwservice:s0
+```
+
+**`file_contexts`**（相同）：
+
+```
+/vendor/bin/hw/android\.hardware\.vehiclebody@1\.0-service u:object_r:hal_vehiclebody_default_exec:s0
+```
+
+##### Step E：Framework 侧调用（Android 10 HIDL Java API）
+
+```java
+// Android 10 中 Framework Service 调用 HIDL HAL（替代 1.6 里 AIDL 的 asInterface）
+import android.hardware.vehiclebody.V1_0.IVehicleBody;
+
+// HIDL 用静态 getService()，不是 ServiceManager.getService()
+// 第二个参数 true = 阻塞重试直到 HAL 起来
+try {
+    IVehicleBody hal = IVehicleBody.getService(true /* retry */);
+    float speed = hal.getSpeed();   // 直接返回 float（不是 out 参数）
+    // 取 struct 用回调：
+    hal.getAllInfo(info -> { /* info.speed / info.fuelLevel */ });
+} catch (RemoteException | NoSuchElementException e) {
+    Slog.e(TAG, "HIDL HAL 调用失败", e);
+}
+```
+
+##### Android 10 特有的「捷径」（可选）
+
+因为 Android 10 **没有 GKI 限制**，你也可以不走正式 HAL，而是：
+
+1. **直接在 vendor 原生 daemon 里读 CAN**，通过 **unix domain socket / 共享内存** 暴露给 Framework（不推荐，破坏 Treble 规范）；或
+2. **passthrough HIDL**（Step C 方式 A）——`defaultPassthroughServiceImplementation` 让 HAL 跑在调用方进程内，省去独立 daemon 和大量 SELinux 配置，调试期最快。代价是 `/dev/can0` 的访问权限要开给调用进程（如 system_server）。
+
+> 量产建议仍走 **binderized HIDL（方式 B）**，权限与生命周期边界最清晰，也最符合 VTS 合规要求。
+
 ---
 
 ## 场景二：修改系统行为 — 以「Launcher 多任务切换动画」和「禁用系统对话框」为例
