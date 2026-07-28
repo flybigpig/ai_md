@@ -37,3 +37,10 @@
 - 飞书推送成功：user 身份上传云空间 file_token `Q83YbMIBdokkTexiKJ9cb4fJn0f`(url https://my.feishu.cn/file/Q83YbMIBdokkTexiKJ9cb4fJn0f)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b695ef77288b0b1a4c14de56578f)。
 - 状态/踩坑：本次 user 身份 token 需 refresh 但自动刷新成功(expiresAt 已过、refreshExpiresAt 2026-07-31 仍有效)；bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合，均一次成功。用户 openId ou_9bb9a536eb5ca6ec98914b4982e2bafb。
 - 六篇至此闭环：主篇(16)/拓展篇(10)/深挖篇(11)/图形多媒体通信篇(12)/本篇(11)。后续仍可轮换：CarService/Automotive、NFC/SE、NNAPI/TFLite、Vulkan/ANGLE/HWUI-Skia 后端、Codec2 vendor plugin、virtual A/B snapuserd、ART 镜像 odex 布局深水区。
+
+### 2026-07-28（第七篇·端侧 AI 与 Android 17 演进热点篇）
+- 联网锚定当日热点：Android 17(API 37, CinnamonBun, 2026-06-16 stable)正式版主线 = Compose-First / Adaptive-First / 端侧 AI-NPU 化 / 隐私收紧；NNAPI 被标 deprecated，A17 要求 NPU 访问声明 FEATURE_NEURAL_PROCESSING_UNIT；端侧 AI 为 2026 最大增量热点。
+- 产出 `Android_Framework面试题_端侧AI与Android17演进_2026-07-28.md`（10 大专题 + 六篇总图 + 易错点速记）：填补此前完全未覆盖的真缺口——NNAPI/NPU 全链路(IDevice 分区调度/共享内存张量/neuralnetworks AIDL HAL)、LiteRT NPU delegate 与 A17 NPU 声明、CarService/Vehicle HAL、Vulkan/ANGLE/HWUI Skia 后端、ART oat/odex/vdex/art 镜像与 profile-guided、virtual A/B + snapuserd COW 快照；并将 NNAPI/CarService/Vulkan/ART 产物/virtual A/B 与 A16/A17 行为变更(edge-to-edge/Predictive Back/WindowSizeClass/大屏 resizable)热点衔接。均带 Android 14 AOSP 源码路径。
+- 飞书推送成功：user 身份上传云空间 file_token `PxVfbagJ6os06mxRTFRcrpBbnGf`(url https://my.feishu.cn/file/PxVfbagJ6os06mxRTFRcrpBbnGf)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b694bcf1018a4b038a9009dfac68)。
+- 状态：user 身份 token 本次 needs_refresh 但自动刷新成功(expiresAt 2026-07-27 已过期,refreshExpiresAt 2026-08-03 仍有效);bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合,均一次成功。
+- 七篇至此闭环：主篇(16)/拓展篇(10)/深挖篇(11)/图形多媒体通信篇(12)/系统基建篇(11)/本篇(10)。后续真·未覆盖角度所剩：Media3/ExoPlayer、Codec2 vendor plugin、LiteRT NPU delegate 源码走读、端侧 LLM(Gemini Nano)运行时、CarService 多用户/多显示、SF RenderEngine Vulkan 后端、ART hiddenapi/非 SDK 接口管制。

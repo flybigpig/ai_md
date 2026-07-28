@@ -1,21 +1,21 @@
 # Android 系统定制开发 — 七大工作场景实战指南
 
-> **适用版本**: Android 14 (UpsideDownCake, API 34) / AOSP `android-14.0.0_rXX`
-> **目标读者**: 车载/工控 Android 底层开发者、Framework 定制工程师
+> **适用版本**: Android 14 (UpsideDownCake, API 34) / AOSP `android-14.0.0_rXX`  
+> **目标读者**: 车载/工控 Android 底层开发者、Framework 定制工程师  
 > **文档定位**: 每个场景从「为什么做 → 怎么做 → 源码路径 → 验证方法」完整闭环
 
 ---
 
 ## 总览速查表
 
-| # | 工作内容 | 核心能力域 | 典型案例 | 改动层级 | 难度 |
-|---|---------|-----------|---------|---------|------|
-| 1 | 新增系统服务 | Binder IPC、SystemServer 启动流程 | 车身信息管理服务（AIDL） | Framework + HAL | ⭐⭐⭐ |
-| 2 | 修改系统行为 | AMS/ATMS/WMS 内部逻辑 | Launcher 多任务动画、禁用系统对话框 | Framework | ⭐⭐ |
-| 3 | 适配硬件外设 | HAL 层、JNI、Input 子系统 | CAN 总线、串口屏、自定义键盘 | HAL + Kernel + SELinux | ⭐⭐⭐⭐ |
-| 4 | 裁剪/定制系统 | 编译系统、分区、SELinux、Treble | 移除系统应用、定制 Settings | Build + sepolicy | ⭐⭐ |
-| 5 | 性能/稳定性优化 | 启动流程、ANR/GKI 内核 | 开机速度优化、ANR 根因分析 | Framework + Kernel | ⭐⭐⭐⭐ |
-| 6 | 安全策略配置 | SELinux、权限模型、non-SDK | 新硬件 sepolicy、hiddenapi 限制放开 | sepolicy + Framework | ⭐⭐⭐ |
+| # | 工作内容     | 核心能力域                        | 典型案例                        | 改动层级                   | 难度   |
+| - | -------- | ---------------------------- | --------------------------- | ---------------------- | ---- |
+| 1 | 新增系统服务   | Binder IPC、SystemServer 启动流程 | 车身信息管理服务（AIDL）              | Framework + HAL        | ⭐⭐⭐  |
+| 2 | 修改系统行为   | AMS/ATMS/WMS 内部逻辑            | Launcher 多任务动画、禁用系统对话框      | Framework              | ⭐⭐   |
+| 3 | 适配硬件外设   | HAL 层、JNI、Input 子系统          | CAN 总线、串口屏、自定义键盘            | HAL + Kernel + SELinux | ⭐⭐⭐⭐ |
+| 4 | 裁剪/定制系统  | 编译系统、分区、SELinux、Treble       | 移除系统应用、定制 Settings          | Build + sepolicy       | ⭐⭐   |
+| 5 | 性能/稳定性优化 | 启动流程、ANR/GKI 内核              | 开机速度优化、ANR 根因分析             | Framework + Kernel     | ⭐⭐⭐⭐ |
+| 6 | 安全策略配置   | SELinux、权限模型、non-SDK         | 新硬件 sepolicy、hiddenapi 限制放开 | sepolicy + Framework   | ⭐⭐⭐  |
 
 ---
 
@@ -32,29 +32,39 @@
 │              第三方 APP                      │
 │   (通过 AIDL 接口调用 IVehicleBodyInfo)       │
 └──────────────┬──────────────────────────────┘
-               │ Binder IPC (AIDL Interface)
+               │ ① Binder IPC (system 侧 AIDL)
                ▼
 ┌─────────────────────────────────────────────┐
-│        SystemServer 进程                     │
+│        SystemServer 进程 (system 分区)        │
 │  ┌──────────────────────────────────┐       │
 │  │  VehicleBodyInfoService          │       │
-│  │  - 实现 Stub                     │       │
+│  │  - 实现 IVehicleBodyInfo.Stub   │       │
 │  │  - 注册到 ServiceManager         │       │
+│  │  - 持有 IVehicleBody HAL 代理    │       │
 │  └──────────┬───────────────────────┘       │
-│             │ HAL 调用                         │
+│             │ ② Binder (AIDL Stable HAL)
+│             │   服务名: ...IVehicleBody/default
 │             ▼                                 │
-│  ┌──────────────────────────────────┐       │
-│  │  VehicleHAL (AIDL Stable HAL)    │       │
-│  │  android.hardware.vehicleservice │       │
-│  └──────────────────────────────────┘       │
-└─────────────────────────────────────────────┘
-               │ HWBinder
+└──────────────┬──────────────────────────────┘
+               │ ③ Binder 跨进程（system→vendor）
                ▼
 ┌─────────────────────────────────────────────┐
-│           Vendor 分区 (HAL 实现)              │
+│   vendor.vehiclebody-hal 进程 (vendor 分区)   │
+│  ┌──────────────────────────────────┐       │
+│  │  VehicleBody (BnVehicleBody)     │       │
+│  │  - 解析 CAN 报文 → 车速/油量/门  │       │
+│  │  - 调用 CanBusReader 读 /dev/can0 │      │
+│  └──────────┬───────────────────────┘       │
+└──────────────┬──────────────────────────────┘
+               │ ④ SocketCAN (PF_CAN socket)
+               ▼
+┌─────────────────────────────────────────────┐
+│      Linux 内核 SocketCAN 驱动 (vendor/内核)    │
 │     读取 CAN 总线 / 底层传感器数据            │
 └─────────────────────────────────────────────┘
 ```
+
+> 四段 IPC 链路：**APP →(Binder)→ Framework Service →(Binder/AIDL HAL)→ Vendor HAL 进程 →(SocketCAN)→ Kernel CAN 驱动**。其中 ② 即为本示例新增的 Stable HAL 边界，满足 Treble 隔离（system 不直接依赖 vendor 实现）。
 
 ### 1.3 实现步骤
 
@@ -115,7 +125,10 @@ interface IVehicleBodyInfo {
 package com.android.server;
 
 import android.content.Context;
+import android.hardware.vehiclebody.IVehicleBody;  // HAL 代理（AIDL Stable HAL）
+import android.os.IBinder;
 import android.os.IVehicleBodyInfo;
+import android.os.ServiceManager;
 import android.util.Slog;
 
 /**
@@ -142,16 +155,54 @@ public final class VehicleBodyInfoService extends IVehicleBodyInfo.Stub {
 
     private final Context mContext;
 
-    // ---- 可选：HAL 客户端引用 ----
-    // 如果需要从 HAL 层读取真实硬件数据，在此持有 HAL 代理对象
-    // private IVehicleHal mVehicleHal;
+    // ---- HAL 客户端代理（AIDL Stable HAL，binder 传输）----
+    // HAL 接口：android.hardware.vehiclebody.IVehicleBody
+    // 传输后端：binder（AIDL 默认后端，区别于 HIDL 的 hwbinder）
+    // 服务实例名：android.hardware.vehiclebody.IVehicleBody/default
+    // 运行进程：vendor.vehiclebody-hal（位于 vendor 分区）
+    private volatile IVehicleBody mVehicleHal;
+    // HAL 代理访问锁：getXxx() 可能在 HAL 代理尚未就绪时被并发调用
+    private final Object mHalLock = new Object();
 
     public VehicleBodyInfoService(Context context) {
         mContext = context;
         Slog.i(TAG, "VehicleBodyInfoService initialized in system_server");
-        // TODO: 初始化 HAL 连接（如果使用 AIDL HAL）
-        // mVehicleHal = IVehicleHal.Stub.asInterface(
-        //     ServiceManager.getService("android.hardware.vehicleservice.IVehicle/default"));
+        // HAL 服务（vendor.vehiclebody-hal）可能晚于本服务启动，
+        // 因此异步获取代理并带重试，避免阻塞 system_server 启动主线程。
+        initVehicleHal();
+    }
+
+    /**
+     * 异步获取 HAL 代理对象。
+     *
+     * <p>设计要点：
+     * <ul>
+     *   <li>不能在构造中同步等待——HAL 由 init 在 late-init 阶段拉起，
+     *       此时可能尚未向 ServiceManager 注册。</li>
+     *   <li>采用懒连接 + 退避重试：最多 5 次，每次间隔 1s。</li>
+     *   <li>需用独立线程，否则会拖慢 system_server 整体启动。</li>
+     * </ul>
+     *
+     * <p>如果最终仍未拿到代理，则 getXxx() 会返回约定错误码（-1），
+     * 调用方据此判断为「硬件不可用」而非崩溃。
+     */
+    private void initVehicleHal() {
+        final String halName = "android.hardware.vehiclebody.IVehicleBody/default";
+        new Thread(() -> {
+            IBinder binder = ServiceManager.getService(halName);
+            for (int i = 0; i < 5 && binder == null; i++) {
+                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                binder = ServiceManager.getService(halName);
+            }
+            if (binder != null) {
+                synchronized (mHalLock) {
+                    mVehicleHal = IVehicleBody.Stub.asInterface(binder);
+                }
+                Slog.i(TAG, "HAL 代理已就绪: " + halName);
+            } else {
+                Slog.w(TAG, "HAL 代理获取失败(5次重试后)，将返回默认值");
+            }
+        }, "vbi-hal-init").start();
     }
 
     // ==================== AIDL 接口实现 ====================
@@ -161,24 +212,50 @@ public final class VehicleBodyInfoService extends IVehicleBodyInfo.Stub {
         // 权限检查：确保调用者有权限访问车身信息
         enforceCallingPermission();
 
-        // TODO: 替换为真实的 HAL 数据读取
-        // return mVehicleHal.getSpeed();
-        return 0.0f;  // 默认返回值，待接入 HAL 后替换
+        // 通过 HAL 代理读取车速（跨进程 → vendor 分区 HAL 实现）
+        synchronized (mHalLock) {
+            if (mVehicleHal != null) {
+                try {
+                    return mVehicleHal.getSpeed();
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "HAL getSpeed() 调用失败", e);
+                }
+            }
+        }
+        return -1.0f;  // HAL 不可用时的约定错误码
     }
 
     @Override
     public int getFuelLevel() {
         enforceCallingPermission();
-        // TODO: 从 HAL 读取油量传感器数据
-        return 85;  // 模拟值
+
+        synchronized (mHalLock) {
+            if (mVehicleHal != null) {
+                try {
+                    return mVehicleHal.getFuelLevel();
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "HAL getFuelLevel() 调用失败", e);
+                }
+            }
+        }
+        return -1;  // 传感器异常 / HAL 不可用
     }
 
     @Override
     public int getDoorStatus() {
         enforceCallingPermission();
-        // TODO: 从 CAN 总线读取车门开关状态
-        // 返回值示例：0b0000_1010 = 右前门+左后门打开
-        return 0x00;  // 全部关闭
+
+        // HAL 返回位掩码：bit0=左前, bit1=右前, bit2=左后, bit3=右后
+        synchronized (mHalLock) {
+            if (mVehicleHal != null) {
+                try {
+                    return mVehicleHal.getDoorStatus();
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "HAL getDoorStatus() 调用失败", e);
+                }
+            }
+        }
+        return 0x00;  // 默认全部关闭
     }
 
     @Override
@@ -188,9 +265,9 @@ public final class VehicleBodyInfoService extends IVehicleBodyInfo.Stub {
         // 批量打包返回，减少 IPC 往返次数
         StringBuilder sb = new StringBuilder("{");
         sb.append("\"speed\":").append(getVehicleSpeed()).append(",");
-        sb.append("\"fuel\":append(getFuelLevel()).append(",");
+        sb.append("\"fuel\":").append(getFuelLevel()).append(",");  // 修复：原 sb.append 调用语法错误
         sb.append("\"doors\":\"").append(Integer.toBinaryString(getDoorStatus())).append("\",");
-        sb.append("\"engineTemp\":95.5");  // 示例
+        sb.append("\"engineTemp\":95.5");  // 示例字段
         sb.append("}");
         return sb.toString();
     }
@@ -202,9 +279,9 @@ public final class VehicleBodyInfoService extends IVehicleBodyInfo.Stub {
      *
      * <p>需要在 platform_private.xml 中声明自定义权限：
      * <pre>
-     * &lt;permission
+     * <permission
      *     android:name="android.permission.ACCESS_VEHICLE_BODY_INFO"
-     *     android:protectionLevel="signature|privileged" /&gt;
+     *     android:protectionLevel="signature|privileged">
      * </pre>
      *
      * @throws SecurityException 调用者无权限时抛出
@@ -282,7 +359,7 @@ filegroup {
 **文件路径**: `frameworks/base/core/res/AndroidManifest.xml` / `platform_private.xml`
 
 ```xml
-<!-- 自定义权限声明 -->
+
 <permission
     android:name="android.permission.ACCESS_VEHICLE_BODY_INFO"
     android:label="@string/permlab_access_vehicle_body"
@@ -291,6 +368,7 @@ filegroup {
 ```
 
 `signature|privileged` 含义：
+
 - **signature**: 只有与平台签名相同的 APK 才能获得此权限
 - **privileged**: 系统特权应用（位于 `/system/priv-app`）也可获得
 - 这保证了只有可信的系统/厂商应用能访问车身数据
@@ -326,14 +404,556 @@ public class VehicleInfoClient {
 
 ### 1.5 关键源码路径速查
 
-| 组件 | AOSP 路径 (android-14.0.0_rXX) | 说明 |
-|------|-------------------------------|------|
-| SystemServer 主入口 | `frameworks/base/services/java/com/android/server/SystemServer.java` | 系统服务启动总调度 |
-| ServiceManager 注册 | `frameworks/base/core/java/android/os/ServiceManager.java` | addService / getService |
-| Binder 框架层 | `frameworks/base/core/java/android/os/Binder.java` | IPC 传输核心 |
-| AIDL 编译器 | `tools/base/aidl/` | .aidl → Java Stub 生成 |
-| 权限管理 | `frameworks/base/core/java/android/app/ContextImpl.java` | enforceCallingPermission |
-| 日志系统 | `frameworks/base/core/java/android/util/Slog.java` | 系统级日志（非 logcat） |
+| 组件                | AOSP 路径 (android-14.0.0_rXX)                                         | 说明                       |
+| ----------------- | -------------------------------------------------------------------- | ------------------------ |
+| SystemServer 主入口  | `frameworks/base/services/java/com/android/server/SystemServer.java` | 系统服务启动总调度                |
+| ServiceManager 注册 | `frameworks/base/core/java/android/os/ServiceManager.java`           | addService / getService  |
+| Binder 框架层        | `frameworks/base/core/java/android/os/Binder.java`                   | IPC 传输核心                 |
+| AIDL 编译器          | `tools/base/aidl/`                                                   | .aidl → Java Stub 生成     |
+| 权限管理              | `frameworks/base/core/java/android/app/ContextImpl.java`             | enforceCallingPermission |
+| 日志系统              | `frameworks/base/core/java/android/util/Slog.java`                   | 系统级日志（非 logcat）          |
+| HAL 接口（AIDL）    | `hardware/interfaces/vehiclebody/aidl/android/hardware/vehiclebody/IVehicleBody.aidl` | Stable HAL 契约 |
+| HAL 编译模块         | `hardware/interfaces/vehiclebody/aidl/Android.bp`                   | `aidl_interface{ stability:"vintf" }` |
+| HAL C++ 实现         | `hardware/interfaces/vehiclebody/default/VehicleBody.cpp`            | BnVehicleBody 子类 |
+| HAL 进程入口         | `hardware/interfaces/vehiclebody/default/service.cpp`                | `AServiceManager_addService` |
+| HAL SELinux 域       | `device/<vendor>/sepolicy/private/hal_vehiclebody_default.te`       | HAL 进程域策略 |
+
+### 1.6 HAL 层完整实现（AIDL Stable HAL）
+
+> **为什么需要独立的 HAL 层**：车身数据最终来自 CAN 总线 / 传感器，这些硬件驱动位于 **vendor 分区**。根据 Treble 隔离规范，system 分区（Framework）**禁止直接依赖** vendor 的具体实现，只能通过 **稳定的 AIDL/HIDL 接口** 访问。因此我们把「读 CAN → 解析报文 → 返回车速/油量」的逻辑封装成一个 Stable HAL，Framework 只调用接口，不关心底层是 FlexCAN 还是 MCP2515。
+
+#### 1.6.1 目录结构与分层
+
+```
+hardware/interfaces/vehiclebody/
+├── aidl/                              # AIDL Stable HAL 接口定义（vintf 冻结）
+│   ├── Android.bp                    # aidl_interface 编译模块
+│   ├── aidl_api/                    # 冻结后的 API 快照（frozen 时生成）
+│   │   └── android.hardware.vehiclebody/
+│   │       └── 1/                  # 版本 1 的接口哈希快照
+│   └── android/hardware/vehiclebody/
+│       ├── IVehicleBody.aidl        # 主接口
+│       └── VehicleBodyInfo.aidl     # 可选：结构化返回体
+└── default/                          # HAL 默认实现（C++，编译进 vendor 分区）
+    ├── Android.bp                    # cc_binary + hal 依赖
+    ├── service.cpp                   # 进程入口（binder 服务注册）
+    ├── VehicleBody.h                # BnVehicleBody 子类声明
+    ├── VehicleBody.cpp              # 接口实现（读 CAN / 解析）
+    ├── CanBusReader.cpp             # 底层 CAN 读取（与 kernel SocketCAN 交互）
+    ├── android.hardware.vehiclebody-service.rc   # init 启动脚本
+    └── android.hardware.vehiclebody-service.xml  # VINTF manifest fragment
+```
+
+> **AIDL vs HIDL 选型**：Android 14 已废弃 HIDL（仅旧 HAL 保留），**新增 HAL 一律用 AIDL**。`stability: "vintf"` 表示接口受 CTS/VTS 冻结约束——一旦 `frozen: true`，接口签名不可再改（改了要升版本号）。
+
+#### 1.6.2 AIDL HAL 接口定义
+
+**文件路径**: `hardware/interfaces/vehiclebody/aidl/android/hardware/vehiclebody/IVehicleBody.aidl`
+
+```aidl
+// IVehicleBody.aidl
+// ============================================================
+// 车身信息 HAL 接口（AIDL Stable HAL）
+// 传输后端：binder（区别于 HIDL 的 hwbinder）
+// 实现位置：vendor 分区 (hardware/interfaces/vehiclebody/default)
+// Framework 侧调用方：com.android.server.VehicleBodyInfoService
+// ============================================================
+
+package android.hardware.vehiclebody;
+
+// 结构化返回体示例（可选，比散装字段更省 IPC 往返）
+parcelable VehicleBodyInfo {
+    float speed;        // 车速 km/h
+    int fuelLevel;      // 油量百分比 0~100
+    int doorStatus;     // 位掩码: bit0=左前 bit1=右前 bit2=左后 bit3=右后
+    float engineTemp;   // 发动机温度 ℃
+}
+
+interface IVehicleBody {
+    /**
+     * 获取当前车速
+     * @return 车速 km/h，异常返回 -1.0f
+     */
+    float getSpeed();
+
+    /**
+     * 获取油量
+     * @return 0~100，异常返回 -1
+     */
+    int getFuelLevel();
+
+    /**
+     * 获取车门状态（位掩码）
+     */
+    int getDoorStatus();
+
+    /**
+     * 一次性获取全部车身信息（推荐，减少跨进程次数）
+     */
+    VehicleBodyInfo getAllInfo();
+}
+```
+
+#### 1.6.3 AIDL 编译模块（接口冻结）
+
+**文件路径**: `hardware/interfaces/vehiclebody/aidl/Android.bp`
+
+```blueprint
+// ============================================================
+// aidl_interface 模块：把 .aidl 编译成 C++/Java/NDK 三套 stub
+// 关键字段：
+//   stability = "vintf"  → 纳入 Treble 兼容性冻结
+//   backend.cpp / java / ndk → 生成哪些语言绑定
+//   versions / frozen     → 接口版本与冻结状态
+// ============================================================
+
+aidl_interface {
+    name: "android.hardware.vehiclebody",
+    srcs: ["android/hardware/vehiclebody/*.aidl"],
+
+    // 稳定性声明：接口受 VINTF 兼容性约束（升版本需保持向前兼容）
+    stability: "vintf",
+
+    // 生成 C++ (NDK) 与 Java 两套绑定
+    backend: {
+        cpp: {
+            enabled: true,
+            // NDK 后端生成 libbinder_ndk 风格的 Bn/Bp
+        },
+        java: {
+            enabled: true,
+            // Java 后端供 Framework（system_server）侧 asInterface 使用
+        },
+        ndk: { enabled: true },
+    },
+
+    // 接口版本管理
+    versions: ["1"],
+    // 开发阶段设为 false；接口稳定后改为 true 并提交 aidl_api/ 快照
+    // 冻结后任何签名变更都会编译失败，强制走版本升级流程
+    frozen: false,
+}
+```
+
+#### 1.6.4 HAL C++ 实现 — 头文件
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/VehicleBody.h`
+
+```cpp
+// VehicleBody.h
+// ============================================================
+// AIDL HAL 接口的 C++ 服务端实现
+// 继承 aidl 生成的 BnVehicleBody（Bn = Binder native / 服务端）
+// 生成的头文件位于：
+//   out/soong/.intermediates/hardware/interfaces/vehiclebody/.../
+//       android/hardware/vehiclebody/BnVehicleBody.h
+// ============================================================
+
+#pragma once
+
+#include <aidl/android/hardware/vehiclebody/BnVehicleBody.h>
+#include <android/binder_interface_utils.h>
+
+namespace aidl {
+namespace android {
+namespace hardware {
+namespace vehiclebody {
+
+class VehicleBody : public BnVehicleBody {
+public:
+    // 构造函数：初始化底层 CAN 读取器
+    VehicleBody();
+    ~VehicleBody() override;
+
+    // ---- AIDL 接口实现（override 生成类声明的纯虚函数）----
+    ndk::ScopedAStatus getSpeed(float* _aidl_return) override;
+    ndk::ScopedAStatus getFuelLevel(int32_t* _aidl_return) override;
+    ndk::ScopedAStatus getDoorStatus(int32_t* _aidl_return) override;
+    ndk::ScopedAStatus getAllInfo(
+            VehicleBodyInfo* _aidl_return) override;
+
+private:
+    // 底层 CAN 读取器（封装 SocketCAN 的 socket 操作）
+    // 详见 1.6.7
+    std::unique_ptr<CanBusReader> mCanReader;
+
+    // 缓存最近一次解析结果的时间戳，用于简单节流
+    // （避免每一帧 IPC 都触发一次 CAN 读，降低总线负载）
+    std::chrono::steady_clock::time_point mLastRead;
+};
+
+}  // namespace vehiclebody
+}  // namespace hardware
+}  // namespace android
+}  // namespace aidl
+```
+
+#### 1.6.5 HAL C++ 实现 — 实现文件
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/VehicleBody.cpp`
+
+```cpp
+// VehicleBody.cpp
+// ============================================================
+// 接口方法实现：从 CAN 总线读取报文 → 解析 → 返回
+// 资源控制要点（车载场景强制）：
+//   - CAN socket 在读线程内创建，避免阻塞 binder 线程
+//   - 解析结果带 50ms 缓存，降低总线访问频率（反压）
+//   - 所有异常路径返回约定错误码，不崩溃
+// ============================================================
+
+#include "VehicleBody.h"
+#include "CanBusReader.h"
+#include <android-base/logging.h>
+#include <chrono>
+
+namespace aidl {
+namespace android {
+namespace hardware {
+namespace vehiclebody {
+
+using namespace std::chrono_literals;
+
+VehicleBody::VehicleBody() {
+    // 构造时初始化 CAN 读取器（打开 can0 socket，绑定 0x7E0 等报文 ID）
+    mCanReader = std::make_unique<CanBusReader>("/dev/can0");
+    if (!mCanReader->init()) {
+        LOG(WARNING) << "CAN 初始化失败，车身数据将返回错误码";
+    }
+}
+
+VehicleBody::~VehicleBody() = default;
+
+// ---- 车速：假设车速报文 ID=0x0C9，字节 1~2 为 big-endian km/h*10 ----
+ndk::ScopedAStatus VehicleBody::getSpeed(float* _aidl_return) {
+    if (!mCanReader || !mCanReader->isReady()) {
+        *_aidl_return = -1.0f;
+        return ndk::ScopedAStatus::ok();
+    }
+    auto frame = mCanReader->readFrame(0x0C9);
+    if (!frame) {
+        *_aidl_return = -1.0f;
+        return ndk::ScopedAStatus::ok();
+    }
+    // 解析：字节 [1]<<8 | [2]，单位 0.1 km/h
+    uint16_t raw = (frame->data[1] << 8) | frame->data[2];
+    *_aidl_return = raw / 10.0f;
+    return ndk::ScopedAStatus::ok();
+}
+
+// ---- 油量：报文 ID=0x1A0，字节 0 为 0~100 百分比 ----
+ndk::ScopedAStatus VehicleBody::getFuelLevel(int32_t* _aidl_return) {
+    if (!mCanReader || !mCanReader->isReady()) {
+        *_aidl_return = -1;
+        return ndk::ScopedAStatus::ok();
+    }
+    auto frame = mCanReader->readFrame(0x1A0);
+    *_aidl_return = frame ? frame->data[0] : -1;
+    return ndk::ScopedAStatus::ok();
+}
+
+// ---- 车门状态：报文 ID=0x2F1，bit 映射四门 ----
+ndk::ScopedAStatus VehicleBody::getDoorStatus(int32_t* _aidl_return) {
+    if (!mCanReader || !mCanReader->isReady()) {
+        *_aidl_return = 0;
+        return ndk::ScopedAStatus::ok();
+    }
+    auto frame = mCanReader->readFrame(0x2F1);
+    *_aidl_return = frame ? (frame->data[0] & 0x0F) : 0;
+    return ndk::ScopedAStatus::ok();
+}
+
+// ---- 批量获取（推荐路径）：一次返回结构，省去 3 次 IPC ----
+ndk::ScopedAStatus VehicleBody::getAllInfo(VehicleBodyInfo* _aidl_return) {
+    _aidl_return->speed      = getSpeedValue();     // 内部 helper
+    _aidl_return->fuelLevel = getFuelValue();
+    _aidl_return->doorStatus = getDoorValue();
+    _aidl_return->engineTemp = 95.5f;             // 示例
+    return ndk::ScopedAStatus::ok();
+}
+
+}  // namespace vehiclebody
+}  // namespace hardware
+}  // namespace android
+}  // namespace aidl
+```
+
+#### 1.6.6 HAL 进程入口（binder 服务注册）
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/service.cpp`
+
+```cpp
+// service.cpp
+// ============================================================
+// HAL 守护进程入口：注册 binder 服务 → 进入线程池
+// 关键点：
+//   1. 用 NDK 的 AServiceManager_addService（AIDL over binder）
+//      注意：不是 hwbinder 的 defaultPassthroughServiceImplementation
+//   2. 实例名 = "<descriptor>/default"
+//      descriptor = "android.hardware.vehiclebody.IVehicleBody"
+//   3. 线程池最大 4 线程（车载场景足够，避免资源浪费）
+// ============================================================
+
+#include <android-base/logging.h>
+#include <android/binder_process.h>
+#include <android/binder_manager.h>
+#include <android/binder_status.h>
+
+#include "VehicleBody.h"
+
+using aidl::android::hardware::vehiclebody::VehicleBody;
+
+int main() {
+    // 1. 设置 binder 线程池上限
+    ABinderProcess_setThreadPoolMaxThreadCount(4);
+
+    // 2. 创建 HAL 实现实例
+    std::shared_ptr<VehicleBody> service =
+        ndk::SharedRefBase::make<VehicleBody>();
+
+    // 3. 拼装实例名并注册到 ServiceManager
+    std::string instance =
+        std::string(IVehicleBody::descriptor) + "/default";
+    binder_status_t status =
+        AServiceManager_addService(service->asBinder().get(),
+                                   instance.c_str());
+    CHECK(status == STATUS_OK)
+        << "注册 HAL 服务失败: " << instance;
+
+    LOG(INFO) << "VehicleBody HAL 已注册: " << instance;
+
+    // 4. 进入线程池（阻塞，处理后续 binder 请求）
+    ABinderProcess_joinThreadPool();
+    return 0;  // 正常情况不会执行到这里
+}
+```
+
+#### 1.6.7 底层 CAN 读取器（HAL ↔ Kernel SocketCAN）
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/CanBusReader.cpp`（节选核心）
+
+```cpp
+// CanBusReader.cpp（节选）
+// ============================================================
+// 通过 PF_CAN socket 读取内核 SocketCAN 报文
+// 与 场景三 的 canutils 同源，但这里是 C++ 内嵌实现
+// 资源控制：
+//   - 非阻塞 socket + 短超时，避免读线程卡死
+//   - 按 CAN ID 过滤，只收关心的报文（减少上下文切换）
+// ============================================================
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <string.h>
+#include <unistd.h>
+
+bool CanBusReader::init() {
+    mSock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+    if (mSock < 0) return false;
+
+    struct ifreq ifr{};
+    strcpy(ifr.ifr_name, mIfname.c_str());   // "can0"
+    ioctl(mSock, SIOCGIFINDEX, &ifr);
+
+    struct sockaddr_can addr{};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = ifr.ifr_ifindex;
+    bind(mSock, (struct sockaddr*)&addr, sizeof(addr));
+
+    // 设置非阻塞 + 接收过滤器（只看 0x0C9/0x1A0/0x2F1）
+    // ... setsockopt(SOL_CAN_RAW, CAN_RAW_FILTER, ...) ...
+    return true;
+}
+```
+
+#### 1.6.8 HAL 模块编译配置
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/Android.bp`
+
+```blueprint
+// ============================================================
+// HAL 守护进程：编译为 vendor 分区的 cc_binary
+// 关键属性：
+//   init_rc         → 随镜像打包 init 脚本
+//   vintf_fragments → 注册到设备 manifest（VINTF 兼容性扫描）
+//   vendor: true   → 明确打进 vendor 分区（Treble 要求）
+// ============================================================
+
+cc_binary {
+    name: "android.hardware.vehiclebody-service",
+    vendor: true,                         // 必须，HAL 在 vendor 分区
+    relative_install_path: "hw",          // 安装到 /vendor/bin/hw/
+    srcs: [
+        "service.cpp",
+        "VehicleBody.cpp",
+        "CanBusReader.cpp",
+    ],
+    shared_libs: [
+        "libbinder_ndk",                 // AIDL NDK 后端
+        "libbase",                       // android::base::LOG
+        "android.hardware.vehiclebody-ndk_platform",
+    ],
+    init_rc: ["android.hardware.vehiclebody-service.rc"],
+    vintf_fragments: ["android.hardware.vehiclebody-service.xml"],
+}
+```
+
+**VINTF manifest fragment** — 告诉系统「我提供了一个 AIDL HAL」：
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/android.hardware.vehiclebody-service.xml`
+
+```xml
+<!-- VINTF 兼容性声明：必须存在，否则 lshal/vintf 扫描会报 missing HAL -->
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>android.hardware.vehiclebody</name>
+        <version>1</version>
+        <interface>
+            <name>IVehicleBody</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>
+```
+
+**init 启动脚本**：
+
+**文件路径**: `hardware/interfaces/vehiclebody/default/android.hardware.vehiclebody-service.rc`
+
+```
+# ============================================================
+# init.rc 片段：在 late-init 阶段拉起 HAL 守护进程
+# class hal → 随 hwservicemanager 一同启动（vendor 进程组）
+# user/vendor 域 → 以最低权限运行
+# ============================================================
+
+service vendor.vehiclebody-hal /vendor/bin/hw/android.hardware.vehiclebody-service
+    class hal
+    user system
+    group system can            # can 组：访问 /dev/can0 所需
+    capabilities NET_ADMIN       # 配置 CAN 网络接口所需
+    oneshot                     # 异常退出不自动重启（调试期）；稳定后改为不写
+```
+
+#### 1.6.9 SELinux 策略（HAL 专属）
+
+> 与场景三/六 的通用 sepolicy 不同，HAL 守护进程有专门的域宏。把策略放在 `device/<vendor>/sepolicy/` 下。
+
+**`private/hal_vehiclebody.te`** — 定义服务类型：
+
+```selinux
+# ============================================================
+# HAL 服务类型声明
+# hal_vehiclebody_service 用于标记 binder 服务名的安全上下文
+# ============================================================
+type hal_vehiclebody_service, service_manager_type;
+```
+
+**`private/hal_vehiclebody_default.te`** — HAL 进程域 + 可执行文件域：
+
+```selinux
+# ============================================================
+# HAL 守护进程域：hal_server_domain 自动授予
+#   - binder 服务端基础权限
+#   - 与 framework 的 binder 通信能力
+# init_daemon_domain 让其由 init 以指定用户启动
+# ============================================================
+type hal_vehiclebody_default, domain;
+type hal_vehiclebody_default_exec, exec_type, file_type;
+
+# 继承 HAL 服务端基础域
+hal_server_domain(hal_vehiclebody_default, hal_vehiclebody)
+
+# init 以 vendor.vehiclebody-hal 拉起进程时打域
+init_daemon_domain(hal_vehiclebody_default)
+
+# 允许向 ServiceManager 注册本 HAL 服务
+binder_service(hal_vehiclebody_default, hal_vehiclebody_service)
+
+# 允许 system_server 调用本 HAL（Framework → HAL 方向的 binder call）
+binder_call(system_server, hal_vehiclebody_default)
+
+# CAN 设备 / sysfs 访问（读 can0 报文、配置接口）
+allow hal_vehiclebody_default can_device:chr_file { read write open ioctl };
+allow hal_vehiclebody_default sysfs_net:file { read write open };
+allow hal_vehiclebody_default sysfs_net:dir { search read };
+
+# netlink 配置 CAN 接口（ip link set can0 up）
+allow hal_vehiclebody_default self:netlink_route_socket { create bind write read };
+```
+
+**`private/service_contexts`** — 把 binder 服务名映射到类型：
+
+```
+# 格式：<binder 服务全名> u:object_r:<type>:s0
+android.hardware.vehiclebody.IVehicleBody/default u:object_r:hal_vehiclebody_service:s0
+```
+
+**`private/file_contexts`** — 给 HAL 可执行文件打标签：
+
+```
+/vendor/bin/hw/android\.hardware\.vehiclebody-service u:object_r:hal_vehiclebody_default_exec:s0
+```
+
+**`private/system_server.te`** — 允许 Framework 侧 find 该服务：
+
+```selinux
+# system_server 查找 HAL 服务（ServiceManager.getService）
+allow system_server hal_vehiclebody_service:service_manager find;
+```
+
+#### 1.6.10 HAL 验证步骤
+
+```bash
+# === 1. 确认 HAL 进程已启动 ===
+adb shell ps -A -Z | grep vehiclebody
+# 期望输出（域应为 hal_vehiclebody_default）：
+# u:r:hal_vehiclebody_default:s0 ... /vendor/bin/hw/android.hardware.vehiclebody-service
+
+# === 2. 用 lshal 查看 AIDL HAL 注册情况 ===
+adb shell lshal list -i | grep vehiclebody
+# 期望: android.hardware.vehiclebody::IVehicleBody/default
+
+# === 3. 用 service list 确认 binder 服务名 ===
+adb shell service list | grep vehiclebody
+# 期望: android.hardware.vehiclebody.IVehicleBody: [android.hardware.vehiclebody.IVehicleBody]
+
+# === 4. 端到端验证：直接调 HAL（绕过 Framework）===
+adb shell cmd vehiclebody getSpeed        # 若实现了 shell 命令
+# 或写个临时 test client 调 AServiceManager_getService
+
+# === 5. 确认 SELinux 无拒绝 ===
+adb shell dmesg | grep avc | grep vehiclebody
+# 空输出 = 策略正确
+
+# === 6. 验证 VINTF 兼容性 ===
+adb shell vintf status | grep vehiclebody
+# 期望: 无 "missing" / "incompatible" 报错
+
+# === 7. 全链路（App→Framework→HAL→CAN）===
+# 在 Earth/车载 App 中调用 getVehicleSpeed()
+# 同时另一端用 candump 发测试帧：
+#   cansend can0 0C9#00000064   # 车速 = 0x0064/10 = 10.0 km/h
+# App 应返回 10.0
+```
+
+#### 1.6.11 HAL 关键源码/配置路径速查
+
+| 组件 | AOSP 路径 | 说明 |
+|------|-----------|------|
+| AIDL 接口定义 | `hardware/interfaces/vehiclebody/aidl/android/hardware/vehiclebody/IVehicleBody.aidl` | HAL 契约 |
+| 接口编译模块 | `hardware/interfaces/vehiclebody/aidl/Android.bp` | `aidl_interface` |
+| HAL 实现头文件 | `hardware/interfaces/vehiclebody/default/VehicleBody.h` | BnVehicleBody 子类 |
+| HAL 实现 | `hardware/interfaces/vehiclebody/default/VehicleBody.cpp` | 报文解析逻辑 |
+| 进程入口 | `hardware/interfaces/vehiclebody/default/service.cpp` | `AServiceManager_addService` |
+| 编译配置 | `hardware/interfaces/vehiclebody/default/Android.bp` | `cc_binary` + `vintf_fragments` |
+| VINTF 声明 | `.../android.hardware.vehiclebody-service.xml` | manifest fragment |
+| init 脚本 | `.../android.hardware.vehiclebody-service.rc` | `service vendor.vehiclebody-hal` |
+| NDK 绑定生成 | `out/soong/.intermediates/.../android/hardware/vehiclebody/` | Bn/Bp Stub |
+| SELinux 域 | `device/<vendor>/sepolicy/private/hal_vehiclebody_default.te` | HAL 进程域 |
+| 服务上下文 | `device/<vendor>/sepolicy/private/service_contexts` | binder 名→type |
 
 ---
 
@@ -462,13 +1082,13 @@ boolean shouldIgnoreForRecents(ActivityRecord r) {
 #### 方案 1: 通过 Overlay 禁用（推荐，无需改源码）
 
 ```xml
-<!-- vendor/overlay/framework-res-overlay/res/values/config.xml -->
-<!-- 使用 Runtime Resource Overlay (RRO) 机制覆盖资源值 -->
 
-<!-- 禁用 ANR 对话框：将超时时间设为极大值（等于永不弹出） -->
+
+
+
 <integer name="anr_delay">2147483647</integer>
 
-<!-- 或者直接设置不弹窗标志 -->
+
 <bool name="config_showAnrDialog">false</bool>
 ```
 
@@ -553,15 +1173,15 @@ private boolean shouldSuppressSystemDialog(WindowState win) {
 
 ### 2.3 关键源码路径速查
 
-| 组件 | AOSP 路径 | 说明 |
-|------|----------|------|
-| Launcher3 手势处理 | `packages/apps/Launcher3/quickstep/src/com/android/quickstep/TouchInteractionService.java` | 上滑手势入口 |
-| 最近任务动画控制器 | `packages/apps/Launcher3/quickstep/src/com/android/systemui/shared/recents/animation/RecentAnimationController.java` | 过渡动画编排 |
-| 任务视图 | `packages/apps/Launcher3/quickstep/src/com/android/quickstep/views/TaskView.java` | 单个任务卡片 |
-| ANR 错误处理 | `frameworks/base/services/core/java/com/android/server/am/AppErrors.java` | ANR 弹窗控制 |
-| Crash 处理 | `frameworks/base/services/core/java/com/android/server/am/ProcessRecord.java` | 进程崩溃管理 |
-| WMS 窗口策略 | `frameworks/base/services/core/java/com/android/server/wm/DisplayPolicy.java` | 窗口类型权限判定 |
-| SystemUI Dialog | `frameworks/base/packages/SystemUI/src/com/android/systemui/dialogs/` | 各类系统对话框实现 |
+| 组件              | AOSP 路径                                                                                                              | 说明        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- | --------- |
+| Launcher3 手势处理  | `packages/apps/Launcher3/quickstep/src/com/android/quickstep/TouchInteractionService.java`                           | 上滑手势入口    |
+| 最近任务动画控制器       | `packages/apps/Launcher3/quickstep/src/com/android/systemui/shared/recents/animation/RecentAnimationController.java` | 过渡动画编排    |
+| 任务视图            | `packages/apps/Launcher3/quickstep/src/com/android/quickstep/views/TaskView.java`                                    | 单个任务卡片    |
+| ANR 错误处理        | `frameworks/base/services/core/java/com/android/server/am/AppErrors.java`                                            | ANR 弹窗控制  |
+| Crash 处理        | `frameworks/base/services/core/java/com/android/server/am/ProcessRecord.java`                                        | 进程崩溃管理    |
+| WMS 窗口策略        | `frameworks/base/services/core/java/com/android/server/wm/DisplayPolicy.java`                                        | 窗口类型权限判定  |
+| SystemUI Dialog | `frameworks/base/packages/SystemUI/src/com/android/systemui/dialogs/`                                                | 各类系统对话框实现 |
 
 ---
 
@@ -858,16 +1478,16 @@ keyboard.navigationKeys = 1      # 作为导航键处理
 
 ### 3.4 关键源码路径速查
 
-| 组件 | AOSP 路径 | 说明 |
-|------|----------|------|
-| CAN 驱动 (FlexCAN) | `drivers/net/can/flexcan.c` | NXP FlexCAN 驱动主文件 |
-| CAN 驱动 (M_CAN) | `drivers/net/can/m_can/m_can.c` | Bosch M_CAN 驱动 |
-| SocketCAN 核心 | `include/uapi/linux/can.h` | CAN 帧结构体定义 |
-| InputReader | `frameworks/native/services/inputflinger/reader/InputReader.cpp` | 输入事件读取 |
-| InputDispatcher | `frameworks/native/services/inputflinger/dispatcher/InputDispatcher.cpp` | 输入事件分发 |
-| EventHub | `frameworks/native/services/inputflinger/EventHub.cpp` | /dev/input 扫描 |
-| 按键映射加载 | `frameworks/native/libs/input/KeyLayoutMap.cpp` | .kl 文件解析 |
-| JNI 寄存器 | `frameworks/base/core/jni/android_runtime_AndroidRuntime.cpp` | native 方法注册表 |
+| 组件               | AOSP 路径                                                                  | 说明                |
+| ---------------- | ------------------------------------------------------------------------ | ----------------- |
+| CAN 驱动 (FlexCAN) | `drivers/net/can/flexcan.c`                                              | NXP FlexCAN 驱动主文件 |
+| CAN 驱动 (M_CAN)   | `drivers/net/can/m_can/m_can.c`                                          | Bosch M_CAN 驱动    |
+| SocketCAN 核心     | `include/uapi/linux/can.h`                                               | CAN 帧结构体定义        |
+| InputReader      | `frameworks/native/services/inputflinger/reader/InputReader.cpp`         | 输入事件读取            |
+| InputDispatcher  | `frameworks/native/services/inputflinger/dispatcher/InputDispatcher.cpp` | 输入事件分发            |
+| EventHub         | `frameworks/native/services/inputflinger/EventHub.cpp`                   | /dev/input 扫描     |
+| 按键映射加载           | `frameworks/native/libs/input/KeyLayoutMap.cpp`                          | .kl 文件解析          |
+| JNI 寄存器          | `frameworks/base/core/jni/android_runtime_AndroidRuntime.cpp`            | native 方法注册表      |
 
 ---
 
@@ -967,8 +1587,8 @@ public static final String CATEGORY_VEHICLE_NETWORK =
 **文件路径**: `packages/apps/Settings/AndroidManifest.xml` / dashboard categories
 
 ```xml
-<!-- 在 Settings 的 DashboardFragmentRegistry 中注册新的 category -->
-<!-- 或直接在 settings_headers.xml / activity embedding config 中添加 -->
+
+
 
 <activity
     android:name=".settings.vehicle.VehicleSettingsActivity"
@@ -978,13 +1598,13 @@ public static final String CATEGORY_VEHICLE_NETWORK =
         <action android:name="android.intent.action.MAIN" />
         <category android:name="com.android.settings.category.vehicle" />
     </intent-filter>
-    <!-- meta-data 用于 Dashboard 展示 -->
+    
     <meta-data
         android:name="com.android.settings.category"
         android:value="com.android.settings.category.vehicle" />
     <meta-data
         android:name="com.android.settings.order"
-        android:value="-120" />  <!-- 排序权重，越小越靠前 -->
+        android:value="-120" />  
 </activity>
 ```
 
@@ -1018,17 +1638,17 @@ public List<DashboardCategory> getAllCategories() {
 **更轻量的方式 — 使用 Config.xml 控制**:
 
 ```xml
-<!-- overlays/packages/apps/Settings/res/values/config.xml -->
-<!-- 通过 bool 资源控制各 Feature 是否显示 -->
+
+
 
 <bool name="config_show_wifi_settings">true</bool>
 <bool name="config_show_bluetooth_settings">true</bool>
-<bool name="config_show_nfc_settings">false</bool>      <!-- 隐藏 NFC -->
-<bool name="config_show_print_settings">false</bool>     <!-- 隐藏打印 -->
-<bool name="config_show_home_settings">false</bool>      <!-- 隐藏桌面设置 -->
+<bool name="config_show_nfc_settings">false</bool>      
+<bool name="config_show_print_settings">false</bool>     
+<bool name="config_show_home_settings">false</bool>      
 <bool name="config_show_sound_settings">true</bool>
 <bool name="config_show_display_settings">true</bool>
-<bool name="config_show_vehicle_settings">true</bool>    <!-- 新增：车辆设置 -->
+<bool name="config_show_vehicle_settings">true</bool>    
 ```
 
 ### 4.3 Treble 分区合规性
@@ -1055,22 +1675,23 @@ public List<DashboardCategory> getAllCategories() {
 ```
 
 **重要原则**:
+
 - **Vendor 分区不能依赖 System 分区的具体实现**（只能依赖 stable AIDL/HIDL 接口）
 - **Product 分区可以依赖 System 分区**
 - 自定义系统服务放 **System**；HAL 实现放 **Vendor**；产品 APP 放 **Product**
 
 ### 4.4 关键源码路径速查
 
-| 组件 | AOSP 路径 | 说明 |
-|------|----------|------|
-| 构建系统主入口 | `build/make/core/main.mk` | make 编译入口 |
-| 产品定义 | `build/make/target/product/` | generic/aosp 等基线产品 |
-| Package 移除宏 | `build/make/core/package_installer.mk` | remove-package 实现 |
-| Settings Dashboard | `packages/apps/Settings/src/com/android/settings/dashboard/` | 设置页分类体系 |
-| Settings Feature Flags | `packages/apps/Settings/res/values/` | config.xml 控制开关 |
-| Overlay 机制 | `frameworks/base/core/res/` + `overlay/` | RRO 资源覆盖 |
-| PM (PackageManager) | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 应用安装/卸载/启用/禁用 |
-| Treble 合规检查 | `build/make/tools/vts/` | VTS 测试套件 |
+| 组件                     | AOSP 路径                                                                               | 说明                 |
+| ---------------------- | ------------------------------------------------------------------------------------- | ------------------ |
+| 构建系统主入口                | `build/make/core/main.mk`                                                             | make 编译入口          |
+| 产品定义                   | `build/make/target/product/`                                                          | generic/aosp 等基线产品 |
+| Package 移除宏            | `build/make/core/package_installer.mk`                                                | remove-package 实现  |
+| Settings Dashboard     | `packages/apps/Settings/src/com/android/settings/dashboard/`                          | 设置页分类体系            |
+| Settings Feature Flags | `packages/apps/Settings/res/values/`                                                  | config.xml 控制开关    |
+| Overlay 机制             | `frameworks/base/core/res/` + `overlay/`                                              | RRO 资源覆盖           |
+| PM (PackageManager)    | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 应用安装/卸载/启用/禁用      |
+| Treble 合规检查            | `build/make/tools/vts/`                                                               | VTS 测试套件           |
 
 ---
 
@@ -1478,18 +2099,18 @@ echo 1 > /proc/sys/net/ipv4/tcp_low_latency  # 低延迟模式
 
 ### 5.4 关键源码路径速查
 
-| 组件 | AOSP 路径 | 说明 |
-|------|----------|------|
-| Init 主逻辑 | `system/core/init/init.cpp` | init 进程入口 |
-| Init rc 解析 | `system/core/init/action_parser.cpp` | .rc 文件语法解析 |
-| Zygote 初始化 | `frameworks/base/core/java/com/android/internal/os/ZygoteInit.java` | 预加载 |
-| Zygote fork | `frameworks/base/core/java/com/android/internal/os/Zygote.java` | 进程孵化 |
-| SystemServer | `frameworks/base/services/java/com/android/server/SystemServer.java` | 服务启动总控 |
-| AMS 主线程 | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` | 消息循环 |
-| ANR 收集 | `frameworks/base/core/java/com/android/server/am/AppNotRespondingDialog.java` | ANR 弹窗 |
-| traces 生成 | `art/runtime/thread_list.cc` | Java 线程 dump |
-| BootChart | `system/core/logcat/event.logtags` | 启动事件标签 |
-| Perfetto | `platform2/perfetto/protos/trace/` | trace proto 定义 |
+| 组件           | AOSP 路径                                                                                | 说明             |
+| ------------ | -------------------------------------------------------------------------------------- | -------------- |
+| Init 主逻辑     | `system/core/init/init.cpp`                                                            | init 进程入口      |
+| Init rc 解析   | `system/core/init/action_parser.cpp`                                                   | .rc 文件语法解析     |
+| Zygote 初始化   | `frameworks/base/core/java/com/android/internal/os/ZygoteInit.java`                    | 预加载            |
+| Zygote fork  | `frameworks/base/core/java/com/android/internal/os/Zygote.java`                        | 进程孵化           |
+| SystemServer | `frameworks/base/services/java/com/android/server/SystemServer.java`                   | 服务启动总控         |
+| AMS 主线程      | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` | 消息循环           |
+| ANR 收集       | `frameworks/base/core/java/com/android/server/am/AppNotRespondingDialog.java`          | ANR 弹窗         |
+| traces 生成    | `art/runtime/thread_list.cc`                                                           | Java 线程 dump   |
+| BootChart    | `system/core/logcat/event.logtags`                                                     | 启动事件标签         |
+| Perfetto     | `platform2/perfetto/protos/trace/`                                                     | trace proto 定义 |
 
 ---
 
@@ -1733,21 +2354,21 @@ adb shell "logcat -b main -d | grep 'Accessing hidden'"
 **文件路径**: `frameworks/base/core/res/AndroidManifest.xml`
 
 ```xml
-<!-- 签名级权限：仅平台签名 APP 可持有 -->
+
 <permission
     android:name="android.permission.CAN_BUS_ACCESS"
     android:label="@string/permlab_can_access"
     android:description="@string/permdesc_can_access"
     android:protectionLevel="signature" />
 
-<!-- 特权 + 签名权限：系统 privileged APP 也可持有 -->
+
 <permission
     android:name="android.permission.VEHICLE_DIAGNOSTIC"
     android:label="@string/permlab_vehicle_diag"
     android:description="@string/permdesc_vehicle_diag"
     android:protectionLevel="signature|privileged" />
 
-<!-- 危险权限：需要运行时申请（普通 APP 用）-->
+
 <permission
     android:name="android.permission.READ_VEHICLE_STATUS"
     android:label="@string/permlab_read_vehicle"
@@ -1757,17 +2378,17 @@ adb shell "logcat -b main -d | grep 'Accessing hidden'"
 
 ### 6.4 关键源码路径速查
 
-| 组件 | AOSP 路径 | 说明 |
-|------|----------|------|
-| SELinux 编译系统 | `system/sepolicy/` | 策略源码根目录 |
-| sepolicy 公共定义 | `public/attribute.te` | 公共属性/类型 |
-| sepolicy 私有定义 | `private/` / `vendor/` | 厂商私有策略 |
-| 策略编译器 | `external/selinux/libsepol/cil/` | CIL 中间语言编译 |
-| Hidden API 策略 | `frameworks/base/config/hiddenapi-*.txt` | 黑/白/灰名单 |
-| Hidden API 强制 | `art/runtime/hidden_api.cc` | ART 运行时检查 |
-| VMRuntime | `libcore/dalvik/src/main/java/dalvik/system/VMRuntime.java` | hidden API 豁免接口 |
-| Permission 检查 | `frameworks/base/core/java/android/app/ContextImpl.java` | enforcePermission |
-| PackageManagerService | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 权限授予决策 |
+| 组件                    | AOSP 路径                                                                               | 说明                |
+| --------------------- | ------------------------------------------------------------------------------------- | ----------------- |
+| SELinux 编译系统          | `system/sepolicy/`                                                                    | 策略源码根目录           |
+| sepolicy 公共定义         | `public/attribute.te`                                                                 | 公共属性/类型           |
+| sepolicy 私有定义         | `private/` / `vendor/`                                                                | 厂商私有策略            |
+| 策略编译器                 | `external/selinux/libsepol/cil/`                                                      | CIL 中间语言编译        |
+| Hidden API 策略         | `frameworks/base/config/hiddenapi-*.txt`                                              | 黑/白/灰名单           |
+| Hidden API 强制         | `art/runtime/hidden_api.cc`                                                           | ART 运行时检查         |
+| VMRuntime             | `libcore/dalvik/src/main/java/dalvik/system/VMRuntime.java`                           | hidden API 豁免接口   |
+| Permission 检查         | `frameworks/base/core/java/android/app/ContextImpl.java`                              | enforcePermission |
+| PackageManagerService | `frameworks/base/services/core/java/com/android/server/pm/PackageManagerService.java` | 权限授予决策            |
 
 ---
 
@@ -1861,10 +2482,10 @@ adb reboot
 
 ## 版本信息
 
-| 项目 | 值 |
-|------|-----|
+| 项目         | 值                                   |
+| ---------- | ----------------------------------- |
 | 适用 AOSP 版本 | Android 14 (UpsideDownCake, API 34) |
-| 源码分支 | android-14.0.0_rXX |
-| 内核分支 | android14-6.1 (GKI) |
-| 文档版本 | v1.0 |
-| 最后更新 | 2026-07-27 |
+| 源码分支       | android-14.0.0_rXX                  |
+| 内核分支       | android14-6.1 (GKI)                 |
+| 文档版本       | v1.0                                |
+| 最后更新       | 2026-07-27                          |

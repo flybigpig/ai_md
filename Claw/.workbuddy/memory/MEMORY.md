@@ -28,3 +28,7 @@ AOSP / Android Framework 内核级代码研究,目标版本 Android 14(API 34, U
 - HAL server 由 init 从 vendor/*.rc 拉起 → AIBinder_registerService → servicemanager::do_add_service(VINTF+SELinux 双检查)。
 - binder 三节点现状:Android 14 实际仍三个 /dev 节点(binder/hwbinder/vndbinder),同驱动实例。
 - 架构图已内联绘制(四层 + Treble 边界 + vibrator 调用链示例)。
+
+## Android 17 关注点(2026-07-27 起)
+- 用户开始关注 Android 17(API 37);当前工作区仍基于 AOSP 14。深扒 17 需另 checkout `android-17.0.0_rXX` 分支(内核 GKI 对应 android17-xx)。
+- 关键变更落地点(frameworks/base):ActivityManager/ActivityTaskManager(大屏方向限制移除、config change 默认不重启 Activity + 新 `recreateOnConfigChanges`)、AppFunctionsManager 系统服务(on-device MCP)、ProfilingManager(异常检测)、keystore2(ML-DSA 后量子签名)。
