@@ -10,6 +10,8 @@
 
 所有四组 patch 都依赖这个开关类。它用反射读 `android.os.SystemProperties`，**不引入 hidden API 编译依赖**，可在 `device.mk` 里按机型动态开合，无需重编 Launcher3。
 
+
+
 **新增文件：`src/com/android/launcher3/car/CarConfig.java`**
 
 ```java
