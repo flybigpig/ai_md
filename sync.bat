@@ -16,7 +16,7 @@ for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd"') do 
 
 echo [1/4] git pull --rebase (autostash local changes)
 git pull --rebase --autostash
-if %errorlevel% neq 0 (
+if %errorlevel% neq 0 ( 
     echo [ERROR] pull --rebase failed, possibly a merge conflict.
     echo         Resolve the conflict manually, then run sync.bat again.
     pause
