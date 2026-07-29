@@ -44,3 +44,11 @@
 - 飞书推送成功：user 身份上传云空间 file_token `PxVfbagJ6os06mxRTFRcrpBbnGf`(url https://my.feishu.cn/file/PxVfbagJ6os06mxRTFRcrpBbnGf)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b694bcf1018a4b038a9009dfac68)。
 - 状态：user 身份 token 本次 needs_refresh 但自动刷新成功(expiresAt 2026-07-27 已过期,refreshExpiresAt 2026-08-03 仍有效);bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合,均一次成功。
 - 七篇至此闭环：主篇(16)/拓展篇(10)/深挖篇(11)/图形多媒体通信篇(12)/系统基建篇(11)/本篇(10)。后续真·未覆盖角度所剩：Media3/ExoPlayer、Codec2 vendor plugin、LiteRT NPU delegate 源码走读、端侧 LLM(Gemini Nano)运行时、CarService 多用户/多显示、SF RenderEngine Vulkan 后端、ART hiddenapi/非 SDK 接口管制。
+
+### 2026-07-29（第八篇·Android 17 新雷区 + 真缺口补全篇）
+- 联网锚定当日热点：Android 17(API 37, CinnamonBun, 2026-06-16 stable)Framework 破坏性变更集中爆发——Lock-free MessageQueue、ART 分代 GC、static final 真不可变、ProfilingManager 新触发器(COLD_START/OOM/KILL_EXCESSIVE_CPU_USAGE)、后台音频加固+自定义通知限制。
+- 产出 `Android_Framework面试题_2026-07-29.md`（8 大专题+查缺补漏+八篇交叉索引）：A17 Lock-free MessageQueue(Handler/Looper 新雷区)、ART 分代 GC(CMC 之上加 young/old gen,经 art apex Mainline 热更)、ART hiddenapi/非SDK接口管制(light/dark/black greylist + A17 final 封死)、ProfilingManager 触发器、后台音频+通知限制、NFC/Secure Element 全链路、Media3/ExoPlayer 底层(构建于 MediaCodec)、端侧 LLM(AICore 专有/ODP AOSP 开放)。均带 Android14 AOSP 源码路径。
+- 补全此前七篇完全未覆盖真缺口：hiddenapi、NFC/SE、Media3/ExoPlayer、端侧LLM(AICore/ODP)。八篇至此 78 个专题闭环。
+- 飞书推送成功：user 身份上传云空间 file_token `Z8zCbjvwRoc4aPxZctLc66TCnMd`(url https://my.feishu.cn/file/Z8zCbjvwRoc4aPxZctLc66TCnMd)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b69a0d2ab34a8b20487f339486db)。
+- 状态：user 身份本次 needs_refresh 但自动刷新成功(expiresAt 2026-07-28 已过,refreshExpiresAt 2026-08-04 仍有效);bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合,均一次成功。
+- 后续真·未覆盖角度所剩：Codec2 vendor plugin 开发、SF RenderEngine Vulkan 后端、LiteRT NPU delegate 源码走读、CarService 多用户/多显示、ART 镜像 odex 布局深水区。
