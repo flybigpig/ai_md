@@ -1,0 +1,13 @@
+# frameworks/native/services/aiagent/aiagent.rc
+# init 启动配置。class main 随框架启动;disabled 时由 system_server 按需 start。
+
+service aiagent /system/bin/aiagent
+    class main
+    user system
+    group system
+    disabled
+    # 如需联网调本地 LLM(127.0.0.1:8081),放开网络权限:
+    # oneshot
+    # 若 daemon 常驻,去掉 oneshot;如只需在 submitGoal 时拉起,保持 disabled 并由 Java 侧 startService("aiagent")
+
+# 若希望开机即启动(常驻大脑),去掉 disabled 即可。

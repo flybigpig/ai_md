@@ -1,0 +1,19 @@
+# frameworks/base/core/java/android/content/Context.java
+# 新增 AI_AGENT_SERVICE 常量,供 getSystemService() 使用。
+# 放在其它 @hide 服务常量附近(例如 CONTEXT_ 常量块之后)。
+--- a/core/java/android/content/Context.java
++++ b/core/java/android/content/Context.java
+@@
+     /**
+      * @hide
+      */
+     @TestApi
+     public static final String CONTEXT_PRELOAD_CLASSES = "preload_classes";
++
++    /**
++     * Use with {@link #getSystemService(String)} to retrieve a
++     * {@link android.os.aiagent.AIAgentManager} for driving the on-device agent loop.
++     *
++     * @hide
++     */
++    public static final String AI_AGENT_SERVICE = "aiagent";

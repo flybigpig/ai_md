@@ -1,0 +1,3 @@
+# system/sepolicy/private/service_contexts
+# 把 Binder 服务名 "aiagent" 映射到 SELinux 类型。追加到该文件末尾。
+aiagent u:object_r:aiagent_service:s0

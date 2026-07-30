@@ -1,0 +1,4 @@
+# system/sepolicy/public/service.te
+# 声明 aiagent_service 为 service_manager 类型(公开域,供 private 规则引用)。
+# 追加到该文件末尾。
+type aiagent_service, service_manager_type;

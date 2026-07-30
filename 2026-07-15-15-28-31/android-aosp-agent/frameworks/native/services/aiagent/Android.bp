@@ -1,0 +1,21 @@
+// frameworks/native/services/aiagent/Android.bp
+// native aiagent 守护进程构建。注意:真实链接需 AIDL 生成的 IAIAgentManager 库。
+
+cc_binary {
+    name: "aiagent",
+    srcs: ["aiagent.cpp"],
+    shared_libs: [
+        "libbinder",
+        "libutils",
+        "liblog",
+        // "android.os.aiagent-ndk",   // 由 AIDL 生成的 NDK 库,需先声明 aidl_interface
+    ],
+    init_rc: ["aiagent.rc"],
+    cflags: ["-Wall", "-Wextra"],
+    // 仅在 userdebug/eng 默认编入;product 变体按需
+    product_variables: {
+        debuggable: {
+            cflags: ["-DDEBUG"],
+        },
+    },
+}

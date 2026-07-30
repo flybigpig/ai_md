@@ -1,0 +1,20 @@
+# frameworks/base/core/res/AndroidManifest.xml
+# 新增 MANAGE_AI_AGENTS 权限,限定 system/特权 App(签名+特权)。
+# 放在其它 <permission> 定义附近。
+--- a/core/res/AndroidManifest.xml
++++ b/core/res/AndroidManifest.xml
+@@
+     <permission android:name="android.permission.MANAGE_ACTIVITY_TASKS"
+         android:protectionLevel="signature|privileged" />
++
++    <!-- ===== AI Agent harness ===== -->
++    <permission android:name="android.permission.MANAGE_AI_AGENTS"
++        android:label="@string/permlab_manageAiAgents"
++        android:description="@string/permdesc_manageAiAgents"
++        android:protectionLevel="signature|privileged" />
+@@
+     <string name="permlab_manageProfileAndDeviceOwner">manage profile and device owners</string>
+     <string name="permdesc_manageProfileAndDeviceOwner">Allows an application to manage profile and device owners.</string>
++
++    <string name="permlab_manageAiAgents">manage on-device AI agents</string>
++    <string name="permdesc_manageAiAgents">Allows a privileged app to submit goals and drive the on-device agent loop.</string>

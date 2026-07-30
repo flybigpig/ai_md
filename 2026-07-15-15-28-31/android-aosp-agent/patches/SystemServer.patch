@@ -1,0 +1,23 @@
+# frameworks/base/services/java/com/android/server/SystemServer.java
+# 在 startOtherServices() 里启动 AIAgentManagerService。
+# 位置:与其他 mSystemServiceManager.startService(...) 调用相邻处(如 ATMS/WMS 之后)。
+--- a/services/java/com/android/server/SystemServer.java
++++ b/services/java/com/android/server/SystemServer.java
+@@
+ import com.android.server.am.ActivityManagerService;
++import com.android.server.aiagent.AIAgentManagerService;
+@@
+     private void startOtherServices(@NonNull TimingsTraceAndSlog t) {
+@@
+         mSystemServiceManager.startService(WindowManagerGlobalLockService.class);
++
++        // ===== AI Agent harness:系统层"手" =====
++        try {
++            mSystemServiceManager.startService(AIAgentManagerService.class);
++            t.traceEnd();
++        } catch (Throwable e) {
++            reportWtf("starting AIAgentManagerService", e);
++        }
+@@
+         // 其余原有启动逻辑不变...
+     }

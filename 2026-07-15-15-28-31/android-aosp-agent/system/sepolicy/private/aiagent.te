@@ -1,0 +1,39 @@
+# system/sepolicy/private/aiagent.te
+# AIAgentManagerService 的 SELinux 规则。核心:允许 system_server 注册本服务,
+# 客户端(系统/特权 App)查找本服务;可选 daemon 域的最小权限。
+#
+# 注意:权限尽量小,避免触发 neverallow 编译失败。
+
+# ---- 服务类型(继承 system_api_service / system_server_service 宏) ----
+type aiagent_service, system_api_service, system_server_service, service_manager_type;
+
+# system_server 注册本服务
+add_service(system_server, aiagent_service)
+
+# 客户端查找(系统 / 特权 App)
+allow system_app aiagent_service:service_manager find;
+allow privileged_app aiagent_service:service_manager find;
+
+# ---- 可选:native aiagent 守护进程域(大脑宿主) ----
+# 把"LLM 运行时"放到独立 daemon,经 Binder 调本服务执行特权动作。
+type aiagent_exec, exec_type, file_type, system_file_type;
+type aiagent, domain;
+typeattribute aiagent coredomain;
+
+# init 拉起 daemon
+init_daemon_domain(aiagent)
+
+# daemon 使用 binder、查找本服务、访问 servicemanager
+binder_use(aiagent)
+allow aiagent aiagent_service:service_manager find;
+allow aiagent servicemanager:service_manager find;
+
+# daemon 联网(若 LLM 走云端/边缘端点,如 127.0.0.1:8081)
+allow aiagent self:tcp_socket create_stream_socket_perms;
+allow aiagent portcache:tcp_socket name_connect;   # 视具体端口加;更稳用 udp_socket 或具体 node
+# 若只连本机 8081,可用:
+# allow aiagent local_ai_endpoint:tcp_socket name_connect;  (需自行定义 type)
+
+# daemon 写私有数据目录
+allow aiagent aiagent_data_file:dir rw_dir_perms;
+allow aiagent aiagent_data_file:file create_file_perms;

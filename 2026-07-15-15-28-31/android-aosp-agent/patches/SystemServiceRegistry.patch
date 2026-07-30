@@ -1,0 +1,27 @@
+# frameworks/base/core/java/android/app/SystemServiceRegistry.java
+# 注册 AIAgentManager,使 Context.getSystemService(Context.AI_AGENT_SERVICE) 可用。
+--- a/core/java/android/app/SystemServiceRegistry.java
++++ b/core/java/android/app/SystemServiceRegistry.java
+@@
+ import android.os.UserManager;
++import android.os.aiagent.AIAgentManager;
++import android.os.aiagent.IAIAgentManager;
++import android.os.IBinder;
++import android.os.ServiceManager;
+@@
+         registerService(Context.ACTIVITY_SERVICE, ActivityManager.class,
+                 new CachedServiceFetcher<ActivityManager>() {
+             @Override
+             public ActivityManager createService(ContextImpl ctx) {
+                 return new ActivityManager(ctx.getOuterContext(), ctx.mMainThread.getHandler());
+             }});
++
++        // ===== AI Agent harness =====
++        registerService(Context.AI_AGENT_SERVICE, AIAgentManager.class,
++                new CachedServiceFetcher<AIAgentManager>() {
++            @Override
++            public AIAgentManager createService(ContextImpl ctx) {
++                IBinder b = ServiceManager.getService(Context.AI_AGENT_SERVICE);
++                IAIAgentManager service = IAIAgentManager.Stub.asInterface(b);
++                return new AIAgentManager(ctx.getOuterContext(), service);
++            }});
