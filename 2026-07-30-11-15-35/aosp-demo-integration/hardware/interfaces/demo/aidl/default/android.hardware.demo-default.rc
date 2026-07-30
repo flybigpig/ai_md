@@ -1,0 +1,5 @@
+service demo_hal /vendor/bin/hw/android.hardware.demo-default
+    class hal
+    user system
+    group system
+    shutdown critical

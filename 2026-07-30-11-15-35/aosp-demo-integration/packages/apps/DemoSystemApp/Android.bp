@@ -1,0 +1,12 @@
+android_app {
+    name: "DemoSystemApp",
+    srcs: ["src/**/*.java"],
+    platform_apis: true,
+    certificate: "platform",
+    // 与系统同签名即可获得 signature 级权限,无需放进 priv-app,避免 privapp-permissions 约束
+    privileged: false,
+    optimize: {
+        enabled: false,
+    },
+    // 直接通过 platform_apis 使用 framework 中未隐藏的 android.os.demo.DemoManager
+}

@@ -1,0 +1,24 @@
+aidl_interface {
+    name: "android.hardware.demo",
+    vendor: true,
+    stability: "vintf",
+    srcs: [
+        "android/hardware/demo/IDemo.aidl",
+        "android/hardware/demo/IDemoCallback.aidl",
+        "android/hardware/demo/DemoStatus.aidl",
+    ],
+    // 开发期不冻结版本:生成的库名为 android.hardware.demo-java / -ndk
+    // 一旦冻结(frozen: true)并设置 versions,库名变为 -Vn-java / -Vn-ndk,按需调整
+    frozen: false,
+    backend: {
+        java: {
+            enabled: true,
+        },
+        cpp: {
+            enabled: true,
+        },
+        ndk: {
+            enabled: true,
+        },
+    },
+}

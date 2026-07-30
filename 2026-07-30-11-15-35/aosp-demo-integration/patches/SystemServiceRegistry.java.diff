@@ -1,0 +1,22 @@
+# 修改文件: frameworks/base/services/core/java/com/android/server/SystemServiceRegistry.java
+# 作用: 把 Context.DEMO_SERVICE 与 DemoManager 客户端绑定,使 APP 能 getSystemService(DemoManager.class)
+# 应用方式: 在其它 registerService(...) 块之后(如 DISPLAY_HASH_SERVICE 注册块之后)插入带 + 的行
+--- a/services/core/java/com/android/server/SystemServiceRegistry.java
++++ b/services/core/java/com/android/server/SystemServiceRegistry.java
+@@
+         registerService(Context.DISPLAY_HASH_SERVICE, DisplayHashManager.class,
+                 new CachedServiceFetcher<DisplayHashManager>() {
+             @Override
+             public DisplayHashManager createService(ContextImpl ctx) {
+                 return new DisplayHashManager(ctx.getOuterContext());
+             }});
++
++        registerService(Context.DEMO_SERVICE, DemoManager.class,
++                new CachedServiceFetcher<DemoManager>() {
++            @Override
++            public DemoManager createService(ContextImpl ctx) throws ServiceNotFoundException {
++                IBinder b = ServiceManager.getServiceOrThrow(Context.DEMO_SERVICE);
++                IDemoManager service = IDemoManager.Stub.asInterface(b);
++                return new DemoManager(ctx.getOuterContext(), service);
++            }
++        });

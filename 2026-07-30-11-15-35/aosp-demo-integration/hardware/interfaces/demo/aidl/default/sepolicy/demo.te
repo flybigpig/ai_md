@@ -1,0 +1,17 @@
+# HAL 进程域(vendor 侧)。随 hardware/interfaces/demo/aidl/default/sepolicy/ 编入 vendor_sepolicy。
+type hal_demo, domain;
+type hal_demo_exec, exec_type, vendor_file_type, file_type;
+
+# 由 init 启动 demo_hal 服务时转入 hal_demo 域
+init_daemon_domain(hal_demo)
+
+# 注册 AIDL HAL 服务(android.hardware.demo.IDemo/default)到 servicemanager
+add_service(hal_demo, hal_demo_service)
+
+# binder 基础能力 + 与 system_server 双向通信
+binder_use(hal_demo)
+binder_call(hal_demo, system_server)
+binder_call(system_server, hal_demo)
+
+# 允许访问 servicemanager
+allow hal_demo servicemanager:binder { call transfer };

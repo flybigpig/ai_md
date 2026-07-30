@@ -1,0 +1,9 @@
+# 放入 system/sepolicy/private/system_server.te
+# 允许 system_server 注册并查找自己的 demo 服务
+allow system_server demo_service:service_manager { add find };
+
+# 允许 system_server 查找(连接)AIDL HAL 服务
+allow system_server hal_demo_service:service_manager find;
+
+# system_server 与 HAL 进程间的 binder 调用
+binder_call(system_server, hal_demo)

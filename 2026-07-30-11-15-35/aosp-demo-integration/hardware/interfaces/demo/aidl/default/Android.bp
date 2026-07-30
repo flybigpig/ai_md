@@ -1,0 +1,16 @@
+cc_binary {
+    name: "android.hardware.demo-default",
+    relative_install_path: "hw",
+    vendor: true,
+    srcs: [
+        "Demo.cpp",
+        "service.cpp",
+    ],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "android.hardware.demo-ndk",
+    ],
+    init_rc: ["android.hardware.demo-default.rc"],
+    vintf_fragments: ["android.hardware.demo-default.xml"],
+}

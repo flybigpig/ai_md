@@ -1,0 +1,16 @@
+# 修改文件: frameworks/base/core/java/android/content/Context.java
+# 作用: 新增系统服务名常量 DEMO_SERVICE = "demo"
+# 应用方式: 在其它 XXX_SERVICE 常量附近(如 DISPLAY_HASH_SERVICE 之后)插入下面带 + 的行
+--- a/core/java/android/content/Context.java
++++ b/core/java/android/content/Context.java
+@@
+     public static final String DISPLAY_HASH_SERVICE = "displayhash";
++
++    /**
++     * Use with {@link #getSystemService(String)} to retrieve a
++     * {@link android.os.demo.DemoManager} for talking to the demo service.
++     *
++     * @see #getSystemService(String)
++     * @see android.os.demo.DemoManager
++     */
++    public static final String DEMO_SERVICE = "demo";

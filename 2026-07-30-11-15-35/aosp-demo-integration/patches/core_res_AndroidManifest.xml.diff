@@ -1,0 +1,18 @@
+# 修改文件: frameworks/base/core/res/AndroidManifest.xml
+# 作用: 声明自定义系统权限 ACCESS_DEMO_SERVICE(protectionLevel=signature),
+#       只有 platform 签名的系统 app 才能获得;DemoManagerService 会 enforce 该权限
+# 应用方式: 在 <manifest> 内、任一 <permission .../> 元素之后插入带 + 的块
+--- a/core/res/AndroidManifest.xml
++++ b/core/res/AndroidManifest.xml
+@@
+     <permission android:name="android.permission.ACCESS_CHECKIN_PROPERTIES"
+         android:permissionGroup="android.permission-group.SYSTEM_TOOLS"
+         android:protectionLevel="signatureOrSystem"
+         android:label="@string/permlab_accessCheckinProperties"
+         android:description="@string/permdesc_accessCheckinProperties" />
++
++    <!-- Demo: 自定义系统服务访问权限,仅 platform 签名应用可用 -->
++    <permission android:name="android.permission.ACCESS_DEMO_SERVICE"
++        android:protectionLevel="signature"
++        android:label="Access Demo Service"
++        android:description="Allows an application to access the demo system service." />

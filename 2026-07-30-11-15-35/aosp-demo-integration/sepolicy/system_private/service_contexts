@@ -1,0 +1,5 @@
+# 放入 system/sepolicy/private/service_contexts
+# Framework 系统服务 "demo" -> demo_service 类型
+demo                                 u:object_r:demo_service:s0
+# AIDL HAL 服务实例 -> hal_demo_service 类型
+android.hardware.demo.IDemo/default  u:object_r:hal_demo_service:s0

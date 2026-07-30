@@ -1,0 +1,6 @@
+# 放入 system/sepolicy/private/service.te
+# Framework 系统服务类型
+type demo_service, system_api_service, system_server_service, service_manager_type;
+
+# AIDL HAL 服务类型(system_server 通过 ServiceManager 查找它)
+type hal_demo_service, hal_service_manager_type, service_manager_type;

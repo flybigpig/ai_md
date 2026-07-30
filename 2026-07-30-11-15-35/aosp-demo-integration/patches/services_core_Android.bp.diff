@@ -1,0 +1,9 @@
+# 修改文件: frameworks/base/services/core/Android.bp
+# 作用: 让 services.core 能链接到 HAL 的 Java 后端(android.hardware.demo-java)
+#       注: 若 aidl_interface 已 frozen 且设了 versions,库名会变成 android.hardware.demo-Vn-java,按实际调整
+# 应用方式: 在 static_libs: [ ... ] 列表中任意已存在条目后插入带 + 的行
+--- a/services/core/Android.bp
++++ b/services/core/Android.bp
+@@
+         "services.core.wm",
++        "android.hardware.demo-java",

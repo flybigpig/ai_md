@@ -1,0 +1,2 @@
+# 给 HAL 可执行文件打标签(rc 里 service 名 demo_hal,二进制定位于 /vendor/bin/hw/)
+/(vendor|system/vendor)/bin/hw/android\.hardware\.demo-default  u:object_r:hal_demo_exec:s0

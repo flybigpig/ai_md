@@ -1,0 +1,10 @@
+# 修改文件: frameworks/base/services/java/com/android/server/SystemServer.java
+# 作用: 在 startOtherServices() 中启动 DemoManagerService
+# 应用方式: 在 startOtherServices() 方法体内、某个已存在的 startService 调用之后插入带 + 的行
+--- a/services/java/com/android/server/SystemServer.java
++++ b/services/java/com/android/server/SystemServer.java
+@@
+         mSystemServiceManager.startService(TelephonyRegistry.class);
++
++        // Demo: 自定义 Java 系统服务(会自行连接 HAL android.hardware.demo.IDemo/default)
++        mSystemServiceManager.startService(DemoManagerService.class);
