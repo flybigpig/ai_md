@@ -52,3 +52,10 @@
 - 飞书推送成功：user 身份上传云空间 file_token `Z8zCbjvwRoc4aPxZctLc66TCnMd`(url https://my.feishu.cn/file/Z8zCbjvwRoc4aPxZctLc66TCnMd)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b69a0d2ab34a8b20487f339486db)。
 - 状态：user 身份本次 needs_refresh 但自动刷新成功(expiresAt 2026-07-28 已过,refreshExpiresAt 2026-08-04 仍有效);bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合,均一次成功。
 - 后续真·未覆盖角度所剩：Codec2 vendor plugin 开发、SF RenderEngine Vulkan 后端、LiteRT NPU delegate 源码走读、CarService 多用户/多显示、ART 镜像 odex 布局深水区。
+
+### 2026-07-30（第九篇·渲染合成深水区 + Android 17 安全/内存新雷区篇）
+- 联网锚定当日热点（Google I/O 2026 / Android 17 stable 2026-06-16）：Vulkan 成为原生 GPU API + WebGPU 进 Jetpack；A17 新增 Memory Limiter（应用内存限额）、安全原生 DCL 加固（dlopen 的 .so 必须只读）、Keystore 每应用密钥限额、跨资料环回流量默认阻断、限制隐式 URI 授权。
+- 产出 `Android_Framework面试题_渲染合成与A17安全内存_2026-07-30.md`（7 大专题 + 查缺补漏）：SF RenderEngine(GL/Vulkan 合成后端) + HWC 合成决策深水区、Codec2 vendor plugin(CCodec→C2Component 厂商扩展)、A17 Memory Limiter 与 LMKD/ART 分代 GC 协同、安全原生 DCL 加固(16KB/SELinux/hiddenapi 三连击)、Keystore 限额+跨资料环回阻断、CarService 多用户/多显示/整车电源、ART oat/odex/vdex/art 镜像布局深水区。均带 A14 AOSP 源码路径；九篇累计 85 专题。
+- 飞书推送成功：user 身份上传云空间 file_token `Pv9sb7VtUothdcxSJGDc3KdJnAe`(url https://my.feishu.cn/file/Pv9sb7VtUothdcxSJGDc3KdJnAe)；bot 身份发链接到用户私聊(chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af, message_id om_x100b699df2d3f8a4b116ee2987a25cf)。
+- 状态：user 身份本次 needs_refresh 但自动刷新成功(expiresAt 2026-07-29 已过, refreshExpiresAt 2026-08-05 仍有效); bot 身份 ready。沿用「user 上传 + bot 发消息」稳定组合，均一次成功。
+- 后续真·未覆盖角度所剩：LiteRT NPU delegate 源码走读、SF RenderEngine Vulkan 后端细节、Codec2 vendor 组件调试实战、ART hiddenapi 名单生成流水线、端侧 LLM 量化工程化、CarService 电源状态机完整状态图。

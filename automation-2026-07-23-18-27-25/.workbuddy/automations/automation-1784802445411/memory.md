@@ -47,3 +47,16 @@
 - 行测答案预校验：数量第9题=720（倍数递增 ×2/×3/×4/×5/×6）、第10题=3天（甲8乙12合3天余甲3天）、第11题标价=250元（进价160、8折获利25%）；资料16-18 新能源汽车产量 400/480/600/780 万辆，增速/增长量已核算，答案 B/C/C。
 - 推送飞书：沿用 bot 身份 P2P 直发用户 王凯（open_id ou_9bb9a536eb5ca6ec98914b4982e2bafb）：先发文件（om_x100b69a0dfd010a8b49821bc7ff9ec0）再发说明文本（om_x100b69a0dc8494acb3e2a76b0732656），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 经验：lark-cli 提示有 1.0.78/1.0.79 更新（当前 1.0.77），功能不受影响可继续使用；bot P2P 在同会话内稳定可复用，open_id 不变。
+
+## 2026-07-30 执行（08:28）
+- 生成**全新**20题（非复用前几日）：申论1（优化营商环境"以'营商'之变，聚'发展'之力"主题）+ 综合能力写作1（把"群众跑腿"变"数据跑路"·政务服务数字化转型）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-07-30.md`（带日期，工作区根目录，约 19KB）。
+- 行测答案预校验：数量第9题=63（2ⁿ−1）、第10题=4天（甲6乙12合4天）、第11题标价=300元（进价200、8折获利20%）；资料16-18 新设经营主体 1500/1650/1800/1980 万户，增速/增长量已核算，答案 C/C/C。
+- 推送飞书：沿用 bot 身份 P2P 直发用户 王凯（open_id ou_9bb9a536eb5ca6ec98914b4982e2bafb）：先发文件（om_x100b699de73dd0b0b03522d690554c0）再发说明文本（om_x100b699de46e98acb4b6544498691e0），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 经验：本会话 lark-cli 已升到 1.0.79（提示 1.0.80 可更新），bot 身份仍 ready；`im +messages-send --as bot --user-id ou_xxx --file <cwd相对路径>` 发送本地文件稳定可用。每日换主题与素材，避免与历史重复。
+
+## 2026-07-30 追加（09:05，用户指令：将文档都推送到飞书云文档）
+- 将工作区全部 6 份练习题 markdown 推送到飞书云空间（原生可编辑云文档，非聊天文件）。
+- 以 **user 身份**在王凯云空间根目录建文件夹「公务员事业编练习题」(folder_token SkSRfzxXwlTenmdWVBwc09Awnje)，再用 `markdown +create --as user --folder-token <token> --file <x>.md` 逐份创建。6 份 file_token：07-24=NuwCbQf8gorZ1DxSrXgcJhgYnkh、07-27=Sqg2bOOUFoDRHHx4KAwcS2s6n6b、07-28=Ql2sbi8dMo2FekxbkfCcFbdZnqh、07-29=RTJxbqZProdJikxl1tRcXC1PnMf、07-30=Xy4pbSyVUoU6YbxdK9VcoBx2n9U、20道=LKofb0My3oCnIgx3P0rcJ386nT3。
+- 另以 bot P2P 给王凯发链接汇总(om_x100b699e7b1a70acb1196143e9d8e99)。
+- 经验：user 身份 token 标 needs_refresh 但调用会自动刷新可用；要"云文档/可编辑"用 `markdown +create` 而非 `drive +upload`（后者偏附件）。
