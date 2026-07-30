@@ -1,0 +1,30 @@
+# CAN / 内核模块 SELinux 策略模板（system/sepolicy/device/vendor/ 下）
+# 适配步骤：放入厂商 sepolicy 目录，随 vendor 镜像刷入。
+
+# 1) 设备节点类型
+type can_device, dev_type, mlstrustedobject;
+
+# 2) 可执行与域
+type can_exec, vendor_file_type, exec_type, file_type;
+type can_domain, domain, mlstrustedsubject;
+
+# 3) 域入口（从 shell/vendor 域 transitions 到 can_domain）
+domain_auto_trans(shell, can_exec, can_domain)
+domain_auto_trans(vendor_app_domain, can_exec, can_domain)
+
+# 4) 设备节点访问
+allow can_domain can_device:chr_file { read write ioctl open getattr };
+
+# 5) 网络 socket（AF_CAN）
+allow can_domain self:net_socket { create bind connect read write getattr setopt };
+
+# 6) 内核模块加载（驱动 =m 场景，调试期）
+allow kernel self:capability sys_module;
+allow kernel vendor_file:system module_load;
+
+# 7) 文件上下文（另一文件 file_contexts 中）：
+# /dev/can[0-9]*        u:object_r:can_device:s0
+# /vendor/bin/cantool   u:object_r:can_exec:s0
+
+# 注意：neverallow 规则可能拦截，需在对应的 exception 中声明；
+# 生产环境收紧权限，避免 broad allow。

@@ -1,0 +1,22 @@
+{
+  "name": "飞书套件",
+  "installedAt": 1783477078520,
+  "source": "marketplace",
+  "version": "1.0.0",
+  "skillId": "skill_2053082253572640768",
+  "examples_zh": [
+    "用飞书给团队群发一条消息",
+    "在飞书云文档新建一篇文档",
+    "查询飞书多维表格里的记录"
+  ],
+  "examples_en": [
+    "Send a message to a Lark group chat",
+    "Create a new document in Lark Docs",
+    "Query records from a Lark Base table"
+  ],
+  "description_zh": "飞书/Lark 全能套件（消息、文档、表格、日历、任务、Wiki 等 11 个业务域）",
+  "description_en": "Lark/Feishu unified CLI: messaging, docs, sheets, calendar, tasks, wiki & more",
+  "iconSource": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/lark-unified.svg",
+  "iconLocalPath": "C:\\Users\\YTO-02231406\\.workbuddy\\skills\\lark-unified\\_icon.svg",
+  "iconDownloadedFrom": "https://openplatform-cdn.codebuddy.cn/public/skills/icons/lark-unified.svg"
+}
