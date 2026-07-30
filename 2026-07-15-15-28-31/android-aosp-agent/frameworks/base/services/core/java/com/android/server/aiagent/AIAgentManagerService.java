@@ -159,8 +159,14 @@ public final class AIAgentManagerService extends SystemService implements Device
             enforceManageAgents();
             final boolean mock = request.isUseMock();
             Thread t = new Thread(() -> {
-                LlmClient client = mock ? mMock : new MockLlmClient(); // TODO: 接 OpenAI/NNAPI
-                mMock.reset();
+                LlmClient client;
+                if (mock) {
+                    mMock.reset();
+                    client = mMock;                       // 不联网,先跑通链路
+                } else {
+                    client = new OpenAiLlmClient(         // 接真实 LLM(/v1/chat/completions)
+                            request.getBaseUrl(), request.getModel());
+                }
                 AgentLoop loop = new AgentLoop(mRegistry, client, mState,
                         SYSTEM_PROMPT);
                 loop.run(request.getGoal());

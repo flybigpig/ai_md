@@ -158,3 +158,51 @@ adb logcat -s aiagent
 - **`MANAGE_AI_AGENTS` 必须 `signature|privileged`**,只有系统/特权 App 能拿到;调试可临时给 shell 或 `adb shell` 加 domain 例外(不进正式构建)。
 - **native AIDL**:`aiagent.cpp` 依赖 AIDL 生成的 NDK 头,需把 `IAIAgentManager.aidl` 作为 `aidl_interface` 声明后再编 daemon。
 - **注入输入**:`InputManager.injectInputEvent` 在 system_server(uid 1000)内直接调用不受 `INJECT_EVENTS` 限制;若经 Binder 从外部调,需确保调用方有该权限或走豁免。
+
+---
+
+## 八、LLM 接入(OpenAiLlmClient)
+
+`OpenAiLlmClient` 已实现并接入 `AIAgentManagerService.submitGoal`:`useMock=false` 时走
+`HttpURLConnection` 调 `${baseUrl}/chat/completions`,**零新依赖**(只用 boot classpath 的
+`java.net` + `org.json`)。
+
+### 8.1 调用方式
+```java
+// AIAgentManagerService.submitGoal 内部:
+LlmClient client = new OpenAiLlmClient(request.getBaseUrl(), request.getModel());
+```
+客户端构造时拿到 `baseUrl`(如 `http://127.0.0.1:8081/v1`)与 `model`(如 `qwen`)。
+
+### 8.2 双协议兼容
+- **tool calling**(首选):解析 `choices[0].message.tool_calls[].function.{name,arguments}`。
+- **JSON 兜底**(本地小模型 tool calling 不稳时):从 `content` 抠
+  `{"tool":"tap_xy","args":{"x":..,"y":..}}` 或 `{"action":..,"args":..}`,自动去 ```json 围栏。
+  若模型只回自然语言,则 `finished=true` 并回显,避免死循环。
+
+### 8.3 在设备上接本地 8081(llama.cpp)
+```bash
+# 设备侧把宿主 8081 映射进设备
+adb reverse tcp:8081 tcp:8081
+# submitGoal 传 baseUrl=http://127.0.0.1:8081/v1, model=qwen, useMock=false
+# 本地端点无鉴权;云端端点可在 OpenAiLlmClient.post() 加 Bearer(代码已留注释位)
+```
+
+### 8.4 SELinux:放行 system_server 出网(接本地 8081)
+system_server 默认不能随便建出站 socket,需补规则(localhost 也走 tcp_socket):
+```te
+# system/sepolicy/private/aiagent.te 追加
+allow system_server self:tcp_socket { create connect read write };
+# 若只连 127.0.0.1:8081,更稳的是定义具体 node:
+# type local_llm_port node_type, mlstrustedsubject;
+# allow system_server local_llm_port:tcp_socket name_connect;
+```
+> 注意:给 system_server 开 `tcp_socket` 较宽,正式构建建议收敛到具体端口 node。
+
+### 8.5 为什么不放 OkHttp / 在 native daemon 里跑
+- **Java 框架进程加 OkHttp**:会拖重 `services` 模块构建,且易触发 SELinux `neverallow`
+  与 `framework` 库依赖冲突。boot classpath 自带 `HttpURLConnection`,够用。
+- **native daemon 跑 LLM 运行时**(大脑与手分离):更隔离、可常驻。此时 `aiagent.cpp`
+  需用 AIDL 生成的 NDK 代理(`android.os.aiagent.IAIAgentManager::fromBinder`)调本服务执行,
+  网络在 `aiagent` 域里走(见 `aiagent.te` 的 `tcp_socket`/`portcache` 规则)。两者二选一,
+  MVP 用 Java 侧 `OpenAiLlmClient` 最省事。
