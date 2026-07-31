@@ -60,3 +60,11 @@
 - 以 **user 身份**在王凯云空间根目录建文件夹「公务员事业编练习题」(folder_token SkSRfzxXwlTenmdWVBwc09Awnje)，再用 `markdown +create --as user --folder-token <token> --file <x>.md` 逐份创建。6 份 file_token：07-24=NuwCbQf8gorZ1DxSrXgcJhgYnkh、07-27=Sqg2bOOUFoDRHHx4KAwcS2s6n6b、07-28=Ql2sbi8dMo2FekxbkfCcFbdZnqh、07-29=RTJxbqZProdJikxl1tRcXC1PnMf、07-30=Xy4pbSyVUoU6YbxdK9VcoBx2n9U、20道=LKofb0My3oCnIgx3P0rcJ386nT3。
 - 另以 bot P2P 给王凯发链接汇总(om_x100b699e7b1a70acb1196143e9d8e99)。
 - 经验：user 身份 token 标 needs_refresh 但调用会自动刷新可用；要"云文档/可编辑"用 `markdown +create` 而非 `drive +upload`（后者偏附件）。
+
+## 2026-07-31 执行（08:33）
+- 生成**全新**20题（非复用前几日）：申论1（人才工作·"让人才'活水'奔涌"，四则材料：某省会重引轻育18%博士流失 / L市揭榜挂帅 / W县乡土人才库 / 30城政策文本分析）+ 综合能力写作1（"让'冷板凳'坐出'热成果'"·科研长周期与考核机制）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-07-31.md`（工作区根目录，约 45KB）。
+- 行测答案预校验：数量第9题=28（二级等差，差1/3/5/7/9，另验通项 n²−2n+4）、第10题=甲休息4天（甲10乙25、总工期10天、特值总量50）、第11题标价=280元（进价200、八五折、19%利润，反验238/38/19%）；资料16-18 为 R&D 经费 2.79/3.08/3.33/3.61 万亿 + 基础研究 1696/1951/2212/2497 亿，答案 B(8.4%)/A(2022年10.4%最高)/C(6.9%比重)。
+- 推送飞书：bot P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b698a989170a4b4859caedc07682）+ 说明文本含云文档链接（om_x100b698a9382d4a0b1f3c9fd3fb7e52），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：**改用 `drive +import --type docx`**（优于 07-30 的 `markdown +create`），生成原生可编辑 docx：token QPNfds9QcoSbbGxJj26ckmBenSb，https://my.feishu.cn/docx/QPNfds9QcoSbbGxJj26ckmBenSb ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。同时已删除误传的 md 附件版（AlfObUuQUojviHxfOQucwoP4nyb）避免重复。
+- 经验：`markdown +create` 产出的是 /file/ 形态附件，**要真正的可编辑云文档必须用 `drive +import --as user --file x.md --type docx --folder-token <t> --name <n>`**，返回 /docx/ 链接；删除云盘文件用 `drive +delete --type file --yes`。后续每日沿用 import 方案。
