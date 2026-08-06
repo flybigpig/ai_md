@@ -1,0 +1,8 @@
+; device/<oem>/<device>/sepolicy/vendor/oem_device.ignore.cil
+; 厂商新增类型豁免 sepolicy_freeze_test（new_objects 宏，写在 .ignore.cil）
+(new_objects
+  (type hal_hello_default)
+  (type hal_hello_default_exec)
+  (type hal_hello_service)
+  (type hal_hello_data_file)
+)

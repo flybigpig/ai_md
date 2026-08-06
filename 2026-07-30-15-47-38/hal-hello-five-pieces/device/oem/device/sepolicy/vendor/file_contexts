@@ -1,0 +1,5 @@
+# device/<oem>/<device>/sepolicy/vendor/file_contexts
+# 可执行体打标（与 rc 的 service 路径、relative_install_path 三者一致）
+/vendor/bin/hw/android\.hardware\.hello-service    u:object_r:hal_hello_default_exec:s0
+# HAL 私有数据目录
+/data/vendor/hello(/.*)?                           u:object_r:hal_hello_data_file:s0

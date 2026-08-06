@@ -1,0 +1,17 @@
+// vendor/<oem>/<device>/hello/Android.bp
+// 放置位置：AOSP 根 / vendor/<oem>/<device>/hello/Android.bp
+// 作用：编译 HAL 服务进程（进 /vendor 分区）
+cc_binary {
+    name: "android.hardware.hello-service",
+    vendor: true,                             // ★ 进 /vendor 分区
+    init_rc: ["android.hardware.hello-service.rc"],
+    vintf_fragments: ["android.hardware.hello.xml"],  // ★ 自动装清单到 /vendor/etc/vintf/manifest/
+    relative_install_path: "hw",              // → /vendor/bin/hw/android.hardware.hello-service
+    srcs: ["service.cpp"],
+    shared_libs: [
+        "libbinder_ndk",                      // NDK binder（默认连 /dev/binder 的 framework servicemanager）
+        "android.hardware.hello-ndk",         // 生成的 NDK 桩
+        "liblog",
+        "libutils",
+    ],
+}

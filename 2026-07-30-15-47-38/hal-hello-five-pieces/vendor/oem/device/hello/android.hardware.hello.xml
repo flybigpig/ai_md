@@ -1,0 +1,12 @@
+<!-- vendor/<oem>/<device>/hello/android.hardware.hello.xml -->
+<!-- 经 cc_binary 的 vintf_fragments 自动安装到 /vendor/etc/vintf/manifest/ -->
+<manifest version="8.0" type="device">
+    <hal format="aidl">
+        <name>android.hardware.hello</name>
+        <version>1</version>
+        <interface>
+            <name>IHello</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>

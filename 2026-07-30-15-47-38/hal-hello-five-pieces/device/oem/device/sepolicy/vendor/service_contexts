@@ -1,0 +1,3 @@
+# device/<oem>/<device>/sepolicy/vendor/service_contexts
+# AIDL 接口名 → 类型（单点记法，必须与 VINTF 实例名、代码注册名一字不差）
+android.hardware.hello.IHello/default    u:object_r:hal_hello_service:s0

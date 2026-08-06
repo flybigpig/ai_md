@@ -1,0 +1,3 @@
+# device/<oem>/<device>/sepolicy/vendor/service.te
+# 声明 HAL 服务名的 SELinux 类型（必须是 service_manager_type）
+type hal_hello_service, service_manager_type;

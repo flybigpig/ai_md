@@ -1,0 +1,11 @@
+# vendor/<oem>/<device>/hello/android.hardware.hello-service.rc
+# 安装落点：/vendor/etc/init/android.hardware.hello-service.rc
+service vendorhello-hal /vendor/bin/hw/android.hardware.hello-service
+    class hal
+    user system
+    group system
+    seclabel u:object_r:hal_hello_default_exec:s0
+    # 车载省电：lazy HAL 放开下面三行（需 service.cpp 用 LazyServiceRegistrar）
+    # interface aidl android.hardware.hello.IHello/default
+    # disabled
+    # oneshot

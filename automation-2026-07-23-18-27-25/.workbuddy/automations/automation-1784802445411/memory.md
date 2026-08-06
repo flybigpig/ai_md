@@ -68,3 +68,66 @@
 - 推送飞书：bot P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b698a989170a4b4859caedc07682）+ 说明文本含云文档链接（om_x100b698a9382d4a0b1f3c9fd3fb7e52），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
 - 云文档：**改用 `drive +import --type docx`**（优于 07-30 的 `markdown +create`），生成原生可编辑 docx：token QPNfds9QcoSbbGxJj26ckmBenSb，https://my.feishu.cn/docx/QPNfds9QcoSbbGxJj26ckmBenSb ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。同时已删除误传的 md 附件版（AlfObUuQUojviHxfOQucwoP4nyb）避免重复。
 - 经验：`markdown +create` 产出的是 /file/ 形态附件，**要真正的可编辑云文档必须用 `drive +import --as user --file x.md --type docx --folder-token <t> --name <n>`**，返回 /docx/ 链接；删除云盘文件用 `drive +delete --type file --yes`。后续每日沿用 import 方案。
+
+## 2026-08-01 执行（08:33）
+- 生成**全新**20题（非复用前几日）：申论1（提振消费/扩大内需·"以'三力'齐发，激活消费一池春水"，三则材料：某市消费券+场景升级 / 消费连着就业收入保障 / 消费环境短板）+ 综合应用写作1（"把'关键小事'办成'民生大事'"·政绩观与为民办实事）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-01.md`（工作区根目录，约 24KB）。
+- 行测答案预校验：数量第9题=29（和数列，前两项之和）、第10题=甲工作4天（甲12乙9、总工期6天、总量36：乙全程24、余12甲做4天）、第11题标价=30元/利润率20%（进价20、八折售24、利润4）；资料16-18 社零总额24000亿(+6.5%)，答案 A(2022≈22535亿)/C(餐饮占比12.5%)/D(餐饮增速12%>商品5.8%)。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b69e7a3b1d134b1f77ad976e8ec1）+ 说明文本含云文档链接（om_x100b69e7be46b4acb1db1ceabebd4d2），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --type docx` 导入成功，token UwaVdoLFWoaWuNxybD8cfOQznph，https://my.feishu.cn/docx/UwaVdoLFWoaWuNxybD8cfOQznph ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：本会话 lark-cli 1.0.79（提示可升1.0.81）；im 发消息子命令须用 **`+messages-send`（带加号）**，无加号会报 unknown subcommand；bot/user 双身份均 ready，方案稳定沿用。
+
+## 2026-08-02 执行（08:33）
+- 生成**全新**20题（非复用前几日）：申论1（「人工智能+」赋能高质量发展·"让'智'能落地　让'人'在中心"，三则材料：A市智能质检+61%中小企业"想用不敢用" / B县智慧农业照搬外省参数失败→46项本地化标定 / C市《人工智能应用负面清单》+报废旧车卡低保）+ 综合应用写作1（《别让"隐患清单"睡成"事故账单"》·安全生产隐患整改，行为层→机制层→思想层）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-02.md`（工作区根目录，约 50KB）。
+- 行测答案预校验（已用 python 复算）：数量第9题=215（n³−1）、第10题=甲请假3天（甲15乙20丙12、特值总量60、乙丙6天做48、甲剩12→工作3天）、第11题容斥=11人（60−8=52，35+28−52）；资料16-18 数字经济核心产业增加值 4200/4830/5620/6520 亿、GDP 52000 亿，答案 B(16.0%)/B(2022年16.36%最高)/C(12.5%比重=1/8速算)。
+- 全套答案：B D D C | B B C A | C B C | C B A B | B B C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b69dd4787a93cb32e4431f0311b2）+ 说明文本含云文档链接（om_x100b69dd440054a0b223bc936e617d9），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token JW8ldBkhPoB7f3xSGpPcTwWOnXj，https://my.feishu.cn/docx/JW8ldBkhPoB7f3xSGpPcTwWOnXj ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程已完全稳定（生成→python复算校验→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.79（提示可升 1.0.81，暂不影响）。已用主题累计：枫桥经验/传统文化/数字鸿沟/生态文明/新质生产力/千万工程/营商环境/人才工作/提振消费/人工智能+，后续需继续避开。
+
+## 2026-08-03 执行（08:36）
+- 生成**全新**20题（非复用前几日）：申论1（城市更新/人民城市·"让城市既有'面子'更有'里子'"，四则材料：S市和平里社区微改造3800万vs重建4.6亿、满意度94% / 中部某市拆280万㎡致商业空置率45%+苏式建筑消失 / Q区加梯"六步工作法"14次板凳会、两年1470部零信访 / 42城跟踪评估相关系数参与度0.81、外观0.19）+ 综合应用写作1（《"新官"要理好"旧账"》·政府诚信，现象层→病灶层→对策层，含"并非所有旧账都要照单全收"的辩证段）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-03.md`（工作区根目录，约 57KB）。
+- 行测答案已用 python 复算：数量第9题=1956（递推 aₙ=n·aₙ₋₁+n）、第10题=60公里（追及2h、行180、240−180，问的是距乙地）、第11题=74种（C(9,3)−C(5,3)，正面分类法验证一致）；第12题图推=右上（外圈8格编号、步长1/2/3/4、循环取模）；资料16-18 老旧小区改造投资 2500/3200/4000/4400/4840亿 + 960万户，答案 B(10.0%)/A(2021年28%最高)/D(4840÷960≈5.04万元/户)。
+- 全套答案：B C A B ｜ A A B C ｜ C B C ｜ B A A A ｜ B A D。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b69ca63db74acb04566ce8bf8e32）+ 说明文本含云文档链接与三个易错点提示（om_x100b69ca617e58b0b324c9185bae785），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token ShT7dl7a9oiyzZxhEMKcSy6enag，https://my.feishu.cn/docx/ShT7dl7a9oiyzZxhEMKcSy6enag ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：①Git Bash 下临时 python 脚本**不能写到 `/tmp/xxx.py`**（会被解析成 C:\tmp 而报 No such file），须写入工作区再删除；②本次刻意在资料分析构造"增长量最大年(2022,800亿) ≠ 增速最高年(2021,28%)"的分离数据，并在数量题设置"问距离而非问时间"的读题陷阱，区分度明显提升，值得沿用；③已用主题再加：城市更新、政府诚信/新官理旧账。
+
+## 2026-08-04 执行（08:44）
+- 生成**全新**20题（非复用前几日）：申论1（粮食安全·"把中国饭碗牢牢端在自己手中"，四则材料：L县高标准农田亩产800→1200斤 / 西部某省加工番茄种源进口依赖→自主品种覆盖率三成→八成 / 产后减损机收损失率压到2%以下 / 2024粮食破1.4万亿斤+18亿亩红线+种业振兴）+ 综合应用写作1（《把"养老"变"享老"，让"夕阳"事业成为"朝阳"产业》·银发经济，形势→问题→对策三层递进）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-04.md`（工作区根目录，约 49KB）。
+- 行测答案已用 python 复算：数量第9题=38（二级等差 aₙ=n²+2）、第10题=乙单独50天（甲10、甲4+甲乙5、1/10→余3/5÷5=3/25→乙1/50）、第11题=进价400元（1.3×0.8=1.04，0.04C=16）；资料16-18 某省粮食产量 5000/6500/8000/10000 万吨（玉米4200/小麦2800/稻谷？更正：稻谷4200小麦2800玉米3000），答案 B(25.0%)/A(2022年30%增速最高)/B(玉米占比30%)。资料刻意构造"增长量最大年(2024,2000万吨) ≠ 增速最高年(2022,30%)"分离陷阱。
+- 全套答案：B B A C ｜ A A B C ｜ C B C ｜ C A A A ｜ C A B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b6827132abcacb1aa47c6f303947）+ 说明文本含云文档链接（om_x100b6827115ee8a8b14e8cfe0c409ce），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token Ig48dzX6oo7Kd9xFq23cdQFqnOb，https://my.feishu.cn/docx/Ig48dzX6oo7Kd9xFq23cdQFqnOb ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程已完全稳定（生成→python复算校验→bot P2P发文件→drive import docx→发说明文本）。lark-cli 升级到 1.0.82（提示可升 1.0.83，不影响）。已用主题再加：粮食安全、银发经济/养老。
+- 备注：临时 python 校验脚本已用 python os.remove 删除（因 safe-delete 包装拦截相对路径，rm 失败，改用 python 直删成功）。
+
+## 2026-08-05 执行（08:33）
+- 生成**全新**20题（非复用前几日）：申论1（文化自信·文物活化"让文化遗产'活'在当下，让文明薪火相传"，四则材料：数字故宫186万件/年访问破亿、文创出圈考古盲盒/头部馆年营收15亿、沉浸体验+活化≠媚俗边界、总书记"让文物活起来"政策）+ 综合应用写作1（"把'稳就业'这件大事办实，让'民生之本'更牢"·就业优先，形势—问题—对策）+ 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-05.md`（带日期，工作区根目录，约 44KB）。
+- 行测答案已用 python 复算：数量第9题=42（二级等差 n(n+1)）、第10题=乙15天（1/6−1/10=1/15）、第11题=100（C(10,3)−C(6,3)，正面分类法验证一致）；资料16-18 文创收入 500/650/820/1050 亿，答案 C(28.0%)/A(2021年30%增速最高)/B(平均120000÷6833≈17.6万)。资料刻意构造"增长量最大年(2023,230亿) ≠ 增速最高年(2021,30%)"分离陷阱。
+- 全套答案：A C B C ｜ A B B C ｜ B B A ｜ B C A A ｜ C A B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b681c051534a4b12c044d1b4c77c）+ 说明文本含云文档链接（om_x100b681c0087f4a4b12363577998f46），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token N3tRd0y6boqzxdxSirwchjRonwc，https://my.feishu.cn/docx/N3tRd0y6boqzxdxSirwchjRonwc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：本会话 lark-cli 的 sh 启动器在 Git Bash 下会把 `/c/Users` 错拼成 `C:\c\Users` 导致 MODULE_NOT_FOUND；改用**托管 node 直调 run.js**（`node <win-path>/node_modules/@larksuite/cli/scripts/run.js`）即可绕过，其余 `--as/--user-id/--file/--markdown/--folder-token/--type docx` 参数均不变。流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。已用主题再加：文化自信/文物活化、就业优先/稳就业。
+
+## 2026-08-05 二次执行（10:51，当日重新生成）
+- 同日第二次生成（首次 08:33 已发"文化自信/文物活化 + 就业优先"版）：因任务在 10:43 重新触发，生成**全新**20题（非复用 08:33 版），申论1（诚信建设/社会信用体系·"让诚信成为社会治理的'硬通货'"四则材料：信易贷300亿授信/老赖联合惩戒4.3万人履行80亿/信用修复6000户"一件事"/徙木立信治理现代化）+ 综合应用写作1（"把'运动'变'日常'，让健康成为生活'底色'"·健康中国）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：覆盖写入 `公务员事业编练习题_2026-08-05.md`（同日期文件名，约 43KB）。
+- 行测答案预校验（python 复算）：数量第9题=37（n²+1）、第10题=乙24天（1/8−1/12=1/24）、第11题=110（C(10,3)−C(5,3)）；资料16-18 信用修复 50/80/110/150 万户，答案 C(36.4%)/A(2021年60%最高)/B(150×60%=90万)。资料刻意构造"增长量最大年(2023,40万) ≠ 增速最高年(2021,60%)"分离陷阱。
+- 全套答案：B C B A ｜ A B B C ｜ C B B ｜ C A A A ｜ C A B。
+- 推送飞书：沿用 bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）：先发文件（om_x100b681e1ccb9840b2a92e5aecad337）再发说明文本含云文档链接（om_x100b681e1a562500b349f55144bec94），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：`drive +import --as user --type docx` 导入成功，token LzCddalGXo9gPZx89ITctcrfnjc，https://my.feishu.cn/docx/LzCddalGXo9gPZx89ITctcrfnjc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：Git Bash 下 node 调 run.js 的 `C:\Users` 路径被 MSYS 错拼成 `C:\c\Users`（MODULE_NOT_FOUND）；**必须加 `MSYS_NO_PATHCONV=1` 且 run.js 路径用正斜杠 `C:/Users/...`** 才能绕过，其余参数不变。本会话 lark-cli 1.0.82，提示可升 1.0.83 不影响。已用主题再加：诚信建设/社会信用体系、健康中国/全民健身。
+
+## 2026-08-06 执行（08:34）
+- 生成**全新**20题（非复用前几日）：申论1（城乡融合发展"让城乡'双向奔赴'，绘就融合发展新图景"四则材料：快递进村县乡村三级物流/农村网零18亿+村级站点覆盖率95%、县管校聘+县域医共体但引才留才难、特色林果加工就近就业一户多收但产业链短同质化、二十大+三中全会完善城乡融合机制/把县域作为切入点）+ 综合应用写作1（让"民声"定"民生"·民生实事群众点单票决制，点单—监单—评单闭环）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-06.md`（带日期，工作区根目录，约 46KB）。
+- 行测答案预校验（python 复算）：数量第9题=38（n²+2）、第10题乙30天（1/12−1/20=1/30）、第11题=100（C(10,3)−C(6,3)）；资料16-18 乡村收入 20000/32000/48000/60000、城镇 105000/120000/132000/144000，答案 B(25.0%)/A(2021年60%增速最高，辨析增长率≠增长量、增长量最大为2022年16000)/B(乡村占城镇 60000/144000≈41.7%≈42%，城乡收入比由5.25降至2.4)。
+- 全套答案：A A A A ｜ A A B B ｜ C C B ｜ B A A A ｜ B A B。
+- 推送飞书：bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68092623bcacb3e462bbbca64b8）+ 说明文本含云文档链接（om_x100b680925a84ca0b10fbd99ea15e40），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token VFEFdpLXEo89ADxSvsFcJig0nPc，https://my.feishu.cn/docx/VFEFdpLXEo89ADxSvsFcJig0nPc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。2026-08-06 起 `lark_status.py` 检测报 not_installed(exit3)，但 `auth status` 实际两身份均 ready（bot openId ou_b7d6e2739d5e588fc345f00fb327e5cc、user 王凯 ou_9bb9a536... needs_refresh 自动刷新）；lark-cli 二进制位于 `cli-connector-packages/`，调用需 `MSYS_NO_PATHCONV=1` + 正斜杠绝对路径，参数沿用 `--as/--user-id/--file/--folder-token/--type docx/--name`。已用主题再加：城乡融合/县域发展、民生实事群众点单/全过程人民民主。

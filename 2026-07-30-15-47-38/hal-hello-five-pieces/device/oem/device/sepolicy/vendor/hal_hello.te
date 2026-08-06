@@ -1,0 +1,27 @@
+# device/<oem>/<device>/sepolicy/vendor/hal_hello.te
+# HAL 进程域定义与授权（AIDL HAL，vendor 分区）
+
+type hal_hello_default, domain;
+type hal_hello_default_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(hal_hello_default)            # init 拉起 rc 时切到 hal_hello_default 域
+
+hal_attribute(hello)                             # ★ 必须先于 hal_server_domain
+hal_server_domain(hello, hal_hello_default)      # 标记本域是该 HAL 的服务端
+
+# AIDL HAL 走 /dev/binder（不是 /dev/vndbinder）
+binder_use(hal_hello_default)
+binder_service(hal_hello_default)
+allow hal_hello_default hal_hello_service:service_manager { add find };
+
+# 与 system_server 双向 binder IPC（第二道闸）
+binder_call(hal_hello_default, system_server)
+binder_call(system_server, hal_hello_default)
+
+# 若 HAL 需访问自身设备节点（如 CAN 控制器 /dev/canX），取消下面注释并定义类型
+# type can_device, dev_type;
+# allow hal_hello_default can_device:chr_file { read write ioctl open };
+
+# HAL 私有数据目录（禁写 /data，必须 /data/vendor）
+type hal_hello_data_file, file_type, data_file_type;
+allow hal_hello_default hal_hello_data_file:dir create_dir_perms;
+allow hal_hello_default hal_hello_data_file:file create_file_perms;

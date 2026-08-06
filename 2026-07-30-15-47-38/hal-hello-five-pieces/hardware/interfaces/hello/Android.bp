@@ -1,0 +1,16 @@
+// hardware/interfaces/hello/Android.bp
+// 放置位置：AOSP 根 / hardware/interfaces/hello/Android.bp
+// 作用：定义 HAL 的 AIDL 接口（生成 NDK / java / cpp 三种后端桩）
+aidl_interface {
+    name: "android.hardware.hello",
+    vendor_available: true,                 // 允许 vendor 进程使用
+    stability: "vintf",                     // HAL 硬要求：接口稳定性/版本化
+    srcs: ["aidl/android/hardware/hello/IHello.aidl"],
+    versions: ["1"],                        // 必须与 VINTF 清单 <version> 一致
+    gen_trace: true,                        // 生成 trace 代码（atrace/perfetto）
+    backend: {
+        cpp:  { enabled: true },
+        ndk:  { enabled: true },            // HAL server 用 NDK 后端
+        java: { enabled: true },            // framework/system_app 侧用 java 后端
+    },
+}

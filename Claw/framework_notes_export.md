@@ -1,53 +1,71 @@
 # AOSP 14 Framework 学习笔记 · 导出合集
 
-> 自动合并生成于脚本 `_export_build.py`。本合集汇总工作区全部 Framework 学习 Markdown 笔记，按学习路线图分章。
+> 自动合并生成于脚本 `_export_build.py`。本合集汇总工作区全部 Framework 学习 Markdown 笔记，按学习路线图分章。>   
 > 适用版本：Android 14 (API 34, UpsideDownCake)。
 
 ## 目录
 
 ### 一、总览与路线图
-- [app_to_framework_guide.md](app_to_framework_guide.md)
-- [framework_index_aosp14.md](framework_index_aosp14.md)
-- [android_framework_paper.md](android_framework_paper.md)
+
+- [app\_to\_framework\_guide.md](app_to_framework_guide.md)
+- [framework\_index\_aosp14.md](framework_index_aosp14.md)
+- [android\_framework\_paper.md](android_framework_paper.md)
+
 ### 二、编译烧录
-- [android14_build.md](android14_build.md)
+
+- [android14\_build.md](android14_build.md)
 - [aosp-build-guide.md](aosp-build-guide.md)
+
 ### 三、Binder / AIDL
-- [binder_aidl.md](binder_aidl.md)
+
+- [binder\_aidl.md](binder_aidl.md)
+
 ### 四、AMS / 四大组件
-- [ams_deep_dive.md](ams_deep_dive.md)
-- [ams_modify_practice.md](ams_modify_practice.md)
+
+- [ams\_deep\_dive.md](ams_deep_dive.md)
+- [ams\_modify\_practice.md](ams_modify_practice.md)
+
 ### 五、HAL / 外设适配
-- [hal_android14.md](hal_android14.md)
-- [hal_version_history.md](hal_version_history.md)
-- [hal_example_android14.md](hal_example_android14.md)
-- [hal_learning_roadmap.md](hal_learning_roadmap.md)
+
+- [hal\_android14.md](hal_android14.md)
+- [hal\_version\_history.md](hal_version_history.md)
+- [hal\_example\_android14.md](hal_example_android14.md)
+- [hal\_learning\_roadmap.md](hal_learning_roadmap.md)
+
 ### 六、Settings / 系统裁剪
-- [framework_settings_analysis.md](framework_settings_analysis.md)
-- [settings_modify_practice.md](settings_modify_practice.md)
+
+- [framework\_settings\_analysis.md](framework_settings_analysis.md)
+- [settings\_modify\_practice.md](settings_modify_practice.md)
+
 ### 七、WMS 窗口管理
-- [wms_deep_dive.md](wms_deep_dive.md)
+
+- [wms\_deep\_dive.md](wms_deep_dive.md)
+
 ### 八、Input 事件分发
-- [input_deep_dive.md](input_deep_dive.md)
+
+- [input\_deep\_dive.md](input_deep_dive.md)
+
 ### 九、SystemUI 定制
-- [systemui_customization.md](systemui_customization.md)
+
+- [systemui\_customization.md](systemui_customization.md)
+
 ### 十、SELinux 策略
-- [selinux_policy.md](selinux_policy.md)
+
+- [selinux\_policy.md](selinux_policy.md)
+
 ### 十一、性能 / 排障 (Perfetto/ANR)
-- [perfetto_anr_troubleshooting.md](perfetto_anr_troubleshooting.md)
+
+- [perfetto\_anr\_troubleshooting.md](perfetto_anr_troubleshooting.md)
+
 ### 十二、新增纯系统服务 (含 AIDL)
-- [system_service_aidl.md](system_service_aidl.md)
 
-
+- [system\_service\_aidl.md](system_service_aidl.md)
 
 ---
 
 # 一、总览与路线图
 
-
-
 ## app_to_framework_guide.md
-
 
 # APP 开发者转 Android Framework 开发：破局指南
 
@@ -75,20 +93,20 @@
 ### 核心误区
 
 > 大多数 APP 开发者以为学 Framework = 看源码、画流程图、背调用链。  
-> **这是最大的误解。** Framework 开发的核心不是"看懂"，而是**"能改"**。
+> **这是最大的误解。** Framework 开发的核心不是"看懂"，而是\*\*"能改"\*\*。
 
 ### Framework 开发到底做什么？
 
 Framework 开发 = **对 AOSP 源码进行二次定制**，具体包括：
 
-| 实际工作内容 | 对应能力 | 例子 |
-|-------------|----------|------|
-| **新增系统服务** | 理解 Binder IPC、SystemServer 启动流程 | 车载项目新增"车身信息管理服务"，APP 通过 AIDL 获取车速、油量 |
-| **修改系统行为** | 理解 AMS/WMS/PMS 内部逻辑 | 修改 Launcher 多任务切换动画、禁用某个系统对话框 |
-| **适配硬件外设** | 理解 HAL 层、JNI | 适配 CAN 总线、串口屏、自定义按键板 |
-| **裁剪/定制系统** | 理解编译系统、分区、SELinux | 移除不需要的系统应用、定制 Settings 菜单项 |
-| **性能/稳定性优化** | 理解系统启动流程、ANR/卡顿机制 | 优化开机速度、解决系统服务 ANR |
-| **安全策略配置** | 理解 SELinux、权限模型 | 为新增硬件节点配置 sepolicy |
+| 实际工作内容       | 对应能力                            | 例子                                   |
+| ------------ | ------------------------------- | ------------------------------------ |
+| **新增系统服务**   | 理解 Binder IPC、SystemServer 启动流程 | 车载项目新增"车身信息管理服务"，APP 通过 AIDL 获取车速、油量 |
+| **修改系统行为**   | 理解 AMS/WMS/PMS 内部逻辑             | 修改 Launcher 多任务切换动画、禁用某个系统对话框        |
+| **适配硬件外设**   | 理解 HAL 层、JNI                    | 适配 CAN 总线、串口屏、自定义按键板                 |
+| **裁剪/定制系统**  | 理解编译系统、分区、SELinux               | 移除不需要的系统应用、定制 Settings 菜单项           |
+| **性能/稳定性优化** | 理解系统启动流程、ANR/卡顿机制               | 优化开机速度、解决系统服务 ANR                    |
+| **安全策略配置**   | 理解 SELinux、权限模型                 | 为新增硬件节点配置 sepolicy                   |
 
 ### 一句话总结
 
@@ -97,12 +115,12 @@ Framework 开发 = **对 AOSP 源码进行二次定制**，具体包括：
 
 ### 学了 Framework 的职业价值
 
-| 价值 | 说明 |
-|------|------|
-| **不可替代性** | APP 开发者供给过剩，Framework 开发者稀缺（尤其是车载/工控领域） |
-| **薪资溢价** | 系统开发岗通常比同级别 APP 开发高 30-50% |
+| 价值          | 说明                                                       |
+| ----------- | -------------------------------------------------------- |
+| **不可替代性**   | APP 开发者供给过剩，Framework 开发者稀缺（尤其是车载/工控领域）                  |
+| **薪资溢价**    | 系统开发岗通常比同级别 APP 开发高 30-50%                               |
 | **技术深度护城河** | 底层能力积累不会因上层框架迭代而过时（Flutter/Compose 怎么变，Binder 还是 Binder） |
-| **向上发展空间** | Framework → HAL → Kernel 是清晰的技术深挖路线 |
+| **向上发展空间**  | Framework → HAL → Kernel 是清晰的技术深挖路线                      |
 
 ---
 
@@ -150,13 +168,13 @@ flowchart TD
 
 **第一阶段：系统全貌（目标：能把源码编译出来刷进去）**
 
-| 学习内容 | 验证方式 | 耗时 |
-|----------|----------|------|
-| Android 架构分层（APP/Framework/HAL/Kernel） | 能画出分层图，说出每层作用 | 1 天 |
-| AOSP 源码下载（repo init/sync） | 成功下载一套源码 | 1 天（看网速） |
-| lunch + make 编译 | 成功编译出系统镜像 | 1 天 |
-| fastboot 刷机 | 成功刷入并开机 | 1 天 |
-| adb shell / logcat / dumpsys | 能查看当前焦点窗口、Activity 栈 | 3 天 |
+| 学习内容                                   | 验证方式                 | 耗时       |
+| -------------------------------------- | -------------------- | -------- |
+| Android 架构分层（APP/Framework/HAL/Kernel） | 能画出分层图，说出每层作用        | 1 天      |
+| AOSP 源码下载（repo init/sync）              | 成功下载一套源码             | 1 天（看网速） |
+| lunch + make 编译                        | 成功编译出系统镜像            | 1 天      |
+| fastboot 刷机                            | 成功刷入并开机              | 1 天      |
+| adb shell / logcat / dumpsys           | 能查看当前焦点窗口、Activity 栈 | 3 天      |
 
 **关键提醒：** 第一阶段最大的坑是**编译环境**。如果公司已有编译服务器直接用，个人学习建议 Ubuntu 20.04/22.04，内存 >= 32G，硬盘 >= 500G SSD。
 
@@ -164,13 +182,13 @@ flowchart TD
 
 > **学习方法：每个模块按"是什么 → 怎么用 → 核心流程 → 关键代码"四步走。**
 
-| 模块 | 是什么 | 怎么用（dumpsys 命令） | 核心流程 | 关键代码 |
-|------|--------|----------------------|----------|----------|
-| **Binder** | Android IPC 核心 | `dumpsys binder` | client→驱动→server 通信 | `IPCThreadState.cpp`, `binder.c` |
-| **SystemServer** | 系统服务启动入口 | `ps -A \| grep system_server` | main→startBootstrapServices→startOtherServices | `SystemServer.java` |
-| **AMS** | 四大组件管理 | `dumpsys activity activities` | startActivity→进程创建→生命周期 | `ActivityManagerService.java` |
-| **WMS** | 窗口管理 | `dumpsys window windows` | addWindow→relayout→Surface 分配 | `WindowManagerService.java` |
-| **Input** | 输入事件分发 | `dumpsys input` | EventHub→InputReader→InputDispatcher→APP | `InputDispatcher.cpp`（native 层 `frameworks/native/services/inputflinger/`） |
+| 模块               | 是什么            | 怎么用（dumpsys 命令）               | 核心流程                                           | 关键代码                                                                       |
+| ---------------- | -------------- | ----------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
+| **Binder**       | Android IPC 核心 | `dumpsys binder`              | client→驱动→server 通信                            | `IPCThreadState.cpp`, `binder.c`                                           |
+| **SystemServer** | 系统服务启动入口       | `ps -A \| grep system_server` | main→startBootstrapServices→startOtherServices | `SystemServer.java`                                                        |
+| **AMS**          | 四大组件管理         | `dumpsys activity activities` | startActivity→进程创建→生命周期                        | `ActivityManagerService.java`                                              |
+| **WMS**          | 窗口管理           | `dumpsys window windows`      | addWindow→relayout→Surface 分配                  | `WindowManagerService.java`                                                |
+| **Input**        | 输入事件分发         | `dumpsys input`               | EventHub→InputReader→InputDispatcher→APP       | `InputDispatcher.cpp`（native 层 `frameworks/native/services/inputflinger/`） |
 
 **第三阶段：实战改造（目标：能独立完成一个 Framework 修改需求）**
 
@@ -178,24 +196,24 @@ flowchart TD
 
 推荐实战项目（按难度排序）：
 
-| 项目 | 难度 | 涉及知识点 | 预计耗时 |
-|------|------|-----------|----------|
-| 1. 用 `service` 命令写一个 shell 脚本调试系统服务 | ★☆☆☆☆ | service 命令、系统服务生命周期 | 2h |
-| 2. 修改 Settings 数据库默认值（如默认亮度） | ★★☆☆☆ | SettingsProvider、defaults.xml | 4h |
-| 3. 新增一个系统 API（hide → public） | ★★☆☆☆ | SDK 编译、@hide 注解 | 4h |
-| 4. 禁止某个系统对话框弹出 | ★★★☆☆ | WMS/PMS 源码阅读 + 修改 | 1d |
-| 5. 新增一个系统服务（含 AIDL） | ★★★★☆ | Binder、SystemServer、AIDL、SELinux | 3d |
-| 6. 修改 Launcher 多任务切换动画 | ★★★★☆ | ShellTransition、SurfaceControl | 3d |
-| 7. 适配一个外设（如自定义按键板） | ★★★★★ | InputReader、kl/kcm 文件、HAL | 5d |
+| 项目                                  | 难度    | 涉及知识点                            | 预计耗时 |
+| ----------------------------------- | ----- | -------------------------------- | ---- |
+| 1. 用 `service` 命令写一个 shell 脚本调试系统服务 | ★☆☆☆☆ | service 命令、系统服务生命周期              | 2h   |
+| 2. 修改 Settings 数据库默认值（如默认亮度）        | ★★☆☆☆ | SettingsProvider、defaults.xml    | 4h   |
+| 3. 新增一个系统 API（hide → public）        | ★★☆☆☆ | SDK 编译、@hide 注解                  | 4h   |
+| 4. 禁止某个系统对话框弹出                      | ★★★☆☆ | WMS/PMS 源码阅读 + 修改                | 1d   |
+| 5. 新增一个系统服务（含 AIDL）                 | ★★★★☆ | Binder、SystemServer、AIDL、SELinux | 3d   |
+| 6. 修改 Launcher 多任务切换动画              | ★★★★☆ | ShellTransition、SurfaceControl   | 3d   |
+| 7. 适配一个外设（如自定义按键板）                  | ★★★★★ | InputReader、kl/kcm 文件、HAL        | 5d   |
 
 **第四阶段：性能与排障（目标：能独立定位系统级性能问题）**
 
-| 技能 | 工具 | 练习方式 |
-|------|------|----------|
-| ANR 分析 | traces.txt + dumpsys | 故意制造 ANR，练习从 trace 定位根因 |
-| 卡顿分析 | Perfetto / Systrace | 抓 trace，找主线程阻塞点 |
-| 内存分析 | dumpsys meminfo + MAT | 分析 system_server 内存占用 |
-| 启动速度 | bootanimation 时间分析 | 优化开机自启动服务 |
+| 技能     | 工具                    | 练习方式                    |
+| ------ | --------------------- | ----------------------- |
+| ANR 分析 | traces.txt + dumpsys  | 故意制造 ANR，练习从 trace 定位根因 |
+| 卡顿分析   | Perfetto / Systrace   | 抓 trace，找主线程阻塞点         |
+| 内存分析   | dumpsys meminfo + MAT | 分析 system_server 内存占用   |
+| 启动速度   | bootanimation 时间分析    | 优化开机自启动服务               |
 
 ---
 
@@ -255,13 +273,13 @@ development/tools/idegen/idegen.sh
 
 **方法四：掌握关键搜索模式**
 
-| 你想找 | 搜索关键词 |
-|--------|-----------|
-| 某个系统服务的实现 | `extends IXXX.Stub` |
-| 某个 Binder 接口的调用方 | `XXX.Stub.Proxy` |
-| SystemServer 中注册的服务 | `startBootstrapServices` / `startOtherServices` |
-| init.rc 中启动的 native 服务 | `service xxx /system/bin/` |
-| SELinux 规则 | `grep -r "服务名" system/sepolicy/` |
+| 你想找                    | 搜索关键词                                           |
+| ---------------------- | ----------------------------------------------- |
+| 某个系统服务的实现              | `extends IXXX.Stub`                             |
+| 某个 Binder 接口的调用方       | `XXX.Stub.Proxy`                                |
+| SystemServer 中注册的服务    | `startBootstrapServices` / `startOtherServices` |
+| init.rc 中启动的 native 服务 | `service xxx /system/bin/`                      |
+| SELinux 规则             | `grep -r "服务名" system/sepolicy/`                |
 
 **方法五：绘制调用栈而非读代码**
 
@@ -300,15 +318,15 @@ startActivity()
 
 你不需要记住 `ActivityStarter.execute()` 的第 137 行是什么。你需要记住的是：
 
-| 当遇到这个需求时 | 我应该去哪个文件、哪个函数 |
-|-----------------|--------------------------|
-| 修改开机动画 | `frameworks/base/cmds/bootanimation/` |
-| 修改默认亮度 | `frameworks/base/packages/SettingsProvider/res/values/defaults.xml` |
-| 禁止某个权限 | `frameworks/base/services/core/java/com/android/server/pm/permission/` |
-| 修改音量调节步长 | `frameworks/base/services/core/java/com/android/server/audio/AudioService.java` |
+| 当遇到这个需求时  | 我应该去哪个文件、哪个函数                                                                        |
+| --------- | ------------------------------------------------------------------------------------ |
+| 修改开机动画    | `frameworks/base/cmds/bootanimation/`                                                |
+| 修改默认亮度    | `frameworks/base/packages/SettingsProvider/res/values/defaults.xml`                  |
+| 禁止某个权限    | `frameworks/base/services/core/java/com/android/server/pm/permission/`               |
+| 修改音量调节步长  | `frameworks/base/services/core/java/com/android/server/audio/AudioService.java`      |
 | 修改输入法弹出动画 | `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java` |
-| 修改状态栏图标 | `frameworks/base/packages/SystemUI/`（12+ 状态栏核心类由 `StatusBar` 重命名为 `CentralSurfaces`） |
-| 新增系统属性 | `system.prop` 或 `build/make/target/` 下的 mk 文件 |
+| 修改状态栏图标   | `frameworks/base/packages/SystemUI/`（12+ 状态栏核心类由 `StatusBar` 重命名为 `CentralSurfaces`） |
+| 新增系统属性    | `system.prop` 或 `build/make/target/` 下的 mk 文件                                        |
 
 ### 建立从需求到方案的映射
 
@@ -438,16 +456,16 @@ adb logcat -c && adb logcat -v threadtime > all_log.txt
 
 ### 典型排障场景速查
 
-| 问题现象 | 第一反应 | 关键命令 | 常见根因 |
-|----------|----------|----------|----------|
-| **应用闪退** | 看 logcat crash 堆栈 | `adb logcat -b crash` | NPE、SecurityException、DeadObjectException |
-| **界面卡死** | 看 ANR trace | `adb pull /data/anr/` | 主线程 Binder 超时、锁竞争、IO 阻塞 |
-| **点击无响应** | 看 Input 状态 | `adb shell dumpsys input` | 焦点窗口不对、InputChannel 断连 |
-| **开机卡 logo** | 看 boot log | `adb logcat -b all \| grep -E "Boot|SystemServer"` | 系统服务启动失败、SELinux 权限拒绝 |
-| **界面黑屏** | 看 WMS + SF 状态 | `dumpsys window` + `dumpsys SurfaceFlinger` | Surface 未创建、Layer 不可见 |
-| **内存泄漏** | 看 meminfo 趋势 | `adb shell dumpsys meminfo <pid>` | 窗口泄漏、Binder 代理未释放、注册未反注册 |
-| **开机慢** | 抓 boot trace | Perfetto 抓取 boot 阶段 | 某个服务启动耗时过长、dex2oat |
-| **WIFI/蓝牙打不开** | 看对应服务状态 | `adb shell dumpsys wifi` / `bluetooth_manager` | HAL 服务未启动、固件加载失败 |
+| 问题现象           | 第一反应              | 关键命令                                           | 常见根因                                      |                       |
+| -------------- | ----------------- | ---------------------------------------------- | ----------------------------------------- | --------------------- |
+| **应用闪退**       | 看 logcat crash 堆栈 | `adb logcat -b crash`                          | NPE、SecurityException、DeadObjectException |                       |
+| **界面卡死**       | 看 ANR trace       | `adb pull /data/anr/`                          | 主线程 Binder 超时、锁竞争、IO 阻塞                   |                       |
+| **点击无响应**      | 看 Input 状态        | `adb shell dumpsys input`                      | 焦点窗口不对、InputChannel 断连                    |                       |
+| **开机卡 logo**   | 看 boot log        | \`adb logcat -b all | grep -E "Boot            | SystemServer"\`                           | 系统服务启动失败、SELinux 权限拒绝 |
+| **界面黑屏**       | 看 WMS + SF 状态     | `dumpsys window` + `dumpsys SurfaceFlinger`    | Surface 未创建、Layer 不可见                     |                       |
+| **内存泄漏**       | 看 meminfo 趋势      | `adb shell dumpsys meminfo <pid>`              | 窗口泄漏、Binder 代理未释放、注册未反注册                  |                       |
+| **开机慢**        | 抓 boot trace      | Perfetto 抓取 boot 阶段                            | 某个服务启动耗时过长、dex2oat                        |                       |
+| **WIFI/蓝牙打不开** | 看对应服务状态           | `adb shell dumpsys wifi` / `bluetooth_manager` | HAL 服务未启动、固件加载失败                          |                       |
 
 ### 最重要的排障思维：缩小范围
 
@@ -492,30 +510,30 @@ Step 4：二分定位
 
 ### A.1 路线图 ↔ 工作区笔记 全景对照
 
-| 指南路线图 | 工作区已有笔记 | 状态 | 关键 AOSP 14 落点 |
-|---|---|---|---|
-| 编译烧录（阶段一） | `android14_build.md` / `aosp-build-guide.md` | ✅ | `build/envsetup.sh` / `lunch` / `make` / `fastboot` |
-| Binder IPC（阶段二） | `binder_aidl.md` | ✅ | `IPCThreadState.cpp` / `servicemanager` / AIDL |
-| AMS / 四大组件 | `ams_deep_dive.md` / `ams_modify_practice.md` + `ams_patches/` | ✅ 深覆盖 | `ActivityManagerService.java` / `ClientLifecycleManager` / `TransactionExecutor` |
-| HAL / 外设适配 | `hal_android14.md` / `hal_example_android14.md` / `hal_led_example/` | ✅ | AIDL HAL / `hwservicemanager` 退场 |
-| Settings / 系统裁剪 | `framework_settings_analysis.md` / `settings_modify_practice.md` | ✅ | `SettingsProvider` / `defaults.xml` |
-| WMS 窗口管理 | `wms_deep_dive.md` | ✅（本轮补齐） | `WindowManagerService.addWindow()` / `Task`（原 `ActivityStack`） |
-| Input 事件分发 | `input_deep_dive.md` | ✅（本轮补齐） | `inputflinger`: `EventHub`→`InputReader`→`InputDispatcher` / `PhoneWindowManager.interceptKeyBeforeQueueing()` |
-| SystemUI 定制 | `systemui_customization.md` | ✅（本轮补齐） | `CentralSurfaces`（原 `StatusBar`）/ `NavigationBar` / `QSPanel` |
-| SELinux 策略 | `selinux_policy.md` | ✅（本轮补齐） | `system/sepolicy/` `public|private|vendor` / `audit2allow` |
-| 性能/排障（Perfetto/ANR） | `perfetto_anr_troubleshooting.md` | ✅（本轮补齐） | `perfetto` / `/data/anr/` / `kill -3` |
-| 新增纯系统服务（含 AIDL） | `system_service_aidl.md` | ✅（本轮补齐） | `IMyService.Stub` → `SystemServer.addService()` → SELinux |
-| 速查索引（总表） | `framework_index_aosp14.md` | ✅ | 「需求→改动点」总索引 + 排障命令 |
+| 指南路线图               | 工作区已有笔记                                                              | 状态      | 关键 AOSP 14 落点                                                                                                  |         |                        |
+| ------------------- | -------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- | ------- | ---------------------- |
+| 编译烧录（阶段一）           | `android14_build.md` / `aosp-build-guide.md`                         | ✅       | `build/envsetup.sh` / `lunch` / `make` / `fastboot`                                                            |         |                        |
+| Binder IPC（阶段二）     | `binder_aidl.md`                                                     | ✅       | `IPCThreadState.cpp` / `servicemanager` / AIDL                                                                 |         |                        |
+| AMS / 四大组件          | `ams_deep_dive.md` / `ams_modify_practice.md` + `ams_patches/`       | ✅ 深覆盖   | `ActivityManagerService.java` / `ClientLifecycleManager` / `TransactionExecutor`                               |         |                        |
+| HAL / 外设适配          | `hal_android14.md` / `hal_example_android14.md` / `hal_led_example/` | ✅       | AIDL HAL / `hwservicemanager` 退场                                                                               |         |                        |
+| Settings / 系统裁剪     | `framework_settings_analysis.md` / `settings_modify_practice.md`     | ✅       | `SettingsProvider` / `defaults.xml`                                                                            |         |                        |
+| WMS 窗口管理            | `wms_deep_dive.md`                                                   | ✅（本轮补齐） | `WindowManagerService.addWindow()` / `Task`（原 `ActivityStack`）                                                 |         |                        |
+| Input 事件分发          | `input_deep_dive.md`                                                 | ✅（本轮补齐） | `inputflinger`: `EventHub`→`InputReader`→`InputDispatcher` / `PhoneWindowManager.interceptKeyBeforeQueueing()` |         |                        |
+| SystemUI 定制         | `systemui_customization.md`                                          | ✅（本轮补齐） | `CentralSurfaces`（原 `StatusBar`）/ `NavigationBar` / `QSPanel`                                                  |         |                        |
+| SELinux 策略          | `selinux_policy.md`                                                  | ✅（本轮补齐） | `system/sepolicy/` \`public                                                                                    | private | vendor`/`audit2allow\` |
+| 性能/排障（Perfetto/ANR） | `perfetto_anr_troubleshooting.md`                                    | ✅（本轮补齐） | `perfetto` / `/data/anr/` / `kill -3`                                                                          |         |                        |
+| 新增纯系统服务（含 AIDL）     | `system_service_aidl.md`                                             | ✅（本轮补齐） | `IMyService.Stub` → `SystemServer.addService()` → SELinux                                                      |         |                        |
+| 速查索引（总表）            | `framework_index_aosp14.md`                                          | ✅       | 「需求→改动点」总索引 + 排障命令                                                                                             |         |                        |
 
 ### A.2 本指南里"需求→文件"索引表（第 241-249 行）的 AOSP 14 校订补充
 
 原表路径在 14 上基本准确，仅补充两处易错点：
 
-| 需求 | AOSP 14 落点 | 校订备注 |
-|------|-------------|----------|
-| 修改状态栏图标 | `frameworks/base/packages/SystemUI/` | 12+ 状态栏核心类 `StatusBar` 已重命名为 `CentralSurfaces` |
+| 需求                  | AOSP 14 落点                                              | 校订备注                                                                                                  |
+| ------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 修改状态栏图标             | `frameworks/base/packages/SystemUI/`                    | 12+ 状态栏核心类 `StatusBar` 已重命名为 `CentralSurfaces`                                                        |
 | 修改 Launcher 多任务切换动画 | `frameworks/base/` 的 ShellTransition / `SurfaceControl` | 12+ 动画走 `ShellTransitions`（`WindowContainerTransaction` + `RemoteAnimationRunner`），非旧 `AppTransition` |
-| 禁止系统对话框 | `WMS` + `PhoneWindowManager` | 详见 `wms_deep_dive.md` 的"禁止对话框"实战 |
+| 禁止系统对话框             | `WMS` + `PhoneWindowManager`                            | 详见 `wms_deep_dive.md` 的"禁止对话框"实战                                                                      |
 
 ### A.3 按缺口优先级排的学习清单（基于本工作区现状）
 
@@ -535,41 +553,38 @@ Step 4：二分定位
 > **推荐编译环境：** Ubuntu 22.04, 32G+ RAM, 500G+ SSD, E5-2697A v4 级别 CPU  
 > **推荐学习 target：** `aosp_x86_64-eng`（模拟器 target，编译快，验证快）
 
-
-
-
 ## framework_index_aosp14.md
-
 
 # AOSP 14 Framework「需求 → 改动点」速查表（补全版）
 
-> 基于《APP 开发者转 Framework 开发：破局指南》（已留存校订版 `app_to_framework_guide.md` v1.1），按 **Android 14 (API 34, UpsideDownCake)** 校订，并补全指南中缺失/薄弱的模块：WMS / Input / SystemUI / SELinux / Perfetto 排障 / 纯系统服务。
-> 路径以 `android-14.0.0_rXX` 为准；个别类名随版本微调，以本地 AOSP checkout 为准。
+> 基于《APP 开发者转 Framework 开发：破局指南》（已留存校订版 `app_to_framework_guide.md` v1.1），按 **Android 14 (API 34, UpsideDownCake)** 校订，并补全指南中缺失/薄弱的模块：WMS / Input / SystemUI / SELinux / Perfetto 排障 / 纯系统服务。>   
+> 路径以 `android-14.0.0_rXX` 为准；个别类名随版本微调，以本地 AOSP checkout 为准。>   
 > 用法：拿到需求先查「二、通用索引」，再按「一、缺口深挖」或「五、深读笔记」找真实文件 + 函数 + 验证命令。
 
 ---
 
 ## 〇、全景对照（路线图 vs 覆盖状态）
 
-| 指南路线图 | 本工作区已有笔记 | 状态 | AOSP 14 入口（补缺用） | 深读笔记 |
-|---|---|---|---|---|
-| 编译烧录（阶段一） | `android14_build.md` / `aosp-build-guide.md` | ✅ | — | — |
-| Binder IPC（阶段二） | `binder_aidl.md` | ✅ | — | — |
-| AMS / 四大组件（阶段二/三） | `ams_deep_dive.md` / `ams_modify_practice.md` + `ams_patches/` | ✅ 深覆盖 | — | — |
-| HAL / 外设适配 | `hal_android14.md` / `hal_example_android14.md` / `hal_led_example/` | ✅ | — | — |
-| Settings / 系统裁剪 | `framework_settings_analysis.md` / `settings_modify_practice.md` | ✅ | — | — |
-| WMS 窗口管理 | — | ✅ 已补 | `frameworks/base/services/core/java/com/android/server/wm/` | `wms_deep_dive.md` |
-| Input 事件分发 | — | ✅ 已补 | `frameworks/base/services/core/java/com/android/server/input/` + native `inputflinger` | `input_deep_dive.md` |
-| SystemUI 定制 | — | ✅ 已补 | `frameworks/base/packages/SystemUI/` | `systemui_customization.md` |
-| SELinux 策略 | 仅 HAL 示例零星涉及 | ✅ 已补 | `system/sepolicy/` | `selinux_policy.md` |
-| 性能/排障（Perfetto/ANR） | — | ✅ 已补 | `perfetto` / `/data/anr/` | `perfetto_anr_troubleshooting.md` |
-| 新增纯系统服务（含 AIDL） | 仅 HAL-AIDL 示例 | ✅ 已补 | `services/core/java/com/android/server/` + `SystemServer` | `system_service_aidl.md` |
+| 指南路线图               | 本工作区已有笔记                                                             | 状态    | AOSP 14 入口（补缺用）                                                                        | 深读笔记                              |
+| ------------------- | -------------------------------------------------------------------- | ----- | -------------------------------------------------------------------------------------- | --------------------------------- |
+| 编译烧录（阶段一）           | `android14_build.md` / `aosp-build-guide.md`                         | ✅     | —                                                                                      | —                                 |
+| Binder IPC（阶段二）     | `binder_aidl.md`                                                     | ✅     | —                                                                                      | —                                 |
+| AMS / 四大组件（阶段二/三）   | `ams_deep_dive.md` / `ams_modify_practice.md` + `ams_patches/`       | ✅ 深覆盖 | —                                                                                      | —                                 |
+| HAL / 外设适配          | `hal_android14.md` / `hal_example_android14.md` / `hal_led_example/` | ✅     | —                                                                                      | —                                 |
+| Settings / 系统裁剪     | `framework_settings_analysis.md` / `settings_modify_practice.md`     | ✅     | —                                                                                      | —                                 |
+| WMS 窗口管理            | —                                                                    | ✅ 已补  | `frameworks/base/services/core/java/com/android/server/wm/`                            | `wms_deep_dive.md`                |
+| Input 事件分发          | —                                                                    | ✅ 已补  | `frameworks/base/services/core/java/com/android/server/input/` + native `inputflinger` | `input_deep_dive.md`              |
+| SystemUI 定制         | —                                                                    | ✅ 已补  | `frameworks/base/packages/SystemUI/`                                                   | `systemui_customization.md`       |
+| SELinux 策略          | 仅 HAL 示例零星涉及                                                         | ✅ 已补  | `system/sepolicy/`                                                                     | `selinux_policy.md`               |
+| 性能/排障（Perfetto/ANR） | —                                                                    | ✅ 已补  | `perfetto` / `/data/anr/`                                                              | `perfetto_anr_troubleshooting.md` |
+| 新增纯系统服务（含 AIDL）     | 仅 HAL-AIDL 示例                                                        | ✅ 已补  | `services/core/java/com/android/server/` + `SystemServer`                              | `system_service_aidl.md`          |
 
 ---
 
 ## 一、缺口模块深挖（真实路径 + 函数 + 验证）
 
 ### 1. WMS 窗口管理
+
 - **核心类**
   - `frameworks/base/services/core/java/com/android/server/wm/WindowManagerService.java`：`addWindow()` / `relayoutWindow()` / `removeWindow()` / `performLayoutAndPlaceSurfacesLocked()`
   - `frameworks/base/services/core/java/com/android/server/wm/WindowState.java`：单个窗口状态
@@ -584,6 +599,7 @@ Step 4：二分定位
 - **验证**：`adb shell dumpsys window windows` / `dumpsys window displays` / `dumpsys SurfaceFlinger`
 
 ### 2. Input 事件分发
+
 - **核心类**
   - `frameworks/base/services/core/java/com/android/server/input/InputManagerService.java`
   - native：`frameworks/native/services/inputflinger/` → `InputDispatcher.cpp`（分发策略/焦点）、`InputReader.cpp`（读设备/映射）、`EventHub.cpp`（设备枚举/事件读取）
@@ -593,6 +609,7 @@ Step 4：二分定位
 - **验证**：`adb shell dumpsys input` / `adb shell getevent -l`（看原始事件）/ `adb shell input keyevent KEYCODE_XXX`
 
 ### 3. SystemUI 定制
+
 - **目录**：`frameworks/base/packages/SystemUI/`
 - 状态栏：`src/com/android/systemui/statusbar/phone/CentralSurfaces.java`（**Android 12+ 由 `StatusBar` 重命名**，实现类 `CentralSurfacesImpl`）
 - 导航栏：`src/com/android/systemui/navigationbar/NavigationBarController.java` / `NavigationBar.java`
@@ -602,6 +619,7 @@ Step 4：二分定位
 - **验证**：改写后 `make SystemUI` + `adb install -r`，或整编；`adb shell kill <systemui_pid>` 让其重启；`dumpsys activity services SystemUI` 看状态
 
 ### 4. SELinux 策略
+
 - **目录**：`system/sepolicy/` → `public/`（跨版本稳定类型/属性）、`private/`（平台私有）、`vendor/`（厂商）、`prebuilts/api/<ver>/`（版本快照）
 - **关键文件**：`file_contexts`（文件→type）、`service_contexts`（binder 服务名→domain）、`hwservice_contexts`（hwbinder）、`property_contexts`（系统属性）、`seapp_contexts`（app 进程 domain）
 - **新增 native 服务/节点的典型步骤**：
@@ -612,6 +630,7 @@ Step 4：二分定位
 - **注意**：`neverallow` 很严；userdebug/eng 可 `setenforce 0` 临时验证是否 SELinux 拦截
 
 ### 5. Perfetto / ANR 排障
+
 - **Perfetto**：`adb shell perfetto -o /data/misc/perfetto-traces/trace.pftrace -t 10s sched freq idle am wm gfx view binder`（按需选 datasource）→ `adb pull` → 用 `https://ui.perfetto.dev` 打开
 - **systrace**：`frameworks/native/cmds/atrace/`；`python systrace.py` 已 deprecated，优先 perfetto
 - **ANR**：`adb shell ls /data/anr/` → `anr_<pid>_<时间戳>`；或 `adb bugreport` 收集；`adb shell kill -3 <pid>` 触发 Java 线程栈 dump 到 logcat
@@ -619,6 +638,7 @@ Step 4：二分定位
 - **内存**：`adb shell dumpsys meminfo system_server`（或 `<pkg>`）；泄漏看趋势 + `binder` 代理数
 
 ### 6. 新增纯系统服务（含 AIDL）
+
 1. **定义 AIDL**：`frameworks/base/core/java/android/os/IMyService.aidl`，接口方法如 `void doSomething();`；公开 SDK 则去掉 `@hide` 走 API 审核，否则 `@hide`
 2. **实现**：`frameworks/base/services/core/java/com/android/server/MyService.java` `extends IMyService.Stub`（可同时 `extends SystemService` 接入生命周期）
 3. **注册**：`SystemServer.startOtherServices()`（或 `startBootstrapServices`，看重要性）里 `ServiceManager.addService(Context.MY_SERVICE, mMyService);`；`Context` 加常量；若走 `SystemService` 用 `publishBinderService()`
@@ -630,20 +650,20 @@ Step 4：二分定位
 
 ## 二、通用「需求 → 文件」速查索引（AOSP 14 精确版）
 
-| 需求 | 改哪层 | 关键文件（AOSP 14） | 关键函数/类 | 验证 |
-|---|---|---|---|---|
-| 修改开机动画 | framework/cmds | `frameworks/base/cmds/bootanimation/` | `BootAnimation.cpp` | 重启看动画 |
-| 修改默认亮度 | SettingsProvider | `frameworks/base/packages/SettingsProvider/res/values/defaults.xml` | `def_screen_brightness` | `settings get system screen_brightness` |
-| 禁止某系统对话框 | WMS/PWM | `services/core/java/com/android/server/wm/WindowManagerService.java`（addWindow） | `addWindow()` | `dumpsys window` + 复现 |
-| 修改音量步长 | AudioService | `services/core/java/com/android/server/audio/AudioService.java` | `adjustStreamVolume()` | `input keyevent KEYCODE_VOLUME_UP` |
-| 修改输入法/窗口动画 | WMS | `services/core/java/com/android/server/wm/WindowManagerService.java` | `relayoutWindow()` | `dumpsys window` |
-| 改状态栏图标 | SystemUI | `packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java` | — | `kill <systemui_pid>` 看 |
-| 改导航栏 | SystemUI | `packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java` | — | 同上 |
-| 多任务键改回桌面 | PWM | `services/core/java/com/android/server/policy/PhoneWindowManager.java` | `interceptKeyBeforeQueueing()` | `input keyevent KEYCODE_APP_SWITCH` |
-| 新增系统属性 | build | `build/make/target/product/*.mk` 或 `system.prop` | `PRODUCT_PROPERTY_OVERRIDES` | `getprop xxx` |
-| 适配自定义按键板 | Input | `frameworks/base/data/keyboards/*.kl` + `InputReader` | `KeyLayoutMap` | `getevent -l` |
-| 新增系统服务 | SystemServer | `services/core/java/com/android/server/MyService.java` + `SystemServer` | `addService()` | `service list` |
-| SELinux 放行新服务 | sepolicy | `system/sepolicy/{private,vendor}/*.te` + `service_contexts` | `allow ...` | `dmesg \| grep avc` |
+| 需求            | 改哪层              | 关键文件（AOSP 14）                                                                     | 关键函数/类                         | 验证                                      |
+| ------------- | ---------------- | --------------------------------------------------------------------------------- | ------------------------------ | --------------------------------------- |
+| 修改开机动画        | framework/cmds   | `frameworks/base/cmds/bootanimation/`                                             | `BootAnimation.cpp`            | 重启看动画                                   |
+| 修改默认亮度        | SettingsProvider | `frameworks/base/packages/SettingsProvider/res/values/defaults.xml`               | `def_screen_brightness`        | `settings get system screen_brightness` |
+| 禁止某系统对话框      | WMS/PWM          | `services/core/java/com/android/server/wm/WindowManagerService.java`（addWindow）   | `addWindow()`                  | `dumpsys window` + 复现                   |
+| 修改音量步长        | AudioService     | `services/core/java/com/android/server/audio/AudioService.java`                   | `adjustStreamVolume()`         | `input keyevent KEYCODE_VOLUME_UP`      |
+| 修改输入法/窗口动画    | WMS              | `services/core/java/com/android/server/wm/WindowManagerService.java`              | `relayoutWindow()`             | `dumpsys window`                        |
+| 改状态栏图标        | SystemUI         | `packages/SystemUI/src/com/android/systemui/statusbar/phone/CentralSurfaces.java` | —                              | `kill <systemui_pid>` 看                 |
+| 改导航栏          | SystemUI         | `packages/SystemUI/src/com/android/systemui/navigationbar/NavigationBar.java`     | —                              | 同上                                      |
+| 多任务键改回桌面      | PWM              | `services/core/java/com/android/server/policy/PhoneWindowManager.java`            | `interceptKeyBeforeQueueing()` | `input keyevent KEYCODE_APP_SWITCH`     |
+| 新增系统属性        | build            | `build/make/target/product/*.mk` 或 `system.prop`                                  | `PRODUCT_PROPERTY_OVERRIDES`   | `getprop xxx`                           |
+| 适配自定义按键板      | Input            | `frameworks/base/data/keyboards/*.kl` + `InputReader`                             | `KeyLayoutMap`                 | `getevent -l`                           |
+| 新增系统服务        | SystemServer     | `services/core/java/com/android/server/MyService.java` + `SystemServer`           | `addService()`                 | `service list`                          |
+| SELinux 放行新服务 | sepolicy         | `system/sepolicy/{private,vendor}/*.te` + `service_contexts`                      | `allow ...`                    | `dmesg \| grep avc`                     |
 
 ---
 
@@ -703,27 +723,23 @@ adb logcat -c && adb logcat -v threadtime > all_log.txt
 
 以下 6 篇为本次补齐的缺口深读（AOSP 14，真实路径 + 方法名 + 验证 + 实战项目），与上方速查表配合使用：
 
-| 模块 | 深读笔记 | 一句话 |
-|---|---|---|
-| **来源指南（已校订留存）** | `app_to_framework_guide.md` | 路线图 + 学习方法 + 排障思维；含 AOSP 14 校订与「附录 A：与现有笔记对照」 |
-| WMS 窗口管理 | `wms_deep_dive.md` | addWindow/relayoutWindow、Task(原 ActivityStack)、焦点/动画 hook |
-| Input 事件分发 | `input_deep_dive.md` | EventHub→InputReader→InputDispatcher、`PhoneWindowManager` 拦截、`.kl/.kcm` |
-| SystemUI 定制 | `systemui_customization.md` | `CentralSurfaces`/`NavigationBar`/QS、`kill pid` 验证 |
-| SELinux 策略 | `selinux_policy.md` | public/private/vendor、`file_contexts`/`service_contexts`、`audit2allow` |
-| Perfetto/ANR 排障 | `perfetto_anr_troubleshooting.md` | perfetto 抓 trace、`/data/anr/`、`kill -3`、`meminfo` |
-| 新增纯系统服务 | `system_service_aidl.md` | AIDL→Stub→`SystemServer.addService`→SELinux→客户端 |
-
-
-
+| 模块              | 深读笔记                              | 一句话                                                                     |
+| --------------- | --------------------------------- | ----------------------------------------------------------------------- |
+| **来源指南（已校订留存）** | `app_to_framework_guide.md`       | 路线图 + 学习方法 + 排障思维；含 AOSP 14 校订与「附录 A：与现有笔记对照」                           |
+| WMS 窗口管理        | `wms_deep_dive.md`                | addWindow/relayoutWindow、Task(原 ActivityStack)、焦点/动画 hook               |
+| Input 事件分发      | `input_deep_dive.md`              | EventHub→InputReader→InputDispatcher、`PhoneWindowManager` 拦截、`.kl/.kcm` |
+| SystemUI 定制     | `systemui_customization.md`       | `CentralSurfaces`/`NavigationBar`/QS、`kill pid` 验证                      |
+| SELinux 策略      | `selinux_policy.md`               | public/private/vendor、`file_contexts`/`service_contexts`、`audit2allow`  |
+| Perfetto/ANR 排障 | `perfetto_anr_troubleshooting.md` | perfetto 抓 trace、`/data/anr/`、`kill -3`、`meminfo`                       |
+| 新增纯系统服务         | `system_service_aidl.md`          | AIDL→Stub→`SystemServer.addService`→SELinux→客户端                         |
 
 ## android_framework_paper.md
-
 
 # Android Framework 架构与 Binder IPC 机理深度剖析
 
 ## 摘要
 
-Android Framework 以 **Binder IPC** 为通信中枢,将应用进程、系统服务进程(`system_server` 中的 AMS/WMS/PMS/ATMS 等)与内核驱动有机串联。本文从系统启动与进程模型切入,逐层剖析 Binder 在内核态的**一次拷贝**、**异步空间约束**、**延迟回收(deferred gc)**机制,结合 AIDL 自动生成代码与 `ActivityManagerService` 启动 Activity 的真实跨进程调用链,揭示 Framework 各组件如何通过 Binder 协同工作,并讨论其性能与安全性设计取舍。全文引用路径均基于 AOSP 主线(`drivers/android/`、`frameworks/native/libs/binder/`、`frameworks/base/`)。
+Android Framework 以 **Binder IPC** 为通信中枢,将应用进程、系统服务进程(`system_server` 中的 AMS/WMS/PMS/ATMS 等)与内核驱动有机串联。本文从系统启动与进程模型切入,逐层剖析 Binder 在内核态的**一次拷贝**、**异步空间约束**、\*\*延迟回收(deferred gc)\*\*机制,结合 AIDL 自动生成代码与 `ActivityManagerService` 启动 Activity 的真实跨进程调用链,揭示 Framework 各组件如何通过 Binder 协同工作,并讨论其性能与安全性设计取舍。全文引用路径均基于 AOSP 主线(`drivers/android/`、`frameworks/native/libs/binder/`、`frameworks/base/`)。
 
 ---
 
@@ -804,12 +820,12 @@ ProcessState::ProcessState(const char* driver)
 
 ### 3.1 用户态架构
 
-| 角色 | 类 / 文件 | 职责 |
-|------|-----------|------|
-| 进程上下文 | `ProcessState` | 打开驱动、mmap、管理线程池 |
-| 线程上下文 | `IPCThreadState` | `talkWithDriver()` 收发 `BC_*`/`BR_*` |
-| Proxy | `BpBinder` | `transact()` 把请求发往驱动 |
-| Stub 基类 | `BBinder` | `onTransact()` 处理请求 |
+| 角色      | 类 / 文件           | 职责                                  |
+| ------- | ---------------- | ----------------------------------- |
+| 进程上下文   | `ProcessState`   | 打开驱动、mmap、管理线程池                     |
+| 线程上下文   | `IPCThreadState` | `talkWithDriver()` 收发 `BC_*`/`BR_*` |
+| Proxy   | `BpBinder`       | `transact()` 把请求发往驱动                |
+| Stub 基类 | `BBinder`        | `onTransact()` 处理请求                 |
 
 `binder_ioctl(BINDER_WRITE_READ)` 的真正处理函数是 `binder_ioctl_write_read`,它在用户态 `binder_write_read` 与内核间搬运数据;有写数据则进 `binder_thread_write` 解析 `BC_*`,有读缓冲则进 `binder_thread_read` 取待投递的 `BR_*`(无可读事务且非 `O_NONBLOCK` 时 `wait_event_interruptible` 挂起)。
 
@@ -941,17 +957,11 @@ Binder 不只是 IPC 机制,它是 Android Framework 的**通信骨架**。理�
 - 系统服务:`frameworks/base/services/java/com/android/server/SystemServer.java`、`frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java`、`.../wm/WindowManagerService.java`、`.../pm/PackageManagerService.java`
 - 启动脚本:`system/core/rootdir/init.rc`、`frameworks/base/cmds/app_process/app_main.cpp`
 
-
-
-
 ---
 
 # 二、编译烧录
 
-
-
 ## android14_build.md
-
 
 # Android 14 (AOSP) 编译指南
 
@@ -959,13 +969,13 @@ Binder 不只是 IPC 机制,它是 Android Framework 的**通信骨架**。理�
 
 ## 1 环境要求
 
-| 项 | 推荐配置 |
-|----|----------|
-| 系统 | **Ubuntu 22.04 LTS**(64-bit)。20.04 也行,18.04 已不推荐。macOS 仅支持到 Android 13 之前,Android 14 必须在 Linux 上编。 |
-| 内存 | 最低 16GB;Google 官方建议 64GB 以加速。编译进程数受内存约束,经验值 `并发数 ≈ 内存(GB)/2`。 |
-| 磁盘 | 源码 checkout ~100GB + 编译产物 ~150GB,**至少留 250GB 空闲**。 |
-| JDK | **OpenJDK 17**(Android 14 用 prebuilts 里的 JDK17,系统装一份 `openjdk-17-jdk` 兜底即可,无需配 `JAVA_HOME`)。 |
-| Python | 3.8+(Ubuntu 22.04 自带 3.10,`repo` 依赖它)。 |
+| 项      | 推荐配置                                                                                               |
+| ------ | -------------------------------------------------------------------------------------------------- |
+| 系统     | **Ubuntu 22.04 LTS**(64-bit)。20.04 也行,18.04 已不推荐。macOS 仅支持到 Android 13 之前,Android 14 必须在 Linux 上编。 |
+| 内存     | 最低 16GB;Google 官方建议 64GB 以加速。编译进程数受内存约束,经验值 `并发数 ≈ 内存(GB)/2`。                                      |
+| 磁盘     | 源码 checkout ~100GB + 编译产物 ~150GB,**至少留 250GB 空闲**。                                                 |
+| JDK    | **OpenJDK 17**(Android 14 用 prebuilts 里的 JDK17,系统装一份 `openjdk-17-jdk` 兜底即可,无需配 `JAVA_HOME`)。       |
+| Python | 3.8+(Ubuntu 22.04 自带 3.10,`repo` 依赖它)。                                                             |
 
 ## 2 安装依赖(Ubuntu 22.04)
 
@@ -1001,17 +1011,20 @@ chmod a+x ~/bin/repo
 ### 3.2 初始化 manifest
 
 **方式 A:国内镜像(推荐)**
+
 ```bash
 export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo'
 mkdir ~/aosp && cd ~/aosp
 repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest \
   -b android-14.0.0_rXX
 ```
-> `rXX` 选具体 tag,如 `android-14.0.0_r74`(越新补丁越全)。可先
-> `git ls-remote https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest | grep android-14`
+
+> `rXX` 选具体 tag,如 `android-14.0.0_r74`(越新补丁越全)。可先>   
+> `git ls-remote https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest | grep android-14`>   
 > 看可用 tag。
 
 **方式 B:官方源(需梯子)**
+
 ```bash
 repo init -u https://android.googlesource.com/platform/manifest -b android-14.0.0_rXX
 ```
@@ -1021,6 +1034,7 @@ repo init -u https://android.googlesource.com/platform/manifest -b android-14.0.
 ```bash
 repo sync -j$(nproc) -c --no-clone-bundle
 ```
+
 `-c` 只同步当前分支,省时间;全量同步视网速 1~数小时。建议挂在 `nohup`/`tmux` 里跑,断线可重入。
 
 ## 4 编译
@@ -1034,19 +1048,24 @@ m -j$(nproc)                      # 等价于 make,使用 Soong/Ninja
 ```
 
 **编译变体(variant)**：
+
 - `user` —— 量产版,无 root、权限收紧。
 - `userdebug` —— 同 user + root + 调试工具(日常开发选这个)。
 - `eng` —— 工程师版,大量调试符号、关闭部分优化。
 
 **产物位置**:`out/target/product/<product>/`
+
 - `system.img`、`vendor.img`、`boot.img`、`userdata.img`
 - `out/host/linux-x86/bin/` 里有 `fastboot`、`adb`。
 
 **刷机(真机,需解锁 bootloader):**
+
 ```bash
 fastboot flashall -w     # 在产物目录下执行,会清 data
 ```
+
 **Cuttlefish 启动(无需硬件):**
+
 ```bash
 source build/envsetup.sh && lunch aosp_cf_x86_64_phone-userdebug
 acloud create --local-image -w
@@ -1063,6 +1082,7 @@ repo init -u ... -b common-android14-6.1   # 若未在主 manifest
 tools/bazel build //common:kernel_aarch64_dist    # 64 位 ARM
 # 产物: bazel-bin/common/kernel_aarch64/dist/{Image,vmlinux,*.ko}
 ```
+
 编出的内核替换到 `out/.../kernel` 后重 `m` 即可打包进 `boot.img`。x86_64 用 `//common:kernel_x86_64_dist`。
 
 ## 6 加速与常用技巧
@@ -1110,6 +1130,7 @@ tools/bazel build //common:kernel_aarch64_dist     # ARM64(真机)
 Android 14 的 `boot.img` 由 GKI `Image` + ramdisk(vendor_boot 拆出)组成。有两种做法:
 
 **做法 A:直接用 `m` 让 build 系统吃你的 dist 产物(推荐)**
+
 ```bash
 cd ~/aosp
 # 把 bazel 产物软链/拷贝到 prebuilt 约定的内核目录
@@ -1119,9 +1140,11 @@ source build/envsetup.sh
 lunch aosp_redfin-userdebug          # 目标机型必须和内核 ABI 匹配
 m bootimage -j$(nproc)               # 只重打 boot.img,几分钟
 ```
+
 产物:`out/target/product/redfin/boot.img`。
 
 **做法 B:用 `build.sh` + `mkbootimg` 手工拼(无 AOSP 全编时也行)**
+
 ```bash
 # 取 ramdisk(从旧 boot 解,或用 build 产物 out/.../ramdisk.img)
 unpack_bootimg --boot_img out/target/product/redfin/boot.img \
@@ -1145,7 +1168,7 @@ fastboot flash boot /tmp/new_boot.img     # 或 out/.../boot.img
 fastboot reboot
 ```
 
-> 若改的是 KO(可加载模块)而非内置进 Image 的符号,可只 `fastboot flash vendor_kernel_modules` 或 adb push 后 `insmod`,更快。但 `binder.c` 是核心驱动,编进 Image,必须走 boot.img。
+> 若改的是 KO(可加载模块)而非内置进 Image 的符号,可只 `fastboot flash vendor_kernel_modules` 或 adb push 后 `insmod`,更快。但 `binder.c` 是核心驱动,编进 Image,必须走 boot.img。>   
 > **AB 分区注意**:直接 `flash boot` 会写当前 slot;想可回退先 `fastboot set_active` 切到未用 slot 再刷。
 
 ### 8.4 验证
@@ -1171,7 +1194,7 @@ lunch aosp_redfin-userdebug
 
 ### 9.2 拉厂商/驱动二进制(必须,否则无法点亮硬件)
 
-从 https://developers.google.com/android/drivers 下载对应机型的 **`vendor/google` + `vendor/partner`** 两个 `extract-*.sh`(需接受协议,注意年份/月份与 tag 对齐):
+从 <https://developers.google.com/android/drivers> 下载对应机型的 **`vendor/google` + `vendor/partner`** 两个 `extract-*.sh`(需接受协议,注意年份/月份与 tag 对齐):
 
 ```bash
 # 把两个脚本放到 AOSP 根目录执行,会把闭源驱动解到 vendor/
@@ -1194,14 +1217,14 @@ fastboot flashall -w     # -w 清 data;首次刷建议带,后续增量可只 fla
 
 ## 10 快速决策表
 
-| 你想干嘛 | 命令/动作 |
-|----------|-----------|
-| 纯验证 AOSP 编译能过(无硬件) | `lunch aosp_cf_x86_64_phone-userdebug && m` + `acloud create` |
-| 改 framework Java/C++ | `m <模块>`(如 `m services`、`m framework-minus-adata`)后 `adb sync` 或重刷 `system` |
-| 改 `binder.c` 等内核 | §8:Bazel 重编 → 重打 `boot.img` → `fastboot flash boot` |
-| 真机首次点亮 | §9:tag + extract 驱动 + `m` + `fastboot flashall -w` |
-| 只想增量验证某一模块 | `m <模块名>`,Ninja 只编变更 |
-| **在模拟器里跑(x86_64 主机)** | §11:`lunch sdk_phone_x86_64-userdebug && m` + `emulator`(需 KVM) |
+| 你想干嘛                  | 命令/动作                                                                       |
+| --------------------- | --------------------------------------------------------------------------- |
+| 纯验证 AOSP 编译能过(无硬件)    | `lunch aosp_cf_x86_64_phone-userdebug && m` + `acloud create`               |
+| 改 framework Java/C++  | `m <模块>`(如 `m services`、`m framework-minus-adata`)后 `adb sync` 或重刷 `system` |
+| 改 `binder.c` 等内核      | §8:Bazel 重编 → 重打 `boot.img` → `fastboot flash boot`                         |
+| 真机首次点亮                | §9:tag + extract 驱动 + `m` + `fastboot flashall -w`                          |
+| 只想增量验证某一模块            | `m <模块名>`,Ninja 只编变更                                                        |
+| **在模拟器里跑(x86_64 主机)** | §11:`lunch sdk_phone_x86_64-userdebug && m` + `emulator`(需 KVM)             |
 
 ---
 
@@ -1226,6 +1249,7 @@ m -j$(nproc)
 > 注意:lunch 名是 `sdk_phone_x86_64`,但**产物目录名是 `emulator_x86_64`**(由 `PRODUCT_DEVICE` 决定),别找错目录。
 
 `out/target/product/emulator_x86_64/`:
+
 - `system-qemu.img`、`vendor-qemu.img`、`ramdisk-qemu.img`、`userdata-qemu.img` —— emulator 专用镜像(带 `-qemu` 后缀)
 - `kernel-ranchu-64` —— goldfish 预编译内核
 - `advancedFeatures.ini`、`encryptionkey.img`、`system-qemu-config.txt` 等辅助文件
@@ -1242,10 +1266,12 @@ emulator -selinux permissive   # 关 SELinux,调内核时少踩权限
 ```
 
 **KVM 加速(关键)**:emulator 默认探测 `/dev/kvm`,有则硬件加速、速度飞起;无则巨慢。
+
 ```bash
 ls -l /dev/kvm           # 必须存在且当前用户可读写
 sudo usermod -aG kvm $USER   # 没权限就加组,重登生效
 ```
+
 - **WSL2 用户注意**:WSL2 默认没有 `/dev/kvm`,需 Windows 主机开启 Hyper-V/WHPX 并装 Intel HAXM 或在 WSL 里启用 KVM 透传,比较折腾;**强烈建议用原生 Linux 或一台远程 Linux 编译/运行机**。
 - macOS/Windows 主机上跑 emulator 也行,但**编 AOSP 本身必须在 Linux**(见 §1),所以编译和运行的宿主要分开。
 
@@ -1264,6 +1290,7 @@ cp bazel-bin/common/kernel_x86_64/dist/Image \
 emulator -kernel ~/aosp/out/target/product/emulator_x86_64/kernel-ranchu-64
 # 或编译后直接: emulator -kernel <你的 Image 路径> 显式指定
 ```
+
 > GKI 通用内核 vs goldfish 内核是两回事:emulator 默认只认 goldfish prebuilt。直接把 §8 编出的 GKI `Image` 丢给 emulator 大概率因设备树/配置不匹配起不来,务必用 goldfish/ranchu 配置编出的内核。
 
 验证同 §8.4:`adb shell uname -a` + `adb shell dmesg | grep binder`。
@@ -1277,6 +1304,7 @@ emulator -kernel ~/aosp/out/target/product/emulator_x86_64/kernel-ranchu-64
 ### 12.1 目录约定
 
 新建模块放进 AOSP 任意能被 build 系统扫到的路径,常见两处:
+
 - `packages/apps/<YourApp>/`(源码 app 推荐位置)
 - 或你的 device/product 目录下(随产品走)
 
@@ -1322,6 +1350,7 @@ android_app_import {
     dex_preopt: { enabled: false },
 }
 ```
+
 > 想保留原厂签名就 `presigned: true` 并删掉 `certificate`;想用系统签名让其获得系统权限就 `certificate: "platform"`。
 
 ### 12.4 注册进产品(最关键一步!)
@@ -1343,8 +1372,7 @@ PRODUCT_PACKAGES += MySystemApp
 `privileged: true`(落在 `/system/priv-app`)的 app,**必须在 `system/etc/permissions/` 放一份权限白名单**,否则启动时会被框架拒绝授予特权权限(甚至起不来):
 
 ```xml
-<!-- 放到 frameworks/base/data/etc/ 或 device/.../permissions/ 下,
-     文件名 privapp-permissions-myapp.xml,随系统拷贝到 /system/etc/permissions/ -->
+
 <permissions>
     <privapp-permissions package="com.example.mysystemapp">
         <permission name="android.permission.READ_PRIVILEGED_PHONE_STATE"/>
@@ -1352,26 +1380,27 @@ PRODUCT_PACKAGES += MySystemApp
     </privapp-permissions>
 </permissions>
 ```
+
 并在产品 mk 里让该 xml 进 `PRODUCT_COPY_FILES` 或放入 `PRODUCT_PACKAGES`(若包成 module)。漏写这条是 priv-app 最常见的"装上了但用不了特权权限/反复崩溃"根因。
 
 ### 12.6 AndroidManifest 要点
 
 - 与系统同 UID(不推荐新 app 用):
   ```xml
-  android:sharedUserId="android.uid.system"   <!-- 需 platform 签名;Android 10+ 限制变严 -->
+  android:sharedUserId="android.uid.system"   
   ```
 - 想申请 `signature|privileged` 级权限:必须 `privileged: true` + §12.5 白名单。
 - 普通系统 app(非 privileged)用 `android:protectionLevel="signature"` 的权限即可,无需 priv 白名单。
 
 ### 12.7 装到哪个分区
 
-| 分区 | bp 写法 | 路径 |
-|------|---------|------|
-| system(普通) | 默认 | `/system/app/<name>` |
-| system(特权) | `privileged: true` | `/system/priv-app/<name>` |
-| system_ext | `system_ext_specific: true` | `/system_ext/app/<name>` |
-| product | `product_specific: true` | `/product/app/<name>` |
-| vendor | `vendor: true`(极少) | `/vendor/app/<name>` |
+| 分区         | bp 写法                       | 路径                        |
+| ---------- | --------------------------- | ------------------------- |
+| system(普通) | 默认                          | `/system/app/<name>`      |
+| system(特权) | `privileged: true`          | `/system/priv-app/<name>` |
+| system_ext | `system_ext_specific: true` | `/system_ext/app/<name>`  |
+| product    | `product_specific: true`    | `/product/app/<name>`     |
+| vendor     | `vendor: true`(极少)          | `/vendor/app/<name>`      |
 
 ### 12.8 编译与验证
 
@@ -1381,13 +1410,16 @@ lunch sdk_phone_x86_64-userdebug    # 或你的 target
 m MySystemApp -j$(nproc)            # 单模块编,几分钟
 # 或整编: m -j$(nproc)
 ```
+
 烧录/启动后:
+
 ```bash
 adb shell pm list packages | grep mysystemapp
 adb shell pm path com.example.mysystemapp      # 看落在 /system/priv-app 还是 /system/app
 adb shell dumpsys package com.example.mysystemapp | grep -i "privileged\|primaryCpuAbi"
 adb logcat | grep mysystemapp                  # 抓启动/运行日志
 ```
+
 > 若改了 bp 或 mk,记得 `m` 后整个 `system.img` 才会包含新 app;`m <模块>` 只编 app 本身,但刷机前要确认 `system.img` 也重生成(直接 `m` 会连带重打 image)。
 
 ---
@@ -1408,16 +1440,17 @@ adb logcat | grep mysystemapp                  # 抓启动/运行日志
 
 Android 10 起 activity 栈逻辑被拆到独立的 **`ActivityTaskManagerService`(ATMS)**,AMS 只保留进程/任务/广播/内存等总管职能。改之前先确认代码在哪:
 
-| 想改的行为 | 真正落点的文件 |
-|------------|----------------|
-| `startActivity` 入口、权限/调用方校验、跨进程派发 | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java` |
+| 想改的行为                                  | 真正落点的文件                                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `startActivity` 入口、权限/调用方校验、跨进程派发      | `frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java`                                                                                    |
 | Activity 栈、Task、Window、Resume/Pause 流转 | `frameworks/base/services/core/java/com/android/server/wm/ActivityTaskManagerService.java` + `ActivityStarter.java`、`ActivityStack.java`、`Task.java`(同在 `.../server/wm/`) |
-| 应用进程孵化(fork Zygote) | `.../am/ProcessList.java`(`startProcessLocked`) |
-| Service 启停 | `.../am/ActiveServices.java` |
-| 广播 | `.../am/BroadcastQueue.java` / `BroadcastHistory.java` |
-| OOM / adj 评分 | `.../am/OomAdjuster.java` |
+| 应用进程孵化(fork Zygote)                    | `.../am/ProcessList.java`(`startProcessLocked`)                                                                                                                           |
+| Service 启停                             | `.../am/ActiveServices.java`                                                                                                                                              |
+| 广播                                     | `.../am/BroadcastQueue.java` / `BroadcastHistory.java`                                                                                                                    |
+| OOM / adj 评分                           | `.../am/OomAdjuster.java`                                                                                                                                                 |
 
 AMS/ATMS 的客户端接口与 Binder 定义:
+
 - AIDL:`frameworks/base/core/java/android/app/IActivityManager.aidl`(AMS)、`frameworks/base/core/java/android/app/IActivityTaskManager.aidl`(ATMS)
 - AMS 类签名:`public class ActivityManagerService extends IActivityManager.Stub implements ...`(同时持有 `mAtmInternal` 指向 ATMS)
 
@@ -1445,6 +1478,7 @@ public final int startActivityAsUser(IApplicationThread caller, String callingPa
             userId, true /*validateIncomingUser*/);
 }
 ```
+
 `Slog` 已在 `ActivityManagerService` 中 import(`import android.util.Slog;`),`TAG` 常量复用或自起一个。日志走 `logcat -b all`。
 
 ### 14.3 实战示例 B:新增一个隐藏系统 API(改 AIDL)
@@ -1452,6 +1486,7 @@ public final int startActivityAsUser(IApplicationThread caller, String callingPa
 若想从别的系统模块(或你的系统 app)调用 AMS 新逻辑,需扩展 `IActivityManager.aidl`:
 
 1. **改 AIDL 加方法**:
+
 ```aidl
 // frameworks/base/core/java/android/app/IActivityManager.aidl
 interface IActivityManager {
@@ -1459,7 +1494,9 @@ interface IActivityManager {
     boolean myCustomCheck(String pkg, int uid);   // ← 新增
 }
 ```
-2. **在 `ActivityManagerService` 实现该方法**(`.aidl` 改了,服务端必须实现,否则 `system_server` 启动报 `AbstractMethodError`):
+
+1. **在 `ActivityManagerService` 实现该方法**(`.aidl` 改了,服务端必须实现,否则 `system_server` 启动报 `AbstractMethodError`):
+
 ```java
 @Override
 public boolean myCustomCheck(String pkg, int uid) {
@@ -1467,7 +1504,9 @@ public boolean myCustomCheck(String pkg, int uid) {
     return true;
 }
 ```
-3. **客户端暴露**(可选,供 app/framework 调用):在 `frameworks/base/core/java/android/app/ActivityManager.java` 包一层:
+
+1. **客户端暴露**(可选,供 app/framework 调用):在 `frameworks/base/core/java/android/app/ActivityManager.java` 包一层:
+
 ```java
 public static boolean myCustomCheck(String pkg, int uid) {
     try {
@@ -1477,7 +1516,8 @@ public static boolean myCustomCheck(String pkg, int uid) {
     }
 }
 ```
-4. **若方法要给系统 app 当 @SystemApi 用**,还需在 `frameworks/base/config/hiddenapi-unsupported.txt` / `hiddenapi-force-blacklist.txt` 等里处理 hiddenapi 标志(否则调用方会被黑名单拦)。普通 `@hide` 仅需同签名模块能调。
+
+1. **若方法要给系统 app 当 @SystemApi 用**,还需在 `frameworks/base/config/hiddenapi-unsupported.txt` / `hiddenapi-force-blacklist.txt` 等里处理 hiddenapi 标志(否则调用方会被黑名单拦)。普通 `@hide` 仅需同签名模块能调。
 
 > **接口版本一致性**:AIDL 改了方法签名/增删方法,**所有实现类(含测试桩 `ActivityManagerService` 的 mock)** 都要同步改,否则编译或运行期报错。ATMS 同理改 `IActivityTaskManager.aidl`。
 
@@ -1491,20 +1531,24 @@ lunch sdk_phone_x86_64-userdebug     # 或你的 target
 m services -j$(nproc)               # 重编 services.jar(含 AMS/ATMS/所有 am/wm 服务)
 # 产物: out/target/product/.../system/framework/services.jar
 ```
+
 > 只编 `services` 通常 1–3 分钟(取决于改动量),远快于全编。若同时改了 `frameworks/base/core`(如 §14.3 的 `ActivityManager.java` 客户端壳),要一起 `m framework` 或干脆 `m`。
 
 ### 14.5 推送 / 烧录验证
 
 **(A) emulator / userdebug 真机:直接 push jar(免重刷整 image)**
+
 ```bash
 adb root
 adb remount                 # userdebug 且 avb 关闭才能 remount /system
 adb push out/target/product/emulator_x86_64/system/framework/services.jar /system/framework/
 adb reboot
 ```
+
 > Android 10+ `/system` 默认只读;`adb remount` 需 userdebug + `adb disable-verity`(真机首次)或 emulator 默认可 remount。push 后必须 `reboot`,因为 `services.jar` 在启动期被加载,运行中替换不生效。
 
 **(B) 整编重打 system.img(最稳妥)**
+
 ```bash
 m -j$(nproc)               # 连带重打 system.img
 # emulator: 直接 emulator 启动即读新 image;真机: fastboot flash system
@@ -1518,6 +1562,7 @@ adb shell dumpsys activity activities | head -40   # 看 ATMS 栈/Task 状态
 adb shell dumpsys activity processes | grep -i <pkg>  # 看进程/adj
 adb shell am start -n com.xxx/.MainActivity            # 触发一次启动,观察日志
 ```
+
 - 若 `system_server` 起不来(改崩了):`adb logcat -b all | grep -i "AndroidRuntime\|system_server"` 看崩溃栈;`emulator` 下可加 `-wipe-data` 或看 `logcat -b crash`。
 
 ### 14.7 常见坑
@@ -1535,30 +1580,26 @@ adb shell am start -n com.xxx/.MainActivity            # 触发一次启动,观�
 - **单步调试**:`adb shell ps -e | grep system_server` 拿 pid,Android Studio Attach Debugger to Process 选 `system_server`,断点打在 AMS/ATMS(需 `eng` 或 `userdebug` + `debuggable`)。
 - **开关控制**:实战中常用 `Settings.Global` / `SystemProperties` 做功能开关,避免每次改逻辑都重编(如 `if (SystemProperties.getBoolean("persist.myams.enable", false)) {...}`)。
 
-
-
-
 ## aosp-build-guide.md
-
 
 # 从零编译 AOSP（Android 14）完整指南
 
-> 适用环境：本机 Windows + WSL2 Debian 13（trixie），8 核 CPU、23GB 内存、WSL 根分区 952GB 可用。
+> 适用环境：本机 Windows + WSL2 Debian 13（trixie），8 核 CPU、23GB 内存、WSL 根分区 952GB 可用。>   
 > 目标：拉取并编译 **Android 14（API 34，分支 `android-14.0.0_rXX`）**，生成可在模拟器中运行的 `eng` 镜像，便于研究 Framework（AMS/WMS/IMS 等）。
 
 ---
 
 ## 0. 你的机器现状（已实测）
 
-| 项 | 值 | 结论 |
-|---|---|---|
-| WSL 发行版 | Debian 13 (trixie)，WSL 版本 2 | 可用，但 AOSP 官方文档面向 Ubuntu，见第 7 节 Debian 差异 |
-| CPU | 8 核 | 编译 `-j8` 足够 |
-| 内存 | 23GB（WSL 分配） | 满足编译需求（建议 ≥16GB） |
-| WSL 根分区 `/` | 952GB 可用 | 充足，AOSP 代码+编译产物约需 350–400GB |
-| git / python3 | 已安装 | OK |
-| Java | 未安装 | 需装 **OpenJDK 17** |
-| repo | 未安装 | 需安装 |
+| 项             | 值                           | 结论                                       |
+| ------------- | --------------------------- | ---------------------------------------- |
+| WSL 发行版       | Debian 13 (trixie)，WSL 版本 2 | 可用，但 AOSP 官方文档面向 Ubuntu，见第 7 节 Debian 差异 |
+| CPU           | 8 核                         | 编译 `-j8` 足够                              |
+| 内存            | 23GB（WSL 分配）                | 满足编译需求（建议 ≥16GB）                         |
+| WSL 根分区 `/`   | 952GB 可用                    | 充足，AOSP 代码+编译产物约需 350–400GB              |
+| git / python3 | 已安装                         | OK                                       |
+| Java          | 未安装                         | 需装 **OpenJDK 17**                        |
+| repo          | 未安装                         | 需安装                                      |
 
 **最重要的原则**：源码必须放在 **WSL 的 Linux 文件系统内**（如 `~/aosp`，即 `/home/<user>/aosp`），**不要**放在 `/mnt/c/...`（Windows NTFS）。NTFS 不支持符号链接与部分文件权限，且编译速度会慢一个数量级。
 
@@ -1584,6 +1625,7 @@ sudo apt-get install -y \
 ```
 
 要点说明：
+
 - `python-is-python3`：Android 14 的部分脚本仍直接调用 `python`，Debian 13 默认只有 `python3`，该包建立 `/usr/bin/python -> python3` 软链。
 - `lib32ncurses-dev`：Debian 13 已用 ncurses6，原 Ubuntu 文档里的 `lib32ncurses5-dev` 在此发行版更名为 `lib32ncurses-dev`。
 - 不需要 `jack`：Jack 编译器在 Android 9 之后已废弃，Android 14 走 `jack` 无关的新工具链（prebuilts 自带），不要再装 `jack-server`。
@@ -1608,7 +1650,7 @@ source ~/.bashrc
 repo --version      # 确认能运行
 ```
 
-> 国内若 `storage.googleapis.com` 不通，可用清华镜像的 repo：
+> 国内若 `storage.googleapis.com` 不通，可用清华镜像的 repo：>   
 > `curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo > ~/.bin/repo`
 
 ---
@@ -1655,6 +1697,7 @@ repo sync -j8 -c
 ```
 
 参数说明：
+
 - `-u`：manifest 仓库地址。国内用清华镜像 `https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest.git`；直连 Google 用 `https://android.googlesource.com/platform/manifest`。
 - `-b android-14.0.0_rXX`：指定 Android 14 分支。**务必把 `XX` 换成具体小版本号**（见下）。
 - `-j8`：8 线程并发同步。
@@ -1704,11 +1747,11 @@ lunch aosp_x86_64-eng
 
 `lunch` 目标格式为 `<产品名>-<编译类型>`。常见组合：
 
-| 目标 | 说明 | 适用场景 |
-|---|---|---|
-| `aosp_x86_64-eng` | x86_64 模拟器 + 工程版 | **Framework 研究首选**：模拟器跑得快、带 root、带调试符号 |
-| `aosp_arm64-eng` | ARM64 + 工程版 | 真机/部分模拟器，交叉编译更慢 |
-| `sdk_phone64_x86_64-userdebug` | SDK 模拟器 + userdebug | 需要 userdebug 特性时 |
+| 目标                             | 说明                  | 适用场景                                   |
+| ------------------------------ | ------------------- | -------------------------------------- |
+| `aosp_x86_64-eng`              | x86_64 模拟器 + 工程版    | **Framework 研究首选**：模拟器跑得快、带 root、带调试符号 |
+| `aosp_arm64-eng`               | ARM64 + 工程版         | 真机/部分模拟器，交叉编译更慢                        |
+| `sdk_phone64_x86_64-userdebug` | SDK 模拟器 + userdebug | 需要 userdebug 特性时                       |
 
 随后开编：
 
@@ -1744,12 +1787,14 @@ out/host/linux-x86/bin/         # host 端工具：emulator / adb / fastboot / m
 ```
 
 **Framework 源码位置（修改后 `m` 即可重编对应模块）**：
+
 - 系统服务：`frameworks/base/services/core/java/com/android/server/`（`ActivityManagerService`、`WindowManagerService`、`InputManagerService`、`PackageManagerService`…）
 - 公开 API：`frameworks/base/core/java/android/`
 - 应用框架：`frameworks/base/core/java/com/android/`
 - init / 早期用户态：`system/core/`（`init` 进程、`logcat`）
 
 增量编译技巧（只编改动模块，秒级~分钟级）：
+
 ```bash
 mmm frameworks/base/services        # 只编 services
 mm                                  # 在当前模块目录编当前模块
@@ -1768,6 +1813,7 @@ emulator
 首次启动会创建 `out/target/product/emulator64_x86_64/*.img` 对应的虚拟设备，几分钟进入桌面。若想加快启动加 `-writable-system` 或 `-no-snapshot` 按需。
 
 验证 Framework 已带符号/可调试：
+
 ```bash
 adb shell getprop ro.build.type     # 输出 eng
 adb root                            # eng 版可直接 root
@@ -1812,42 +1858,46 @@ adb shell
 
 ## 7. 常见问题与排错（Debian 13 / WSL2）
 
-**Q1：`python: command not found`**
+**Q1：`python: command not found`**  
 A：装 `python-is-python3`（第 1 节已含），或手动 `sudo ln -s /usr/bin/python3 /usr/bin/python`。
 
-**Q2：`repo: command not found`**
+**Q2：`repo: command not found`**  
 A：`~/.bin` 未进 PATH。确认 `~/.bashrc` 里有 `export PATH=~/.bin:$PATH` 且已 `source`。
 
-**Q3：Java 版本不对（提示需要 17）**
+**Q3：Java 版本不对（提示需要 17）**  
 A：`sudo update-alternatives --config java` 切到 openjdk-17；`java -version` 复核。
 
-**Q4：磁盘空间不足 / WSL 虚拟磁盘报错 `No space left on device`**
+**Q4：磁盘空间不足 / WSL 虚拟磁盘报错 `No space left on device`**  
 A：AOSP 需约 350–400GB。WSL2 虚拟磁盘默认自动随 C 盘空间增长，但若 C 盘本身紧张，可把 WSL 迁移到其他盘：
+
 ```powershell
 # 在 Windows PowerShell 中
 wsl --export Debian D:\wsl\debian.tar
 wsl --unregister Debian
 wsl --import Debian D:\wsl\debian D:\wsl\debian.tar
 ```
+
 迁移后 `~/aosp` 仍在 Linux 文件系统内，不受影响。
 
-**Q5：内存不足导致 `java.lang.OutOfMemoryError` 或 `ld` 被杀**
+**Q5：内存不足导致 `java.lang.OutOfMemoryError` 或 `ld` 被杀**  
 A：在 Windows 用户目录建 `%USERPROFILE%\.wslconfig`：
+
 ```
 [wsl2]
 memory=16GB
 processors=8
 swap=8GB
 ```
+
 保存后 `wsl --shutdown` 重启 Debian 生效。你机器 WSL 已分 23GB，一般无需改。
 
-**Q6：`repo sync` 卡在 `Receiving objects` / 网络超时**
+**Q6：`repo sync` 卡在 `Receiving objects` / 网络超时**  
 A：确认用了清华镜像 + 设置 `REPO_URL`；必要时挂代理；中断后重复 `repo sync` 会自动续传。
 
-**Q7：编译报 `flex`/`bison` 版本相关错误**
+**Q7：编译报 `flex`/`bison` 版本相关错误**  
 A：Debian 13 的 flex/bison 较新，AOSP 14 一般兼容；若报具体符号错，优先 `repo sync` 到最新 `_rXX`，或 `make clean` 后重编。
 
-**Q8：模拟器启动黑屏 / `KVM` 不可用**
+**Q8：模拟器启动黑屏 / `KVM` 不可用**  
 A：WSL2 默认无 KVM，x86_64 模拟器走纯软件渲染仍可跑（较慢）。如需加速，可在 `.wslconfig` 加 `nestedVirtualization=true`（需 Windows 11 + 主机 BIOS 开启 VT-x）。若仍慢，考虑宿主机装 Android Studio 模拟器或用真机 `fastboot flash`。
 
 ---
@@ -1863,22 +1913,16 @@ A：WSL2 默认无 KVM，x86_64 模拟器走纯软件渲染仍可跑（较慢）
 
 > 下一步：若你希望我直接在你的 WSL 里**执行**上述步骤（安装依赖 → 拉源码 → 编译），告诉我即可；该过程耗时较长（首次全编数小时），建议放在后台运行并挂载镜像加速。
 
-
-
-
 ---
 
 # 三、Binder / AIDL
 
-
-
 ## binder_aidl.md
-
 
 # Android Binder 与 AIDL 完全解析
 
-> 面向 AOSP 代码层面的Binder核心流程 + AIDL 生成机制对照。
-> 内核路径：`drivers/android/binder.c` / `drivers/android/binder_alloc.c`
+> 面向 AOSP 代码层面的Binder核心流程 + AIDL 生成机制对照。>   
+> 内核路径：`drivers/android/binder.c` / `drivers/android/binder_alloc.c`>   
 > 用户态框架：`frameworks/native/libs/binder/*`、`frameworks/base/core/java/android/os/*`
 
 ---
@@ -1921,13 +1965,13 @@ interface IMyService {
 
 构建系统（`aidl` 工具）会生成 `IMyService.java`，结构固定为：
 
-| 生成物 | 说明 |
-|--------|------|
-| `interface IMyService extends IInterface` | 业务方法声明 + `Stub` / `Proxy` 内部类 |
-| `IMyService.Stub extends Binder implements IMyService` | 服务端基类，含 `onTransact()` 分发 |
-| `IMyService.Stub.Proxy implements IMyService` | 客户端代理，持有 `IBinder mRemote` |
-| `DESCRIPTOR` 常量 | 接口唯一描述符字符串 |
-| `TRANSACTION_* ` 常量 | 每个方法一个整数 `code` |
+| 生成物                                                    | 说明                            |
+| ------------------------------------------------------ | ----------------------------- |
+| `interface IMyService extends IInterface`              | 业务方法声明 + `Stub` / `Proxy` 内部类 |
+| `IMyService.Stub extends Binder implements IMyService` | 服务端基类，含 `onTransact()` 分发     |
+| `IMyService.Stub.Proxy implements IMyService`          | 客户端代理，持有 `IBinder mRemote`    |
+| `DESCRIPTOR` 常量                                        | 接口唯一描述符字符串                    |
+| `TRANSACTION_* ` 常量                                    | 每个方法一个整数 `code`               |
 
 ---
 
@@ -2039,22 +2083,26 @@ private static class Proxy implements IMyService {
 ## 4. 传输协议要点
 
 ### 4.1 transact code
+
 - 方法 → 整数 `code`（`FIRST_CALL_TRANSACTION` 起递增），`onTransact` 用 `switch(code)` 路由。
 - `INTERFACE_TRANSACTION` 用于 `queryLocalInterface` / `asBinder` 探活。
 
 ### 4.2 Parcel（数据载体）
+
 - `Parcel` 是 Binder 专用的序列化缓冲区，对应内核里 `binder_transaction_data` 的 `data.ptr.buffer`。
 - 一次 IPC：**所有 in 参数进 `data`，out 返回值进 `reply`**。
 - `writeToParcel` / `readFromParcel` 在自定义 `Parcelable` 上实现。
 
 ### 4.3 方向符 `in / out / inout`
-| 方向 | 语义 | 传输行为 |
-|------|------|----------|
-| `in`  | 仅入参 | 调用方 → 服务端，单向拷贝 |
-| `out` | 仅出参 | 服务端写回，客户端初始为空 |
-| `inout` | 双向 | 进、出各拷贝一次 |
+
+| 方向      | 语义  | 传输行为           |
+| ------- | --- | -------------- |
+| `in`    | 仅入参 | 调用方 → 服务端，单向拷贝 |
+| `out`   | 仅出参 | 服务端写回，客户端初始为空  |
+| `inout` | 双向  | 进、出各拷贝一次       |
 
 ### 4.4 `oneway`
+
 - AIDL 方法加 `oneway` → 调用端 `transact(..., FLAG_ONEWAY)`，驱动走 **异步事务**：
   - 占用 `free_async_space`（= 映射区一半，见 `binder_alloc_new_buf`）。
   - 不返回 `BR_REPLY`，无阻塞等待。
@@ -2084,6 +2132,7 @@ sequenceDiagram
 ```
 
 内核侧对照（详见《Binder 核心代码注释 流程》）：
+
 1. `IPCThreadState::transact` → `writeTransactionData` → `talkWithDriver`
 2. `ioctl(BINDER_WRITE_READ)` → `binder_ioctl_write_read`
 3. `binder_thread_write`（解析 `BC_TRANSACTION`）→ `binder_transaction`
@@ -2096,14 +2145,14 @@ sequenceDiagram
 
 ## 6. 关键方法对照表
 
-| 用户态 | 内核对应 | 作用 |
-|--------|----------|------|
-| `IBinder.transact()` | `binder_ioctl(BINDER_WRITE_READ)` | 发起 IPC |
-| `Binder.onTransact()` | `binder_thread_read` 的 `BR_TRANSACTION` 分支 | 服务端分发 |
-| `Parcel` | `binder_transaction_data.data` | 序列化缓冲区 |
-| `asInterface` / `queryLocalInterface` | — | 进程内直连 / 跨进程包 Proxy |
-| `linkToDeath` | `binder_thread_write(BC_REQUEST_DEATH_NOTIFICATION)` | 监听对端死亡 |
-| `FLAG_ONEWAY` | `TF_ONE_WAY` → `is_async` | 异步事务、半区限制 |
+| 用户态                                   | 内核对应                                                 | 作用                 |
+| ------------------------------------- | ---------------------------------------------------- | ------------------ |
+| `IBinder.transact()`                  | `binder_ioctl(BINDER_WRITE_READ)`                    | 发起 IPC             |
+| `Binder.onTransact()`                 | `binder_thread_read` 的 `BR_TRANSACTION` 分支           | 服务端分发              |
+| `Parcel`                              | `binder_transaction_data.data`                       | 序列化缓冲区             |
+| `asInterface` / `queryLocalInterface` | —                                                    | 进程内直连 / 跨进程包 Proxy |
+| `linkToDeath`                         | `binder_thread_write(BC_REQUEST_DEATH_NOTIFICATION)` | 监听对端死亡             |
+| `FLAG_ONEWAY`                         | `TF_ONE_WAY` → `is_async`                            | 异步事务、半区限制          |
 
 ---
 
@@ -2118,41 +2167,35 @@ sequenceDiagram
 
 ## 8. 速查路径
 
-| 关注点 | 文件 |
-|--------|------|
-| 驱动主逻辑 | `drivers/android/binder.c` |
-| buffer / 物理页 / LRU | `drivers/android/binder_alloc.c` |
-| 用户态 IPC 循环 | `frameworks/native/libs/binder/IPCThreadState.cpp` |
-| BpBinder / BinderProxy | `frameworks/native/libs/binder/BpBinder.cpp` |
-| Java 层 Binder | `frameworks/base/core/java/android/os/Binder.java` |
-| Java 层 Parcel | `frameworks/base/core/java/android/os/Parcel.java` |
-| AIDL 工具 | `frameworks/base/tools/aidl/` |
-
-
-
+| 关注点                    | 文件                                                 |
+| ---------------------- | -------------------------------------------------- |
+| 驱动主逻辑                  | `drivers/android/binder.c`                         |
+| buffer / 物理页 / LRU     | `drivers/android/binder_alloc.c`                   |
+| 用户态 IPC 循环             | `frameworks/native/libs/binder/IPCThreadState.cpp` |
+| BpBinder / BinderProxy | `frameworks/native/libs/binder/BpBinder.cpp`       |
+| Java 层 Binder          | `frameworks/base/core/java/android/os/Binder.java` |
+| Java 层 Parcel          | `frameworks/base/core/java/android/os/Parcel.java` |
+| AIDL 工具                | `frameworks/base/tools/aidl/`                      |
 
 ---
 
 # 四、AMS / 四大组件
 
-
-
 ## ams_deep_dive.md
-
 
 # AMS 深度讲解（Android 14 AOSP）
 
-> 基于 AOSP **Android 14 (UpsideDownCake, API 34)**。全程贴真实文件路径 + 方法名。
+> 基于 AOSP **Android 14 (UpsideDownCake, API 34)**。全程贴真实文件路径 + 方法名。>   
 > 配套实战见 `ams_modify_practice.md`（修改 AMS/ATMS 的 patch 与编译链路）。
 
 ---
 
 ## 0. 一句话定位
 
-`ActivityManagerService`（AMS）是 `system_server` 进程里**最核心的系统服务**，负责：
+`ActivityManagerService`（AMS）是 `system_server` 进程里**最核心的系统服务**，负责：  
 **进程生命周期、应用进程孵化、四大组件中的 Service / Broadcast / ContentProvider、内存/OOM 管控、权限与 UID 校验、ANR 检测**。
 
-> ⚠️ 关键前置认知（必须记住）：**从 Android 10 起，Activity 的启动/任务栈/生命周期状态机已经从 AMS 拆到了 `ActivityTaskManagerService`（ATMS，`frameworks/base/services/core/java/com/android/server/wm/`）**。
+> ⚠️ 关键前置认知（必须记住）：**从 Android 10 起，Activity 的启动/任务栈/生命周期状态机已经从 AMS 拆到了 `ActivityTaskManagerService`（ATMS，`frameworks/base/services/core/java/com/android/server/wm/`）**。>   
 > 所以严格说，AMS **不再管 Activity 的栈和 Resume 流转**。AMS 现在管的是"进程 + 非 Activity 的三大组件 + 内存"。但 AMS 仍然是四大组件的"总调度"，因为它持有进程、持有 Binder 通道、持有权限上下文。
 
 ---
@@ -2160,7 +2203,9 @@ sequenceDiagram
 ## 1. AMS 在系统里的位置
 
 ### 1.1 启动时机
+
 `system_server` 在 `frameworks/base/services/java/com/android/server/SystemServer.java` 中分阶段拉起服务：
+
 - `startBootstrapServices()`：拉起 `ActivityManagerService.Lifecycle`，AMS 是最早的核心服务之一（因为它要给后续服务创建运行进程）。
   ```java
   // SystemServer.java
@@ -2172,6 +2217,7 @@ sequenceDiagram
 - `mActivityManagerService.systemReady(...)`：系统就绪后回调各服务，触发 Home 启动。
 
 ### 1.2 Binder 拓扑
+
 AMS 处在"所有 app 进程 ↔ system_server"的枢纽位置，定义了三套 Binder 接口：
 
 ```
@@ -2186,7 +2232,9 @@ app 进程 ──IActivityTaskManager▶ ATMS        (Activity 启动入口，An
 - 客户端壳：`ActivityManager.java` / `ActivityTaskManager.java`（`core/java/android/app/`），内部 `getService()` 取 `ServiceManager.getService("activity")`。
 
 ### 1.3 AMS 与 ATMS 的同进程协作
+
 AMS 和 ATMS **都运行在 `system_server` 同一个进程里**。它们互相调用有两条路径：
+
 1. **远程 Binder**（`IActivityManager` / `IActivityTaskManager`）：跨进程语义，但同进程时 Binder 驱动会优化为直接调用（oneway 异步语义保留）。
 2. **Internal 接口（直接方法调用，无 Binder）**：AMS 持有 `ActivityTaskManagerInternal`（ATMS 的内部类实现），ATMS 持有 `ActivityManagerInternal`（AMS 的内部类实现）。这是高频调用优先走的方式，避免 Binder 开销。
 
@@ -2201,15 +2249,15 @@ final ActivityManagerInternal mAmInternal;          // = AMS 的实现
 
 ## 2. AMS vs ATMS vs WMS 职责边界（最重要）
 
-| 维度 | AMS (`server/am/`) | ATMS (`server/wm/`) | WMS（`server/wm/WindowManagerService`） |
-|---|---|---|---|
-| Activity 栈 / Task / Resume | ❌（仅入口转发） | ✅ `ActivityStarter`/`Task`/`ActivityStack` | 窗口层级、Surface 归属 |
-| 进程孵化 / 管理 | ✅ `ProcessList` | 经 `ActivityManagerInternal` 请求 AMS | 不涉及 |
-| Service | ✅ `ActiveServices` | ❌ | ❌ |
-| Broadcast | ✅ `BroadcastQueue*` | ❌ | ❌ |
-| ContentProvider | ✅ `ContentProviderHelper` | ❌ | ❌ |
-| 内存 / OOM | ✅ `OomAdjuster` | 提供可见性/前台状态给 AMS | 窗口可见性影响 oom_adj |
-| 权限 / UID | ✅ `checkPermission`/`enforcePermission` | 复用 AMS | 复用 AMS |
+| 维度                         | AMS (`server/am/`)                      | ATMS (`server/wm/`)                        | WMS（`server/wm/WindowManagerService`） |
+| -------------------------- | --------------------------------------- | ------------------------------------------ | ------------------------------------- |
+| Activity 栈 / Task / Resume | ❌（仅入口转发）                                | ✅ `ActivityStarter`/`Task`/`ActivityStack` | 窗口层级、Surface 归属                       |
+| 进程孵化 / 管理                  | ✅ `ProcessList`                         | 经 `ActivityManagerInternal` 请求 AMS         | 不涉及                                   |
+| Service                    | ✅ `ActiveServices`                      | ❌                                          | ❌                                     |
+| Broadcast                  | ✅ `BroadcastQueue*`                     | ❌                                          | ❌                                     |
+| ContentProvider            | ✅ `ContentProviderHelper`               | ❌                                          | ❌                                     |
+| 内存 / OOM                   | ✅ `OomAdjuster`                         | 提供可见性/前台状态给 AMS                            | 窗口可见性影响 oom_adj                       |
+| 权限 / UID                   | ✅ `checkPermission`/`enforcePermission` | 复用 AMS                                     | 复用 AMS                                |
 
 > 实战铁律：**改「启动行为 / 栈调度 / 生命周期」→ 动 ATMS；改「进程 / 广播 / Service / OOM」→ 动 AMS**。改错文件是新手第一大坑（详见 `ams_modify_practice.md` §6）。
 
@@ -2218,20 +2266,24 @@ final ActivityManagerInternal mAmInternal;          // = AMS 的实现
 ## 3. 核心数据结构
 
 ### 3.1 `ProcessRecord`（`server/am/ProcessRecord.java`）
-一个进程的全部状态机。AMS 用 `mProcessNames`（按 processName+uid 索引）和 `mPidsSelfLocked`（按 pid 索引）两张表管理。
+
+一个进程的全部状态机。AMS 用 `mProcessNames`（按 processName+uid 索引）和 `mPidsSelfLocked`（按 pid 索引）两张表管理。  
 关键子记录：
+
 - `ProcessProfileRecord`：CPU、内存、procstate。
 - `ProcessServices`：该进程运行的 Service。
 - `ProcessPackageInfo`：加载的包。
 - `ProcessCachedOptimizerRecord`：缓存进程优化状态。
 
 ### 3.2 其他组件记录
+
 - `ServiceRecord`（`server/am/ServiceRecord.java`）—— 一个 Service 实例。
 - `BroadcastRecord`（`server/am/BroadcastRecord.java`）—— 一次广播分发。
 - `ContentProviderRecord`（`server/am/ContentProviderHelper` 管理）—— 一个 Provider。
 - `ActivityRecord` / `Task` / `ActivityStack`（`server/wm/`）—— Activity 侧，归 ATMS。
 
 ### 3.3 UID / 进程映射
+
 AMS 以 `(processName, uid)` 作为进程唯一键。同一个 uid 可跑多个进程（多进程组件），所以不是"一 uid 一进程"。
 
 ---
@@ -2239,10 +2291,13 @@ AMS 以 `(processName, uid)` 作为进程唯一键。同一个 uid 可跑多个�
 ## 4. 进程管理：从 fork 到 Application
 
 ### 4.1 发起启动
+
 当 ATMS 决定要启动一个目标进程还没起来的 Activity 时，通过 `ActivityManagerInternal.startProcess()` → AMS → `ProcessList.startProcessLocked(...)`。
 
 ### 4.2 `ProcessList.startProcessLocked`
+
 路径：`server/am/ProcessList.java`
+
 ```java
 // 关键入参：processName, ApplicationInfo info, ...
 final ProcessRecord startProcessLocked(String processName, ApplicationInfo info,
@@ -2253,19 +2308,24 @@ final ProcessRecord startProcessLocked(String processName, ApplicationInfo info,
     //    → 最终调 Process.start()（core/java/android/os/Process.java）
 }
 ```
+
 `Process.start()` 内部走 `ZygoteProcess`：
+
 ```
 Process.start()
   → ZygoteProcess.start()
     → openZygoteSocketIfNeeded(abi)
     → zygoteSendArgsAndGetResult(openZygoteSocketIfNeeded, args)
 ```
+
 通过 **Unix Domain Socket**（`/dev/socket/zygote`）把参数（uid、gid、niceName、targetSdk、fdsToClose 等）发给 Zygote。Zygote 收到后 `fork()`，子进程反射调用 `ActivityThread.main()`。
 
 > 这套 socket 协议就是「Zygote 预加载 + fork 复用」的核心：应用进程不是从零 `execve`，而是从 Zygote `fork` 出来，直接继承已加载的 framework 类与资源，启动快几十倍。详细见 `binder_aidl.md` / `android_framework_paper.md`。
 
 ### 4.3 app 进程回连：attachApplication
+
 子进程 `ActivityThread.main()` 做三件事：
+
 ```java
 // core/java/android/app/ActivityThread.java
 public static void main(String[] args) {
@@ -2275,14 +2335,18 @@ public static void main(String[] args) {
     Looper.loop();
 }
 ```
+
 `attach()` 里通过 Binder 回连 AMS：
+
 ```java
 final IActivityManager mgr = ActivityManager.getService();
 mgr.attachApplication(mAppThread, startSeq);   // mAppThread 是 ApplicationThread (IApplicationThread 实现)
 ```
 
 ### 4.4 `AMS.attachApplicationLocked`
+
 路径：`server/am/ActivityManagerService.java`
+
 ```java
 boolean attachApplicationLocked(@NonNull IApplicationThread thread, long startSeq) {
     // 1. 校验 startSeq，防伪造
@@ -2293,7 +2357,9 @@ boolean attachApplicationLocked(@NonNull IApplicationThread thread, long startSe
     // 5. 调度 pending 的 Service / Broadcast
 }
 ```
+
 app 侧收到 `bindApplication` 后走 `ActivityThread.handleBindApplication()`：
+
 - 创建 `ContextImpl` / `LoadedApk`
 - `makeApplication()` → `Instrumentation.callApplicationOnCreate(app)` → `Application.onCreate()`
 
@@ -2329,6 +2395,7 @@ sequenceDiagram
 ```
 
 要点：
+
 1. **入口在 ATMS，不在 AMS**。App 端 `Instrumentation.execStartActivity()` 调的是 `ActivityTaskManager.getService().startActivity(...)`（Android 10+）。AMS 的 `startActivity` 仍保留，但常规路径不直接进。
 2. `ActivityStarter.execute()` → `startActivityUnchecked()`：处理 `Intent` 解析、`FLAG_ACTIVITY_*`、Task 复用、权限（`AppOpsManager` + `ActivityTaskManagerInternal` 的权限钩子）。
 3. 若目标进程不存在，`ActivityStarter` 通过 `mService.startProcessAsync()`（ATMS 侧）→ `ActivityManagerInternal.startProcess()` → `ProcessList`。
@@ -2352,6 +2419,7 @@ ClientTransaction.obtain(appThread, appToken)
     .setLifecycleStateRequest(ResumeActivityItem.obtain(...));
 mService.getLifecycleManager().scheduleTransaction(transaction);
 ```
+
 AMS → app 方向通过 `IApplicationThread.scheduleTransaction()` 把事务传过去，app 端 `H` Handler 切到主线程执行。
 
 > 这套机制的好处：生命周期状态机由「ATMS 持有 ActivityRecord 的目标状态」+「ClientTransaction 表达如何到达该状态」驱动，避免了老架构里跨进程调用顺序错乱导致的状态不一致。
@@ -2361,18 +2429,22 @@ AMS → app 方向通过 `IApplicationThread.scheduleTransaction()` 把事务传
 ## 7. Service / Broadcast / Provider 管理
 
 ### 7.1 Service —— `ActiveServices`（`server/am/ActiveServices.java`）
+
 - `startServiceLocked()` / `bindServiceLocked()`：校验、查 `ServiceRecord`、必要时拉进程。
 - `bringUpServiceLocked()`：若进程没起，同样走 `ProcessList`。
 - `scheduleCreateService()` / `scheduleBindService()`：经 `IApplicationThread` 通知 app 的 `ActivityThread.handleCreateService()`。
 - 前台 Service（`startForegroundService`）有 `onTimeout` ANR 约束（`mAm.mConstants` 里的 `SERVICE_START_FOREGROUND_TIMEOUT`）。
 
 ### 7.2 Broadcast —— `BroadcastQueue*`（`server/am/`）
+
 Android 12+ 默认走 `BroadcastQueueModernImpl`（基于 `BroadcastQueue` 抽象类）：
+
 - 入队：`enqueueBroadcastLocked()` / `enqueueParallelBroadcastLocked()`。
 - 分发：`processNextBroadcastLocked()`：处理有序/无序、接收者 uid 过滤、`FLAG_RECEIVER_EXCLUDE_STOPPED_PACKAGES`、超时（有序广播 `BROADCAST_TIMEOUT` → ANR）。
 - 后台限制：隐式后台广播受限（`backgroundActivityStart` 相关），保护耗电与隐私。
 
 ### 7.3 ContentProvider —— `ContentProviderHelper`（`server/am/ContentProviderHelper.java`）
+
 - `getContentProviderImpl()`：按 authority 找 `ContentProviderRecord`，进程没起则拉起。
 - Provider 进程启动后，`attachApplicationLocked` 会把进程持有的 providers 通过 `publishContentProviders()` 注册回 AMS，其他进程后续 `acquireProvider` 直接拿已发布的句柄。
 - Provider 的 `stable` / `unstable` 引用影响 AMS 对宿主进程的 oom_adj（持有 stable 引用的 Provider 进程不易被杀）。
@@ -2382,26 +2454,31 @@ Android 12+ 默认走 `BroadcastQueueModernImpl`（基于 `BroadcastQueue` 抽�
 ## 8. 内存与 OOM 管控
 
 ### 8.1 `OomAdjuster`（`server/am/OomAdjuster.java`）
+
 AMS 周期性（或由 `updateOomAdj` 触发）调用：
+
 ```java
 computeOomAdjLSP(ProcessRecord app, int cachedAdj, ...)  // LSP = Locked, Single Process
 ```
+
 根据进程是否前台/可见/有前台 Service/正在响应用户输入等，算出一个 `oom_score_adj`（写进 `/proc/<pid>/oom_score_adj`）。
 
 关键 adj 档位（`ProcessList.java` 常量）：
-| 常量 | 值 | 含义 |
-|---|---|---|
-| `NATIVE_ADJ` | -1000 | native 进程 |
-| `SYSTEM_ADJ` | -900 | system_server |
-| `PERSISTENT_PROC_ADJ` | -800 | 常驻系统进程 |
-| `FOREGROUND_APP_ADJ` | 0 | 前台 App |
-| `VISIBLE_APP_ADJ` | 100 | 可见但未前台 |
-| `PERCEPTIBLE_APP_ADJ` | 200 | 可感知（如后台播放） |
-| `SERVICE_ADJ` | 500 | 含运行中的 Service |
-| `HOME_APP_ADJ` | 600 | Launcher |
-| `CACHED_APP_MIN_ADJ` | 900 | 缓存进程（最易被杀） |
+
+| 常量                    | 值     | 含义            |
+| --------------------- | ----- | ------------- |
+| `NATIVE_ADJ`          | -1000 | native 进程     |
+| `SYSTEM_ADJ`          | -900  | system_server |
+| `PERSISTENT_PROC_ADJ` | -800  | 常驻系统进程        |
+| `FOREGROUND_APP_ADJ`  | 0     | 前台 App        |
+| `VISIBLE_APP_ADJ`     | 100   | 可见但未前台        |
+| `PERCEPTIBLE_APP_ADJ` | 200   | 可感知（如后台播放）    |
+| `SERVICE_ADJ`         | 500   | 含运行中的 Service |
+| `HOME_APP_ADJ`        | 600   | Launcher      |
+| `CACHED_APP_MIN_ADJ`  | 900   | 缓存进程（最易被杀）    |
 
 ### 8.2 lmkd 与回收
+
 - 用户态 `lmkd`（native，源码 `system/core/lmkd/`）读取各进程 `oom_score_adj`，在内存紧张时按 adj 由高到低杀进程。
 - AMS 通过 `ProcessList` / `OomAdjuster` 维护并刷新 adj；WMS 提供窗口可见性、ATMS 提供前后台 Activity 信息作为输入。
 - `dumpsys activity oom` 可直接看当前 adj 计算结果。
@@ -2410,12 +2487,12 @@ computeOomAdjLSP(ProcessRecord app, int cachedAdj, ...)  // LSP = Locked, Single
 
 ## 9. 关键 Binder 接口清单（速查）
 
-| 接口 | 方向 | 典型方法 |
-|---|---|---|
-| `IActivityManager` | app → AMS | `startActivity`, `startService`, `bindService`, `broadcastIntent`, `getMemoryInfo`, `attachApplication`, `checkPermission`, `killBackgroundProcesses` |
-| `IApplicationThread` | AMS → app | `bindApplication`, `scheduleTransaction`, `scheduleReceiver`, `scheduleServiceArgs`, `scheduleBindService` |
-| `IActivityTaskManager` | app → ATMS | `startActivity`, `moveTaskToFront`, `removeTask`, `getTasks` |
-| `IActivityManager / ActivityManagerNative` 内部 | ATMS ↔ AMS | 经 `ActivityManagerInternal` / `ActivityTaskManagerInternal` 同进程直调 |
+| 接口                                            | 方向         | 典型方法                                                                                                                                                  |
+| --------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IActivityManager`                            | app → AMS  | `startActivity`, `startService`, `bindService`, `broadcastIntent`, `getMemoryInfo`, `attachApplication`, `checkPermission`, `killBackgroundProcesses` |
+| `IApplicationThread`                          | AMS → app  | `bindApplication`, `scheduleTransaction`, `scheduleReceiver`, `scheduleServiceArgs`, `scheduleBindService`                                            |
+| `IActivityTaskManager`                        | app → ATMS | `startActivity`, `moveTaskToFront`, `removeTask`, `getTasks`                                                                                          |
+| `IActivityManager / ActivityManagerNative` 内部 | ATMS ↔ AMS | 经 `ActivityManagerInternal` / `ActivityTaskManagerInternal` 同进程直调                                                                                     |
 
 ---
 
@@ -2470,11 +2547,7 @@ graph TD
 
 > 记住这张图就能回答 90% 的「AMS 到底管什么」类问题：**进程 + Service + Broadcast + Provider + 内存，外加 Activity 的入口转发与生命周期事务下发；Activity 的栈逻辑在 ATMS。**
 
-
-
-
 ## ams_modify_practice.md
-
 
 # 修改 AMS 实战技术文档
 
@@ -2495,17 +2568,18 @@ graph TD
 
 ## 1 代码定位速查表
 
-| 你想改的行为 | 目标文件(`frameworks/base/services/core/java/com/android/server/`) | 关键方法 |
-|---|---|---|
-| Activity 启动入口 / 权限校验 | `am/ActivityManagerService.java` | `startActivity` / `startActivityAsUser` |
+| 你想改的行为                        | 目标文件(`frameworks/base/services/core/java/com/android/server/`)                                        | 关键方法                                                                         |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Activity 启动入口 / 权限校验          | `am/ActivityManagerService.java`                                                                      | `startActivity` / `startActivityAsUser`                                      |
 | Activity 栈 / Task / Resume 流转 | `wm/ActivityTaskManagerService.java`、`wm/ActivityStarter.java`、`wm/ActivityStack.java`、`wm/Task.java` | `startActivityAsUser` → `ActivityStarter.execute()` → `startActivityInner()` |
-| 进程孵化 / 管理 | `am/ProcessList.java`、`am/ProcessRecord.java` | `startProcessLocked` |
-| Service 生命周期 | `am/ActiveServices.java` | `startServiceLocked` / `bindServiceLocked` |
-| 广播分发 | `am/BroadcastQueue.java`、`am/BroadcastQueueModernImpl.java` | `enqueueBroadcastLocked` / `processNextBroadcast` |
-| OOM adj 计算 | `am/OomAdjuster.java` | `computeOomAdjLSP` |
-| shell 命令 `am ...` | `am/ActivityManagerShellCommand.java` | `onCommand` |
+| 进程孵化 / 管理                     | `am/ProcessList.java`、`am/ProcessRecord.java`                                                         | `startProcessLocked`                                                         |
+| Service 生命周期                  | `am/ActiveServices.java`                                                                              | `startServiceLocked` / `bindServiceLocked`                                   |
+| 广播分发                          | `am/BroadcastQueue.java`、`am/BroadcastQueueModernImpl.java`                                           | `enqueueBroadcastLocked` / `processNextBroadcast`                            |
+| OOM adj 计算                    | `am/OomAdjuster.java`                                                                                 | `computeOomAdjLSP`                                                           |
+| shell 命令 `am ...`             | `am/ActivityManagerShellCommand.java`                                                                 | `onCommand`                                                                  |
 
 **对外 Binder 接口(AIDL)**:
+
 - `frameworks/base/core/java/android/app/IActivityManager.aidl` —— AMS 的远程接口。
 - `frameworks/base/core/java/android/app/IActivityTaskManager.aidl` —— ATMS 的远程接口。
 - 客户端壳:`ActivityManager.java` / `ActivityTaskManager.java`(`core/java/android/app/`)。
@@ -2543,12 +2617,14 @@ public int startActivityAsUser(IApplicationThread caller, String callingPackage,
 给 AMS 加一个自定义方法 `myCustomCheck`,是「扩展 framework 能力」的标准三步。**顺序不能错,否则 `system_server` 起不来。**
 
 **Step 1 — 改 AIDL(远程接口声明)**
+
 ```aidl
 // frameworks/base/core/java/android/app/IActivityManager.aidl
 + boolean myCustomCheck(String pkg);
 ```
 
 **Step 2 — 在 AMS 实现(不实现就 `AbstractMethodError` → system_server 崩溃循环)**
+
 ```java
 // .../server/am/ActivityManagerService.java
 @Override
@@ -2560,6 +2636,7 @@ public boolean myCustomCheck(String pkg) {
 ```
 
 **Step 3 — 客户端壳(app 侧可调)**
+
 ```java
 // frameworks/base/core/java/android/app/ActivityManager.java
 public boolean myCustomCheck(String pkg) {
@@ -2577,18 +2654,20 @@ public boolean myCustomCheck(String pkg) {
 
 ## 4 三份可直接套的 patch(`ams_patches/`)
 
-| patch | 作用 | 落点 | 编译范围 |
-|---|---|---|---|
-| `01_intercept_pkg_launch.patch` | 在 `startActivityAsUser` 开头读 `persist.myams.enable_block` + `persist.myams.block_pkg`,命中则 `return ActivityManager.START_CANCELED` 拦截启动 | `am/ActivityManagerService.java` | `m services` |
-| `02_cmd_activity_switch.patch` | 在 `ActivityManagerShellCommand.onCommand` 加 `am myams block <pkg>` / `unblock` / `status`,运行时写上面两个属性,与 01 **联动、无需重编即可开关** | `am/ActivityManagerShellCommand.java` | `m services` |
-| `03_hidden_api_myCustomCheck.patch` | 示例 B 落地:AIDL + AMS 实现 + `ActivityManager.java` 客户端壳 | `IActivityManager.aidl` + 2 处 | 改 AIDL 必须 `m` |
+| patch                               | 作用                                                                                                                                    | 落点                                    | 编译范围          |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------- |
+| `01_intercept_pkg_launch.patch`     | 在 `startActivityAsUser` 开头读 `persist.myams.enable_block` + `persist.myams.block_pkg`,命中则 `return ActivityManager.START_CANCELED` 拦截启动 | `am/ActivityManagerService.java`      | `m services`  |
+| `02_cmd_activity_switch.patch`      | 在 `ActivityManagerShellCommand.onCommand` 加 `am myams block <pkg>` / `unblock` / `status`,运行时写上面两个属性,与 01 **联动、无需重编即可开关**             | `am/ActivityManagerShellCommand.java` | `m services`  |
+| `03_hidden_api_myCustomCheck.patch` | 示例 B 落地:AIDL + AMS 实现 + `ActivityManager.java` 客户端壳                                                                                   | `IActivityManager.aidl` + 2 处         | 改 AIDL 必须 `m` |
 
-> 每个 patch 头部都写了**「定位插入点」**;行号是 Android 14 典型 hunk 的参考值,你手上具体 tag 可能偏移,**推荐按插入点手动贴**(比 `git apply` 稳)。
+> 每个 patch 头部都写了\*\*「定位插入点」\*\*;行号是 Android 14 典型 hunk 的参考值,你手上具体 tag 可能偏移,**推荐按插入点手动贴**(比 `git apply` 稳)。
 
 **运行时开关设计(01 + 02 联动的价值)**:实战中常用 `SystemProperties` / `Settings.Global` 做功能开关,避免每次改逻辑都重编刷机。例:
+
 ```java
 if (SystemProperties.getBoolean("persist.myams.enable_block", false)) { /* 拦截逻辑 */ }
 ```
+
 改完刷一次机后,后续只需 `am myams block com.xxx` 即可动态开关。
 
 ---
@@ -2596,6 +2675,7 @@ if (SystemProperties.getBoolean("persist.myams.enable_block", false)) { /* 拦�
 ## 5 最短编译 + 验证链路
 
 **只改了 AMS/ATMS 的 `.java`(未动 AIDL)** —— 只重编 `services.jar`,1~3 分钟:
+
 ```bash
 source build/envsetup.sh
 lunch aosp_cf_x86_64_phone-userdebug   # 或你的 target
@@ -2603,6 +2683,7 @@ m services -j$(nproc)                   # 产物: out/.../system/framework/servi
 ```
 
 **推送验证(必须 reboot,services.jar 不重启不生效)**:
+
 ```bash
 adb root && adb remount
 adb push out/target/product/<device>/system/framework/services.jar /system/framework/
@@ -2616,6 +2697,7 @@ adb shell am myams block com.xxx.yyy    # 运行时开关
 ```
 
 **改了 AIDL / framework 客户端壳** —— 必须整编:
+
 ```bash
 m framework services -j$(nproc)   # 或直接 m
 ```
@@ -2639,17 +2721,11 @@ m framework services -j$(nproc)   # 或直接 m
 - Android 14 全量/增量/内核/模拟器编译、添加系统 App → `android14_build.md`(§1–§12)
 - 本文的三份 patch → `ams_patches/01_intercept_pkg_launch.patch` / `02_cmd_activity_switch.patch` / `03_hidden_api_myCustomCheck.patch`
 
-
-
-
 ---
 
 # 五、HAL / 外设适配
 
-
-
 ## hal_android14.md
-
 
 # Android 14 HAL 架构深度解析
 
@@ -2701,12 +2777,12 @@ flowchart TB
 
 老的 `hardware/interfaces/*` 下的 `.hal` 文件仍存在但冻结，新接口全部走 `aidl_interface`（Soong）。
 
-| 维度 | HIDL（冻结） | AIDL HAL（现行） |
-|------|-------------|------------------|
-| 接口定义 | `hardware/interfaces/foo/1.0/IFoo.hal` | `hardware/interfaces/foo/aidl/android/hardware/foo/IFoo.aidl` |
-| 生成桩 | `IFoo.hal → hwbinder` | 走 `libbinder` 的稳定桩 |
-| binder 域 | `hwservicemanager`（`/dev/hwbinder`，仍保留） | `servicemanager`（`/dev/binder`） |
-| Soong 声明 | `hidl_interface` | `aidl_interface` + `vendor_available: true` + `vndk.enabled`（或 `stability: "vintf"`） |
+| 维度       | HIDL（冻结）                                | AIDL HAL（现行）                                                                         |
+| -------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
+| 接口定义     | `hardware/interfaces/foo/1.0/IFoo.hal`  | `hardware/interfaces/foo/aidl/android/hardware/foo/IFoo.aidl`                        |
+| 生成桩      | `IFoo.hal → hwbinder`                   | 走 `libbinder` 的稳定桩                                                                   |
+| binder 域 | `hwservicemanager`（`/dev/hwbinder`，仍保留） | `servicemanager`（`/dev/binder`）                                                      |
+| Soong 声明 | `hidl_interface`                        | `aidl_interface` + `vendor_available: true` + `vndk.enabled`（或 `stability: "vintf"`） |
 
 > Android 14 绝大多数新 HAL（audio、camera、vibrator、gnss、sensors、rebootescrow 等）都是 **AIDL**。
 
@@ -2729,21 +2805,21 @@ flowchart TB
 
 ## 3. 关键源码路径（android-14.0.0_r*）
 
-| 角色 | 路径 |
-|------|------|
-| AIDL HAL 接口定义总目录 | `hardware/interfaces/` |
-| 参考默认实现 | `hardware/interfaces/<mod>/aidl/default/`（如 `hardware/interfaces/vibrator/aidl/default/Vibrator.cpp`） |
-| HIDL（冻结）工具链 | `system/tools/hidl/` |
-| AIDL 编译器 | `system/tools/aidl/` |
-| servicemanager | `system/core/servicemanager/`（`service-manager.c`、`binder.c`） |
-| VINTF 库 | `system/libvintf/`（`VintfObject.cpp`、`parse_string.cpp`） |
-| libhidlbase | `system/libhidl/transport/` |
-| libbinder（vendor 用） | `frameworks/native/libs/binder/` |
-| init + rc 解析 | `system/core/init/`（`service.cpp`、`parser.cpp`） |
-| SELinux 策略 | `system/sepolicy/` + `device/<oem>/<device>/sepolicy/` |
-| 音频 HAL（server） | `frameworks/av/services/audioflinger/`（client）+ vendor 侧 `android.hardware.audio` |
-| 相机 HAL | `hardware/interfaces/camera/` + `frameworks/av/services/camera/` |
-| 图形 / SurfaceFlinger | `frameworks/native/services/surfaceflinger/` + `hardware/interfaces/graphics/` |
+| 角色                  | 路径                                                                                                    |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| AIDL HAL 接口定义总目录    | `hardware/interfaces/`                                                                                |
+| 参考默认实现              | `hardware/interfaces/<mod>/aidl/default/`（如 `hardware/interfaces/vibrator/aidl/default/Vibrator.cpp`） |
+| HIDL（冻结）工具链         | `system/tools/hidl/`                                                                                  |
+| AIDL 编译器            | `system/tools/aidl/`                                                                                  |
+| servicemanager      | `system/core/servicemanager/`（`service-manager.c`、`binder.c`）                                         |
+| VINTF 库             | `system/libvintf/`（`VintfObject.cpp`、`parse_string.cpp`）                                              |
+| libhidlbase         | `system/libhidl/transport/`                                                                           |
+| libbinder（vendor 用） | `frameworks/native/libs/binder/`                                                                      |
+| init + rc 解析        | `system/core/init/`（`service.cpp`、`parser.cpp`）                                                       |
+| SELinux 策略          | `system/sepolicy/` + `device/<oem>/<device>/sepolicy/`                                                |
+| 音频 HAL（server）      | `frameworks/av/services/audioflinger/`（client）+ vendor 侧 `android.hardware.audio`                     |
+| 相机 HAL              | `hardware/interfaces/camera/` + `frameworks/av/services/camera/`                                      |
+| 图形 / SurfaceFlinger | `frameworks/native/services/surfaceflinger/` + `hardware/interfaces/graphics/`                        |
 
 ---
 
@@ -2810,11 +2886,7 @@ VibratorService.vibrate(...)                  // frameworks/base/.../VibratorSer
 
 *基于 AOSP android-14.0.0_r* · 配合 Binder / Settings 分析食用*
 
-
-
-
 ## hal_version_history.md
-
 
 # Android HAL 版本演进史（Android 7.1 → 14）
 
@@ -2857,13 +2929,13 @@ timeline
 
 ## 1. 前 Treble 时代（≤ Android 7.1 / Nougat）
 
-| 维度 | 说明 |
-|------|------|
-| 接口定义 | `hardware/libhardware/include/hardware/hardware.h`：`hw_module_t` / `hw_device_t` |
-| 加载方式 | `hw_get_module()` 按 `ro.hardware`、`ro.product.board` 等属性查找 `.so`，**直接 `dlopen` 进调用进程** |
-| 模块路径 | `/system/lib/hw/` + `/vendor/lib/hw/`，形如 `<module>.default.so`、`<module>.<variant>.so` |
+| 维度   | 说明                                                                                         |
+| ---- | ------------------------------------------------------------------------------------------ |
+| 接口定义 | `hardware/libhardware/include/hardware/hardware.h`：`hw_module_t` / `hw_device_t`           |
+| 加载方式 | `hw_get_module()` 按 `ro.hardware`、`ro.product.board` 等属性查找 `.so`，**直接 `dlopen` 进调用进程**     |
+| 模块路径 | `/system/lib/hw/` + `/vendor/lib/hw/`，形如 `<module>.default.so`、`<module>.<variant>.so`     |
 | 进程模型 | HAL `.so` 被加载进 framework 进程（`surfaceflinger`、`audioserver`、`system_server` 等）——**同进程、无隔离** |
-| 版本契约 | 无。framework 与 vendor 代码强耦合，**OTA 升级必崩 vendor 实现** |
+| 版本契约 | 无。framework 与 vendor 代码强耦合，**OTA 升级必崩 vendor 实现**                                          |
 
 这是 Treble 要解决的痛点：每次 Android 大版本升级，芯片厂都要重新适配 HAL，导致碎片化。
 
@@ -2935,11 +3007,11 @@ timeline
 
 ## 9. 三个 binder 域对照（Android 14）
 
-| 服务管理器 | 二进制 | binder 节点 | 域 | 管理对象 |
-|-----------|--------|------------|-----|---------|
-| `servicemanager` | `system/bin/servicemanager` | `/dev/binder` | framework ↔ framework / **AIDL HAL** | 系统服务 + 新 AIDL HAL |
-| `hwservicemanager` | `vendor/bin/hwservicemanager` | `/dev/hwbinder` | framework ↔ **HIDL HAL** | 遗留 HIDL HAL |
-| `vndservicemanager` | `system/bin/servicemanager`（同二进制） | `/dev/vndbinder` | vendor ↔ vendor | vendor 进程间服务 |
+| 服务管理器               | 二进制                               | binder 节点        | 域                                    | 管理对象              |
+| ------------------- | --------------------------------- | ---------------- | ------------------------------------ | ----------------- |
+| `servicemanager`    | `system/bin/servicemanager`       | `/dev/binder`    | framework ↔ framework / **AIDL HAL** | 系统服务 + 新 AIDL HAL |
+| `hwservicemanager`  | `vendor/bin/hwservicemanager`     | `/dev/hwbinder`  | framework ↔ **HIDL HAL**             | 遗留 HIDL HAL       |
+| `vndservicemanager` | `system/bin/servicemanager`（同二进制） | `/dev/vndbinder` | vendor ↔ vendor                      | vendor 进程间服务      |
 
 > **约束（Treble 红线）**：system 代码只能用 `/dev/binder`，vendor 代码只能用 `/dev/vndbinder`，跨边界调用一律走已声明的 HAL 接口；vendor 代码禁止直接调用 framework 私有 API。
 
@@ -2954,15 +3026,11 @@ timeline
 
 *配套文档：`hal_android14.md`（架构深度）/ `hal_android14.html`（可视化）。版本节点依据 AOSP 官方文档与 Android 14 源码。*
 
-
-
-
 ## hal_example_android14.md
-
 
 # Android 14 AIDL HAL 完整示例：`android.hardware.led`
 
-> 目标：从零实现一个**自定义 AIDL HAL**，覆盖接口定义 → Soong → 服务端实现 → init.rc → VINTF → SELinux → 客户端调用 → 编译部署调试。
+> 目标：从零实现一个**自定义 AIDL HAL**，覆盖接口定义 → Soong → 服务端实现 → init.rc → VINTF → SELinux → 客户端调用 → 编译部署调试。>   
 > 基于 Android 14（API 34）。本示例注册的 HAL 走**标准 `servicemanager`（域 `/dev/binder`）**——这是 Android 11+ 新 AIDL HAL 的规范路径（区别于遗留 HIDL 走 `hwservicemanager`）。
 
 ---
@@ -3046,6 +3114,7 @@ aidl_interface {
 ```
 
 生成产物：
+
 - C++ 头：`aidl/android/hardware/led/BnLed.h`、`ILed.h`（库 `android.hardware.led-cpp`）
 - Java 包：`android.hardware.led`（库 `android.hardware.led-java`）
 - NDK 库：`android.hardware.led-ndk`
@@ -3308,16 +3377,12 @@ adb shell ps -A | grep led-service
 
 *配套文档：`hal_android14.md`（架构）、`hal_version_history.md`（演进史）。本示例为最小可运行骨架，真实硬件需替换 `setBrightness` 内的 ioctl/sysfs 逻辑，并补全设备 SELinux 策略。*
 
-
-
-
 ## hal_learning_roadmap.md
-
 
 # HAL 学习路线图（Android 14 / AOSP）
 
-> 目标：用最少的时间建立「HAL 全栈」心智模型，并能动手写、编、调、读真实 HAL。
-> 适用版本：AOSP `android-14.0.0_r*`（API 34），内核 GKI `android14-6.1`。
+> 目标：用最少的时间建立「HAL 全栈」心智模型，并能动手写、编、调、读真实 HAL。>   
+> 适用版本：AOSP `android-14.0.0_r*`（API 34），内核 GKI `android14-6.1`。>   
 > 配合工作区已有材料：`hal_version_history.md`、`hal_android14.md`、`binder_aidl.md`、`hal_example_android14.md`。
 
 ---
@@ -3327,11 +3392,12 @@ adb shell ps -A | grep led-service
 **Project Treble 把 framework（/system）和厂商实现（/vendor）解耦。** HAL 因此变成独立进程，经 binder IPC 通信，接口用 IDL 描述成"版本化契约"，由 VINTF 校验。所有 HAL 代码都要挂回这条主线理解。
 
 **三个 binder 域（Android 14 铁律）：**
-| 域 | 节点 | 服务管理器 | 管什么 |
-|----|------|-----------|--------|
-| framework↔framework / 新 AIDL HAL | `/dev/binder` | `servicemanager`(`system/bin/servicemanager`) | 系统服务 + AIDL HAL |
-| framework↔遗留 HIDL HAL | `/dev/hwbinder` | `hwservicemanager`(`vendor/bin/hwservicemanager`) | 遗留 HIDL HAL |
-| vendor↔vendor | `/dev/vndbinder` | `vndservicemanager`(同二进制) | vendor 进程间服务 |
+
+| 域                                | 节点               | 服务管理器                                             | 管什么             |
+| -------------------------------- | ---------------- | ------------------------------------------------- | --------------- |
+| framework↔framework / 新 AIDL HAL | `/dev/binder`    | `servicemanager`(`system/bin/servicemanager`)     | 系统服务 + AIDL HAL |
+| framework↔遗留 HIDL HAL            | `/dev/hwbinder`  | `hwservicemanager`(`vendor/bin/hwservicemanager`) | 遗留 HIDL HAL     |
+| vendor↔vendor                    | `/dev/vndbinder` | `vndservicemanager`(同二进制)                         | vendor 进程间服务    |
 
 ⚠️ 纠偏：`hwservicemanager` 在 Android 14 **仍存在**，只服务遗留 HIDL；新 AIDL HAL 走 `servicemanager`。
 
@@ -3340,15 +3406,18 @@ adb shell ps -A | grep led-service
 ## 1. 阶段划分与对应材料
 
 ### 阶段 1 · 演进史（读 `hal_version_history.md`）
+
 - 看第 8、9 节 +「三个 binder 域对照表」。
 - 重点理解：HIDL 为何被 AIDL 取代（Android 10 功能并入、11 Stable AIDL、13 冻结、14 标准）。
 - 真实参考：`hardware/interfaces/*`（老 `.hal` 与 新 `aidl/` 并存）。
 
 ### 阶段 2 · 架构解剖（读 `hal_android14.md`）
+
 - 四层：Framework ↔ Treble 边界(AIDL+VINTF) ↔ HAL 实现 ↔ 内核(GKI)。
 - 读完后能在白纸画出：Framework 进程 → servicemanager → HAL 进程 → 内核驱动 调用链。
 
 ### 阶段 3 · IPC 机制（读 `binder_aidl.md`）
+
 - 搞懂 AIDL 如何编译成 `BnXxx`(服务端桩)/`BpXxx`(客户端桩)、`Parcel` 序列化、`transact`/`onTransact` 与方法对应。
 - 真实路径：
   - `frameworks/native/libs/binder/`（libbinder，`BnInterface`/`BpInterface`/`Parcel`）
@@ -3356,16 +3425,19 @@ adb shell ps -A | grep led-service
   - `system/libhwbinder/`（遗留 HIDL 的 hwbinder 后端）
 
 ### 阶段 4 · 动手写一个 HAL（照 `hal_example_android14.md` 做）
+
 - 实现 `android.hardware.led`：`.aidl`(`@VintfStability`) → `aidl_interface`(`stability:"vintf"`) → `BnLed` 实现 + `AServiceManager_addService` → `init.rc` → `manifest.xml`(VINTF) → SELinux(`hal_attribute(led)`) → 客户端 `waitForDeclaredService`。
 - 真实落地路径（AOSP 树内）：`hardware/interfaces/led/aidl/`。
 
 ### 阶段 5 · VINTF 深潜（当前材料缺口，重点补）
+
 - 读 `system/libvintf/`：`HalManifest`、`CompatibilityMatrix`、`VintfObject::CheckCompatibility`。
 - 理解 `vendor/etc/vintf/manifest.xml` vs `system/etc/vintf/compatibility_matrix.xml` 匹配逻辑、major/minor 版本语义。
 - 真实校验点：`frameworks/native/cmds/servicemanager/ServiceManager.cpp` 的 `do_add_service()`——内部用 `libvintf` 做 VINTF 校验 + SELinux 检查，失败直接拒绝注册 → HAL server 进程退出。
 - 命令：`adb shell lshal --matrix` 看不匹配项。
 
 ### 阶段 6 · framework 怎么调真实 HAL（当前材料缺口，样板：vibrator）
+
 - AIDL 接口：`hardware/interfaces/vibrator/aidl/android/hardware/vibrator/IVibrator.aidl`
 - framework 客户端（Java）：`frameworks/base/services/core/java/com/android/server/VibratorService.java`
 - 上层入口：`frameworks/base/core/java/android/os/VibratorManager.java` / `Vibrator.java`
@@ -3373,12 +3445,14 @@ adb shell ps -A | grep led-service
 - 套路通一个，audio/camera/sensors 同理。
 
 ### 阶段 7 · 调试工具箱
+
 - `adb shell lshal | grep <name>`（AIDL 用 `lshal --aidl` 或 `service list`）
 - `adb shell service check android.hardware.x.IXxx/default`
 - `adb shell logcat | grep avc`（SELinux 拒绝，最常见的起不来原因）
 - `adb shell ps -A | grep <hal>`（看进程是否起来）
 
 ### 阶段 8 · 进阶（按需）
+
 - Stable AIDL 特性：`@VintfStability`、`@Backing`、`@JavaPassthrough`、`union`/`enum`/`Parcelable`、`m <iface>-update-api` 冻结。
 - 遗留 HIDL passthrough 模式 + `hidl2aidl` 迁移工具。
 - 内核侧：`drivers/android/binder.c`（GKI `android14-6.1`）同一驱动实例服务三个 binder 域。
@@ -3388,20 +3462,24 @@ adb shell ps -A | grep led-service
 ## 2. 动手练习（按优先级）
 
 **E1（必做）— 跑通自己的 HAL**
+
 - 按 `hal_example_android14.md` 编出 `android.hardware.led-service.example`，刷机/推文件后：
   - `adb shell service check android.hardware.led.ILed/default` 返回 `service is running`。
 - 验收：服务端进程 `ps -A | grep led-service` 可见，无 `avc` 拒绝。
 
 **E2（理解 VINTF）— 故意改错**
+
 - 把 `manifest.xml` 的 `<instance>default</instance>` 改成 `wrong`，重新部署重启。
 - 观察：服务进程起不来 + `logcat` 出现 VINTF/servicemanager 拒绝日志。
 - 验收：能复述"为什么 manifest 写错服务就崩"。
 
 **E3（看真实设备）— 列出现有 AIDL HAL**
+
 - `adb shell lshal --aidl` 列出设备已注册 AIDL HAL，挑一个（如 vibrator）读其 `.aidl` 源码。
 - 验收：能说出该 HAL 的接口方法。
 
 **E4（接回 framework）— 跟 vibrator 调用链**
+
 - 从 `VibratorService.java` 一路跟到 `IVibrator` HAL 调用，画调用栈。
 - 验收：能指出 framework 拿 HAL 用的是 `waitForDeclaredService` 而非老 `getService`。
 
@@ -3419,21 +3497,15 @@ adb shell ps -A | grep led-service
 
 *本路线图复用了工作区既有 4 份 HAL 材料，并补齐了"VINTF 校验点"与"framework 调真实 HAL"两块最大缺口的 AOSP 路径。按阶段 1→8 推进，配合 E1~E4 练习即可建立完整 HAL 认知。*
 
-
-
-
 ---
 
 # 六、Settings / 系统裁剪
 
-
-
 ## framework_settings_analysis.md
-
 
 # Android Framework Settings 子系统分析（Android 14 / AOSP）
 
-> 版本基准：**Android 14 (UpsideDownCake, API 34)**，源码路径以 `android-14.0.0_rXX` 为准。
+> 版本基准：**Android 14 (UpsideDownCake, API 34)**，源码路径以 `android-14.0.0_rXX` 为准。>   
 > 本文是 `settings_modify_practice.md` 的**互补篇**：实战篇讲「怎么改」，本篇讲「为什么这么工作」。
 
 ---
@@ -3446,40 +3518,40 @@ Settings 是 Android 的**系统级键值配置中心**：对外通过 `android.
 
 ## 1 四层架构
 
-| 层 | 模块 / 进程 | 关键产物 | 职责 |
-|----|-------------|----------|------|
-| 应用层 | `packages/apps/Settings` + 各系统 App | `Settings.apk` | 提供 UI、读写配置 |
-| 公共 API 层 | `frameworks/base/core/java/android/provider/Settings.java` | `framework.jar` | 暴露 `Global/SSystem/Secure` 常量与 `get/put`，维护本地缓存 |
-| Provider 层 | `frameworks/base/packages/SettingsProvider` | `SettingsProvider.apk` | 真正的读写执行者，权限校验、落盘、通知 |
-| 存储层 | `SettingsState` + `AtomicFile` | XML 文件 | 内存态 + 原子落盘 |
-| 观察者层 | `ContentService` + `ContentObserver` | system_server | 变更广播 |
+| 层          | 模块 / 进程                                                    | 关键产物                   | 职责                                              |
+| ---------- | ---------------------------------------------------------- | ---------------------- | ----------------------------------------------- |
+| 应用层        | `packages/apps/Settings` + 各系统 App                         | `Settings.apk`         | 提供 UI、读写配置                                      |
+| 公共 API 层   | `frameworks/base/core/java/android/provider/Settings.java` | `framework.jar`        | 暴露 `Global/SSystem/Secure` 常量与 `get/put`，维护本地缓存 |
+| Provider 层 | `frameworks/base/packages/SettingsProvider`                | `SettingsProvider.apk` | 真正的读写执行者，权限校验、落盘、通知                             |
+| 存储层        | `SettingsState` + `AtomicFile`                             | XML 文件                 | 内存态 + 原子落盘                                      |
+| 观察者层       | `ContentService` + `ContentObserver`                       | system_server          | 变更广播                                            |
 
 ---
 
 ## 2 三个命名空间对比
 
-| 维度 | `Global` | `Secure` | `System` |
-|------|----------|----------|----------|
-| 作用域 | 设备级（所有用户共享） | 用户级（受限，系统/特权可写） | 用户级（legacy，部分已迁移到 Secure） |
-| 可读 | 一般 App 可读（部分键受限） | 仅 `PUBLISHED_SECURE_SETTINGS` 公开可读 | 一般可读 |
-| 可写 | 需 `WRITE_SECURE_SETTINGS` | 需 `WRITE_SECURE_SETTINGS`（signature\|privileged） | 需 `WRITE_SETTINGS`；部分键受 `PROTECTED_SETTINGS` 保护 |
-| 存储文件 | `settings_global.xml` | `settings_secure.xml` | `settings_system.xml` |
-| 典型键 | `DEMO_SWITCH`、`AIRPLANE_MODE_ON` | `ANDROID_ID`、`ENABLED_INPUT_METHODS` | `SCREEN_BRIGHTNESS`（已废弃迁移） |
+| 维度   | `Global`                         | `Secure`                                        | `System`                                        |
+| ---- | -------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| 作用域  | 设备级（所有用户共享）                      | 用户级（受限，系统/特权可写）                                 | 用户级（legacy，部分已迁移到 Secure）                       |
+| 可读   | 一般 App 可读（部分键受限）                 | 仅 `PUBLISHED_SECURE_SETTINGS` 公开可读              | 一般可读                                            |
+| 可写   | 需 `WRITE_SECURE_SETTINGS`        | 需 `WRITE_SECURE_SETTINGS`（signature|privileged） | 需 `WRITE_SETTINGS`；部分键受 `PROTECTED_SETTINGS` 保护 |
+| 存储文件 | `settings_global.xml`            | `settings_secure.xml`                           | `settings_system.xml`                           |
+| 典型键  | `DEMO_SWITCH`、`AIRPLANE_MODE_ON` | `ANDROID_ID`、`ENABLED_INPUT_METHODS`            | `SCREEN_BRIGHTNESS`（已废弃迁移）                      |
 
 ---
 
 ## 3 关键源码文件清单（AOSP android-14.0.0_rXX）
 
-| 路径 | 关键类 / 方法 | 职责 |
-|------|---------------|------|
-| `frameworks/base/core/java/android/provider/Settings.java` | `Global`/`Secure`/`System`、`NameValueCache`、`CALL_METHOD_*` | 公共 API、缓存、`call` 方法名常量 |
-| `frameworks/base/core/java/android/content/ContentResolver.java` | `acquireProvider`、`call`、`registerContentObserver` | 跨进程调用与 observer 注册入口 |
-| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsProvider.java` | `call()`、`setGlobalSetting`、`getGlobalSetting`、`loadGlobalSettings`、`notifyForSettingsChange` | Provider 实现、默认值加载、变更通知 |
-| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsState.java` | `insertSettingLocked`、`getSetting`、`persistSettingsLocked`、`writeStateLocked`、`Setting` 内部类 | 内存态、原子落盘、source 机制 |
-| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsRegistry.java` | `getSettingsStateLocked(userId, type)` | 按 (user, namespace) 管理 `SettingsState` 实例 |
-| `frameworks/base/packages/SettingsProvider/res/values/defaults.xml` | `<integer name="def_*">` | 默认值资源 |
-| `frameworks/base/services/core/java/com/android/server/content/ContentService.java` | `registerContentObserver`、`notifyChange` | observer 注册表与广播 |
-| `frameworks/base/cmds/settings/src/com/android/commands/settings/Settings.java` | `get`/`put`/`list` | `adb shell settings` 命令实现 |
+| 路径                                                                                                   | 关键类 / 方法                                                                                      | 职责                                        |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `frameworks/base/core/java/android/provider/Settings.java`                                           | `Global`/`Secure`/`System`、`NameValueCache`、`CALL_METHOD_*`                                   | 公共 API、缓存、`call` 方法名常量                    |
+| `frameworks/base/core/java/android/content/ContentResolver.java`                                     | `acquireProvider`、`call`、`registerContentObserver`                                            | 跨进程调用与 observer 注册入口                      |
+| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsProvider.java` | `call()`、`setGlobalSetting`、`getGlobalSetting`、`loadGlobalSettings`、`notifyForSettingsChange` | Provider 实现、默认值加载、变更通知                    |
+| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsState.java`    | `insertSettingLocked`、`getSetting`、`persistSettingsLocked`、`writeStateLocked`、`Setting` 内部类   | 内存态、原子落盘、source 机制                        |
+| `frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsRegistry.java` | `getSettingsStateLocked(userId, type)`                                                        | 按 (user, namespace) 管理 `SettingsState` 实例 |
+| `frameworks/base/packages/SettingsProvider/res/values/defaults.xml`                                  | `<integer name="def_*">`                                                                      | 默认值资源                                     |
+| `frameworks/base/services/core/java/com/android/server/content/ContentService.java`                  | `registerContentObserver`、`notifyChange`                                                      | observer 注册表与广播                           |
+| `frameworks/base/cmds/settings/src/com/android/commands/settings/Settings.java`                      | `get`/`put`/`list`                                                                            | `adb shell settings` 命令实现                 |
 
 ---
 
@@ -3536,12 +3608,12 @@ Settings 是 Android 的**系统级键值配置中心**：对外通过 `android.
 
 ## 8 权限模型
 
-| 操作 | 所需权限 | 保护级别 |
-|------|----------|----------|
-| 写 `Global` | `WRITE_SECURE_SETTINGS` | signature\|privileged |
-| 写 `Secure` | `WRITE_SECURE_SETTINGS` | signature\|privileged |
-| 写 `System` | `WRITE_SETTINGS`（部分键需 `WRITE_SECURE_SETTINGS`） | signature\|privileged\|appop |
-| 读受限 `Secure` 键 | `READ_PRIVILEGED_*` 或 privileged | signature\|privileged |
+| 操作             | 所需权限                                           | 保护级别                       |
+| -------------- | ---------------------------------------------- | -------------------------- |
+| 写 `Global`     | `WRITE_SECURE_SETTINGS`                        | signature|privileged       |
+| 写 `Secure`     | `WRITE_SECURE_SETTINGS`                        | signature|privileged       |
+| 写 `System`     | `WRITE_SETTINGS`（部分键需 `WRITE_SECURE_SETTINGS`） | signature|privileged|appop |
+| 读受限 `Secure` 键 | `READ_PRIVILEGED_*` 或 privileged               | signature|privileged       |
 
 - 白名单：`Settings.Global.PUBLIC_SETTINGS` / `PRIVATE_SETTINGS`、`Settings.Secure.PUBLISHED_SECURE_SETTINGS` 控制 App 可见性。
 - 校验位置：`SettingsProvider.enforceWritePermission(...)` / `enforceReadPermission(...)`。
@@ -3565,13 +3637,13 @@ SETTINGS_SOURCE_DEVICE_OVERRIDE(3)  >  SETTINGS_SOURCE_CONFIG(4)  >  SETTINGS_SO
 
 ## 10 与 DeviceConfig / ConfigStore 的区别
 
-| 维度 | Settings | DeviceConfig |
-|------|----------|--------------|
-| 用途 | 用户可见的持久化配置 | 平台/feature flag（多为隐藏开关） |
-| 命名空间 | Global/Secure/System | 任意 namespace（如 `activity_manager`） |
-| 访问 | `Settings.Global.getX` | `DeviceConfig.getProperty` |
-| 存储 | `SettingsState` + XML | `DeviceConfig` 服务 + 文件 |
-| 用户可读写 | 部分 | 否 |
+| 维度    | Settings               | DeviceConfig                       |
+| ----- | ---------------------- | ---------------------------------- |
+| 用途    | 用户可见的持久化配置             | 平台/feature flag（多为隐藏开关）            |
+| 命名空间  | Global/Secure/System   | 任意 namespace（如 `activity_manager`） |
+| 访问    | `Settings.Global.getX` | `DeviceConfig.getProperty`         |
+| 存储    | `SettingsState` + XML  | `DeviceConfig` 服务 + 文件             |
+| 用户可读写 | 部分                     | 否                                  |
 
 ---
 
@@ -3602,12 +3674,12 @@ adb shell content observe --uri content://settings/global/demo_switch
 
 ## 13 与实战篇的关系（交叉索引）
 
-| 实战篇动作 | 对应本篇机制 |
-|------------|--------------|
-| 场景 C：新增 `Global.DEMO_SWITCH` 常量 | §3 `Settings.java` + §4 链路 + §6 默认值 |
-| 场景 C：`loadGlobalSettings` 加默认值 | §6 默认值加载（注意是写进 `SettingsState`，非直接写 SQLite） |
-| 编译 `m framework` + `m SettingsProvider` | §3 两产物分属 API 层与 Provider 层，缺一则键常量/默认值不生效 |
-| 场景 A/B 只动 UI | 不涉及 Provider 层，符合 §1 分层 |
+| 实战篇动作                                   | 对应本篇机制                                      |
+| --------------------------------------- | ------------------------------------------- |
+| 场景 C：新增 `Global.DEMO_SWITCH` 常量         | §3 `Settings.java` + §4 链路 + §6 默认值         |
+| 场景 C：`loadGlobalSettings` 加默认值          | §6 默认值加载（注意是写进 `SettingsState`，非直接写 SQLite） |
+| 编译 `m framework` + `m SettingsProvider` | §3 两产物分属 API 层与 Provider 层，缺一则键常量/默认值不生效    |
+| 场景 A/B 只动 UI                            | 不涉及 Provider 层，符合 §1 分层                     |
 
 ---
 
@@ -3618,11 +3690,7 @@ adb shell content observe --uri content://settings/global/demo_switch
 - AMS / ATMS 修改实战 → `ams_modify_practice.md`（含 3 份 patch）
 - AOSP 编译 / 加系统 app / 改内核 → `android14_build.md`
 
-
-
-
 ## settings_modify_practice.md
-
 
 # Setting 修改实战（Android 14 / AOSP）
 
@@ -3632,10 +3700,10 @@ adb shell content observe --uri content://settings/global/demo_switch
 
 修改 Settings 最大的坑是**分不清改的是哪一层**：
 
-| 层 | 仓库/模块 | 改了什么 | 编译产物 |
-|----|-----------|----------|----------|
-| **UI 层** | `packages/apps/Settings` | 页面、开关、条目、文案、图标 | `Settings.apk`（`/system/priv-app/Settings`） |
-| **存储层** | `frameworks/base/core/java/android/provider/Settings.java` + `frameworks/base/packages/SettingsProvider` | 一个新的设置键（如 `demo_switch`）、默认值 | `framework.jar` + `SettingsProvider.apk` |
+| 层        | 仓库/模块                                                                                                    | 改了什么                         | 编译产物                                        |
+| -------- | -------------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------- |
+| **UI 层** | `packages/apps/Settings`                                                                                 | 页面、开关、条目、文案、图标               | `Settings.apk`（`/system/priv-app/Settings`） |
+| **存储层**  | `frameworks/base/core/java/android/provider/Settings.java` + `frameworks/base/packages/SettingsProvider` | 一个新的设置键（如 `demo_switch`）、默认值 | `framework.jar` + `SettingsProvider.apk`    |
 
 - 只在 UI 上加个开关、挪个条目 → **只动 `Settings.apk`**，最轻。
 - 要新增一个**持久化的系统设置项**（让别的系统服务也能读）→ **必须动存储层**，编译范围重得多。
@@ -3646,15 +3714,15 @@ adb shell content observe --uri content://settings/global/demo_switch
 
 ## 1 Settings App 架构速查
 
-| 你想改的行为 | 落点文件 | 关键类 / 方法 |
-|--------------|----------|---------------|
-| 设置 App 入口 / 各子页的 Activity 别名 | `packages/apps/Settings/AndroidManifest.xml` | `<activity>` / `<activity-alias>` 的 `com.android.settings.FRAGMENT_CLASS` meta-data |
-| 首页顶级面板 | `src/com/android/settings/homepage/TopLevelSettings.java` | `DashboardFragment` 子类，读取 tiles |
-| 首页顶级 tile 定义 | `res/xml/dashboard_categories.xml` | `<dashboard-tile>`（含 `id`/`title`/`icon`/`fragment`） |
-| 某个子设置页 | `src/com/android/settings/.../*Settings.java` | 继承 `DashboardFragment`，`getPreferenceScreenResId()` 返回 xml |
-| 页内某个具体开关/条目 | `src/com/android/settings/.../*Controller.java` | 继承 `AbstractPreferenceController` / `BasePreferenceController` |
-| 主页宿主 Activity | `src/com/android/settings/SettingsActivity.java` | `EXTRA_SHOW_FRAGMENT` 解析 → 实例化对应 Fragment |
-| tile 解析引擎 | `src/com/android/settings/dashboard/DashboardFeatureProviderImpl.java` | 解析 `dashboard_categories.xml` 构造 `Preference` |
+| 你想改的行为                       | 落点文件                                                                   | 关键类 / 方法                                                                            |
+| ---------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 设置 App 入口 / 各子页的 Activity 别名 | `packages/apps/Settings/AndroidManifest.xml`                           | `<activity>` / `<activity-alias>` 的 `com.android.settings.FRAGMENT_CLASS` meta-data |
+| 首页顶级面板                       | `src/com/android/settings/homepage/TopLevelSettings.java`              | `DashboardFragment` 子类，读取 tiles                                                     |
+| 首页顶级 tile 定义                 | `res/xml/dashboard_categories.xml`                                     | `<dashboard-tile>`（含 `id`/`title`/`icon`/`fragment`）                                |
+| 某个子设置页                       | `src/com/android/settings/.../*Settings.java`                          | 继承 `DashboardFragment`，`getPreferenceScreenResId()` 返回 xml                          |
+| 页内某个具体开关/条目                  | `src/com/android/settings/.../*Controller.java`                        | 继承 `AbstractPreferenceController` / `BasePreferenceController`                      |
+| 主页宿主 Activity                | `src/com/android/settings/SettingsActivity.java`                       | `EXTRA_SHOW_FRAGMENT` 解析 → 实例化对应 Fragment                                           |
+| tile 解析引擎                    | `src/com/android/settings/dashboard/DashboardFeatureProviderImpl.java` | 解析 `dashboard_categories.xml` 构造 `Preference`                                       |
 
 **核心模型**：`DashboardFragment` 持有多个 `AbstractPreferenceController`，每个 controller 管一个 `Preference`（key 必须和 xml 里的 `android:key` 对上）。controller 负责「是否显示（`getAvailabilityStatus`）」「显示什么（`updateState`）」「点击做什么（`handlePreferenceTreeClick`）」。
 
@@ -3678,6 +3746,7 @@ graph TD
 以「在「关于手机」页加一个自定义开关」为例。
 
 **(1) 写 Controller**
+
 ```java
 // src/com/android/settings/deviceinfo/MyDemoSwitchController.java
 package com.android.settings.deviceinfo;
@@ -3718,6 +3787,7 @@ public class MyDemoSwitchController extends BasePreferenceController {
 ```
 
 **(2) 在该页 xml 加 Preference**（如 `res/xml/about_settings.xml`）
+
 ```xml
 <SwitchPreference
     android:key="my_demo_switch"
@@ -3726,6 +3796,7 @@ public class MyDemoSwitchController extends BasePreferenceController {
 ```
 
 **(3) 在该页 Fragment 注册 controller**
+
 ```java
 // 在对应 *Settings.java 的 createPreferenceControllers() 里
 @Override
@@ -3737,6 +3808,7 @@ protected List<AbstractPreferenceController> createPreferenceControllers(Context
 ```
 
 **(4) 编译 / 验证**
+
 ```bash
 m Settings -j$(nproc)
 adb root && adb remount
@@ -3750,6 +3822,7 @@ adb shell settings get global my_demo_switch   # 拨动开关后应为 1 / 0
 ## 3 场景 B：新增一个顶级设置页面（top-level）
 
 **(1) 新建 Fragment**
+
 ```java
 // src/com/android/settings/display/MyDemoSettings.java
 package com.android.settings.display;
@@ -3773,6 +3846,7 @@ public class MyDemoSettings extends DashboardFragment {
 ```
 
 **(2) 新建 `res/xml/my_demo_settings.xml`**
+
 ```xml
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
@@ -3783,6 +3857,7 @@ public class MyDemoSettings extends DashboardFragment {
 ```
 
 **(3) 在 `res/xml/dashboard_categories.xml` 加 tile**
+
 ```xml
 <dashboard-category id="com.android.settings.category.device">
     <dashboard-tile
@@ -3794,10 +3869,12 @@ public class MyDemoSettings extends DashboardFragment {
 ```
 
 **(4) 加字符串与图标**
+
 - `res/values/strings.xml`：`<string name="my_demo_title">我的演示</string>`
 - `res/drawable/ic_settings_my_demo.xml`：随便一个 vector 图标。
 
 **(5)（可选）加深链 Activity 别名** —— 若要让 `am start` 或别的 App 直接打开此页，在 `AndroidManifest.xml` 加：
+
 ```xml
 <activity-alias
     android:name=".Settings$MyDemoActivity"
@@ -3821,6 +3898,7 @@ public class MyDemoSettings extends DashboardFragment {
 这是**最重**的一类——UI 想持久化一个被多个服务共享的开关时就需要。以新增 `Global.DEMO_SWITCH` 为例。
 
 **(1) 在 `android.provider.Settings` 定义键**
+
 ```java
 // frameworks/base/core/java/android/provider/Settings.java
 public static final class Global extends NameValueTable {
@@ -3832,6 +3910,7 @@ public static final class Global extends NameValueTable {
 ```
 
 **(2) 在 `SettingsProvider` 给默认值**
+
 ```java
 // frameworks/base/packages/SettingsProvider/src/com/android/providers/settings/SettingsProvider.java
 private void loadGlobalSettings(SQLiteDatabase db) {
@@ -3841,9 +3920,11 @@ private void loadGlobalSettings(SQLiteDatabase db) {
     //     getContext().getResources().getInteger(R.integer.def_demo_switch));
 }
 ```
+
 > 若走资源默认值，还需在 `frameworks/base/packages/SettingsProvider/res/values/defaults.xml` 加 `<integer name="def_demo_switch">0</integer>`。
 
 **(3) 编译范围（关键）**
+
 ```bash
 m framework            # 重编 framework.jar，Settings.java 的常量才生效
 m SettingsProvider     # 重编 provider（引用了上面的常量字符串）
@@ -3854,6 +3935,7 @@ adb reboot
 ```
 
 **(4) 验证**
+
 ```bash
 adb shell settings put global demo_switch 1
 adb shell settings get global demo_switch    # → 1
@@ -3865,11 +3947,11 @@ adb shell cat /data/system/users/0/settings_global.xml | grep demo_switch
 
 ## 5 编译与验证总表
 
-| 你改了什么 | 编译命令 | 推送产物 | 是否需 reboot |
-|------------|----------|----------|---------------|
-| 仅 UI（场景 A/B） | `m Settings` | `Settings.apk` → `/system/priv-app/Settings/` | 是（priv-app 需重挂） |
-| 新增存储键（场景 C） | `m framework` + `m SettingsProvider` | `framework.jar` + `SettingsProvider.apk` | 是 |
-| 同时改 UI 读新键 | `m Settings` + 上面两者 | 三者都推 | 是 |
+| 你改了什么        | 编译命令                                 | 推送产物                                          | 是否需 reboot      |
+| ------------ | ------------------------------------ | --------------------------------------------- | --------------- |
+| 仅 UI（场景 A/B） | `m Settings`                         | `Settings.apk` → `/system/priv-app/Settings/` | 是（priv-app 需重挂） |
+| 新增存储键（场景 C）  | `m framework` + `m SettingsProvider` | `framework.jar` + `SettingsProvider.apk`      | 是               |
+| 同时改 UI 读新键   | `m Settings` + 上面两者                  | 三者都推                                          | 是               |
 
 > 注：`Settings` 是 **priv-app**，必须保持 platform 签名。`m Settings` 产出的 APK 已用正确签名；**不要**用 `adb install -r` 覆盖系统 priv-app（常因签名/分区失败），务必 `adb push` 到 `/system/priv-app/Settings/` 后 reboot。
 
@@ -3893,32 +3975,30 @@ adb shell cat /data/system/users/0/settings_global.xml | grep demo_switch
 - AOSP 编译 / 加系统 app / 改内核 → `android14_build.md`
 - patch 模板 → `ams_patches/`（改 framework 服务的可直接套思路）
 
-
-
-
 ---
 
 # 七、WMS 窗口管理
 
-
-
 ## wms_deep_dive.md
-
 
 # WMS 窗口管理 深读笔记（AOSP 14）
 
 ## 1. 在系统里的位置
+
 WindowManagerService（WMS）管理**所有窗口**（Activity、Dialog、StatusBar、Toast、输入法、壁纸），运行在 `system_server`。与 AMS、InputManagerService 强耦合：AMS 管 Activity 生命周期，WMS 管这些 Activity 的"窗口表面"、层级、焦点、动画；InputManager 把输入事件派发给 WMS 指定的"当前焦点窗口"。
 
 启动：`SystemServer.startOtherServices()`
+
 ```java
 wm = WindowManagerService.main(context, inputManager, !firstBoot, ...);
 ServiceManager.addService(Context.WINDOW_SERVICE, wm, ...);
 ServiceManager.addService("window", wm);
 ```
+
 `WMS.main()` 在独立 looper（"android.display" 线程）上 new 实例；构造里建 `RootWindowContainer`、`mWindowMap`、`Session` 表、`mPolicy = new PhoneWindowManager()`（经 PolicyThread 初始化）、初始化 SurfaceControl native。
 
 ## 2. 核心数据结构（从顶到底）
+
 - `RootWindowContainer` — 所有 Display 的根
 - `DisplayContent` — 一块物理/虚拟屏
 - `Task`（Android 11 前叫 `ActivityStack`）— 一组相关窗口，含 `ActivityRecord`
@@ -3929,56 +4009,60 @@ ServiceManager.addService("window", wm);
 - `SurfaceControl` — 指向 native Surface 的句柄（像素在 SurfaceFlinger）
 
 ## 3. 关键流程
+
 ### addWindow（APP 加窗口）
+
 `ViewRootImpl` → `IWindowSession.add()` → `Session.add()` → `WMS.addWindow(Session, IWindow, LayoutParams, ...)`：
+
 1. 按 `LayoutParams.type` 校验权限（`TYPE_APPLICATION_OVERLAY` 需 `SYSTEM_ALERT_WINDOW`；`TYPE_SYSTEM_ERROR`/`TYPE_SYSTEM_DIALOG` 需系统权限，由 `PhoneWindowManager.checkAddPermission()` 判定）
 2. 找/建 `WindowToken`，new `WindowState`，加入 `mWindowMap`
 3. `mPolicy.adjustWindowParamsLw()` 等微调
 4. 返回 `addResult`（如 `ADD_FLAG_FIRST_WINDOW`），并 `openInputChannel()` 给客户端建 `InputChannel`
 
 ### relayoutWindow（布局/出图）
+
 `WMS.relayoutWindow()` 计算窗口帧、可见性，经 `SurfaceControl` 创建/更新 surface，把 frame 回给客户端去 draw。
 
 ## 4. 常见定制点（hook 位置）
-| 想改什么 | 改哪 | 关键方法 |
-|---|---|---|
-| 禁止某类系统对话框 | `WMS.addWindow()` 或 `PhoneWindowManager.checkAddPermission()` | 按 `attrs.type` 拦截/返回错误 |
-| 窗口转场动画 | `AppTransition` / `RemoteAnimationAdapter` / `WindowStateAnimator` | `overridePendingAppTransition()` |
-| 焦点/置顶逻辑 | `RootWindowContainer` / `DisplayContent` | `getTopFocusedDisplayContent().mCurrentFocus` |
-| 默认分辨率/密度 | `WMS` + `DisplayManager` | `ro.sf.lcd_density` |
-| 状态栏/导航栏高度 | `PhoneWindowManager` + `WMS` | `getSystemDecorLayer()` |
+
+| 想改什么      | 改哪                                                                 | 关键方法                                          |
+| --------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| 禁止某类系统对话框 | `WMS.addWindow()` 或 `PhoneWindowManager.checkAddPermission()`      | 按 `attrs.type` 拦截/返回错误                        |
+| 窗口转场动画    | `AppTransition` / `RemoteAnimationAdapter` / `WindowStateAnimator` | `overridePendingAppTransition()`              |
+| 焦点/置顶逻辑   | `RootWindowContainer` / `DisplayContent`                           | `getTopFocusedDisplayContent().mCurrentFocus` |
+| 默认分辨率/密度  | `WMS` + `DisplayManager`                                           | `ro.sf.lcd_density`                           |
+| 状态栏/导航栏高度 | `PhoneWindowManager` + `WMS`                                       | `getSystemDecorLayer()`                       |
 
 ## 5. 验证
+
 ```bash
 adb shell dumpsys window windows        # WindowState 列表、焦点、层级
 adb shell dumpsys window displays        # 各屏信息
 adb shell dumpsys SurfaceFlinger         # Layer/合成
 adb shell wm size / wm density           # 分辨率/密度
 ```
+
 加 log：`Slog.d("WM_DBG", ...)` 放 `WMS.addWindow/relayoutWindow`，`logcat -s WindowManager:* WM_DBG:*`。
 
 ## 6. 实战小项目
+
 1. 在 `WMS.addWindow()` 里对 `TYPE_SYSTEM_ALERT` 且特定包名直接返回错误/抛 `WindowManager.BadTokenException`，`make services` 推 `services.jar` 验证。
 2. 给某个 Activity 加自定义进场动画（`overridePendingAppTransition`）。
-
-
-
 
 ---
 
 # 八、Input 事件分发
 
-
-
 ## input_deep_dive.md
-
 
 # Input 事件分发 深读笔记（AOSP 14）
 
 ## 1. 位置
+
 InputManagerService（IMS，Java）在 `system_server`；真正的读取与分发在 native `inputflinger`。IMS 与 WMS 互相持有引用：`WMS` 构造后 `inputManager.setWindowManagerCallbacks(wm.getInputManagerCallback())`，`inputManager.start()` 启动 native 线程。
 
 ## 2. 分层与关键类
+
 - Java：`frameworks/base/services/core/java/com/android/server/input/InputManagerService.java`
 - native：`frameworks/native/services/inputflinger/`
   - `InputManager.cpp` — JNI 桥 + 起 `InputReader`/`InputDispatcher` 线程
@@ -3988,6 +4072,7 @@ InputManagerService（IMS，Java）在 `system_server`；真正的读取与分�
 - 客户端：`InputChannel` + `InputEventReceiver`（APP 侧）→ `ViewRootImpl` → DecorView 派发
 
 ## 3. 完整链路
+
 ```
 /dev/input/eventN → EventHub → InputReader(KeyboardInputMapper...)
   → InputDispatcher(应用 policy: PhoneWindowManager.interceptKeyBeforeQueueing /
@@ -3996,16 +4081,19 @@ InputManagerService（IMS，Java）在 `system_server`；真正的读取与分�
 ```
 
 ## 4. 关键拦截点（Java）
+
 - `PhoneWindowManager.interceptKeyBeforeQueueing(KeyEvent event, int policyFlags)`：事件入队前，可消费/改写（音量、电源、多任务键）
 - `interceptKeyBeforeDispatching()`：分发到 app 前
 - `dispatchUnhandledKey()`：app 没消费时的兜底
 
 ## 5. 外设适配（自定义按键板）
+
 - `frameworks/base/data/keyboards/`：`Generic.kl`（scancode→keycode）、`Generic.kcm`（keycode→字符）
 - 设备专属：放 `/system/usr/keylayout/Vendor_XXXX_Product_XXXX.kl`，按 `getevent` 看到的 vendor/product 命名
 - 改完 `adb push` 到 `/system/usr/keylayout/`，`adb reboot` 或重载
 
 ## 6. 验证
+
 ```bash
 adb shell dumpsys input                 # 设备列表/配置/焦点
 adb shell getevent -l                   # 原始事件(scancode/keycode)
@@ -4014,30 +4102,28 @@ adb shell input tap 500 500 / input text hello
 ```
 
 ## 7. 实战小项目
+
 1. 用 `interceptKeyBeforeQueueing` 把 `KEYCODE_APP_SWITCH` 短按改成 `launchHome()`（参考指南多任务键需求）。
 2. 给一块自定义按键板写 `.kl`，把某 scancode 映射成 `KEYCODE_BOOKMARK`，`getevent` 验证。
-
-
-
 
 ---
 
 # 九、SystemUI 定制
 
-
-
 ## systemui_customization.md
-
 
 # SystemUI 定制 深读笔记（AOSP 14）
 
 ## 1. 位置与形态
+
 `frameworks/base/packages/SystemUI/` 编译成 `SystemUI.apk`，运行在独立进程 `com.android.systemui`（**不是 system_server**），是带系统权限的普通 app，通过 binder 调系统服务。可崩溃重启——改完 `kill` 掉 pid 即重载。
 
 ## 2. 启动
+
 `SystemServer` 经 `ActivityManagerInternal.startSystemUi()` 拉起 `com.android.systemui.SystemUIService`（入口 Service）→ `SystemUIApplication` 启动各 `SystemUI` 组件。
 
 ## 3. 关键类（注意重命名）
+
 - 状态栏：`CentralSurfaces`（接口）/ `CentralSurfacesImpl`（实现）——**Android 12 由 `StatusBar` 重命名**，路径 `src/com/android/systemui/statusbar/phone/CentralSurfacesImpl.java`
 - 导航栏：`NavigationBarController` / `NavigationBar`（或 `NavigationBarView`），`src/com/android/systemui/navigationbar/`
 - 通知：`src/com/android/systemui/statusbar/notification/`
@@ -4047,14 +4133,16 @@ adb shell input tap 500 500 / input text hello
 - 注入：AOSP 14 SystemUI 用 **Dagger**（依赖 `SystemUIFactory`）
 
 ## 4. 常见定制点
-| 想改 | 文件 |
-|---|---|
-| 状态栏图标/布局 | `CentralSurfacesImpl` + `res/layout/status_bar.xml` / `StatusBarIconController` |
-| 导航栏按键/布局 | `NavigationBar` + `res/layout/navigation_bar.xml` |
-| 新增快捷开关(QS Tile) | 实现 `QSTileImpl` 子类，注册到 `QSTileHost`/`TileMapper` |
-| 锁屏样式 | `Keyguard*`，`res/layout/keyguard_*` |
+
+| 想改              | 文件                                                                              |
+| --------------- | ------------------------------------------------------------------------------- |
+| 状态栏图标/布局        | `CentralSurfacesImpl` + `res/layout/status_bar.xml` / `StatusBarIconController` |
+| 导航栏按键/布局        | `NavigationBar` + `res/layout/navigation_bar.xml`                               |
+| 新增快捷开关(QS Tile) | 实现 `QSTileImpl` 子类，注册到 `QSTileHost`/`TileMapper`                                |
+| 锁屏样式            | `Keyguard*`，`res/layout/keyguard_*`                                             |
 
 ## 5. 验证
+
 ```bash
 adb shell pm path com.android.systemui
 m SystemUI && adb install -r out/target/product/<dev>/system/priv-app/SystemUI/SystemUI.apk
@@ -4062,28 +4150,26 @@ adb shell ps -A | grep systemui     # 拿 pid
 adb shell kill <pid>                # SystemUI 自动重启,看改动
 dumpsys activity services SystemUI  # 看组件状态
 ```
+
 注意：priv-app 需平台签名；debug 用 `adb install -r` 可覆盖。
 
 ## 6. 实战小项目
+
 1. 在 `status_bar.xml` 加一个自定义图标，并在 `CentralSurfacesImpl` 里控制显隐（如插线时显示）。
 2. 写一个 `QSTile` 一键开关某个系统属性。
-
-
-
 
 ---
 
 # 十、SELinux 策略
 
-
-
 ## selinux_policy.md
-
 
 # SELinux 策略 深读笔记（AOSP 14）
 
 ## 1. 位置与结构
+
 策略源在 `system/sepolicy/`：
+
 - `public/` — 跨版本稳定的 type/attribute/class（vendor 也能引用）
 - `private/` — 平台私有规则
 - `vendor/` — 厂商策略（对应 `/vendor/etc/selinux`）
@@ -4093,18 +4179,20 @@ dumpsys activity services SystemUI  # 看组件状态
 产物：`/system/etc/selinux/`(plat) 与 `/vendor/etc/selinux/`(vendor)，开机由 `init` 加载。
 
 ## 2. 关键文件类型
-| 文件 | 作用 |
-|---|---|
-| `*.te` | type enforcement 规则（allow/neverallow/type 定义） |
-| `file_contexts` | 路径 → type |
-| `service_contexts` | binder 服务名 → type |
-| `hwservice_contexts` | hwbinder 服务 → type |
-| `property_contexts` | 系统属性 → type |
-| `seapp_contexts` | app 进程 → domain |
-| `genfs_contexts` | 伪文件系统(如 proc)标签 |
-| `mac_permissions.xml` | 签名 → seinfo |
+
+| 文件                    | 作用                                            |
+| --------------------- | --------------------------------------------- |
+| `*.te`                | type enforcement 规则（allow/neverallow/type 定义） |
+| `file_contexts`       | 路径 → type                                     |
+| `service_contexts`    | binder 服务名 → type                             |
+| `hwservice_contexts`  | hwbinder 服务 → type                            |
+| `property_contexts`   | 系统属性 → type                                   |
+| `seapp_contexts`      | app 进程 → domain                               |
+| `genfs_contexts`      | 伪文件系统(如 proc)标签                               |
+| `mac_permissions.xml` | 签名 → seinfo                                   |
 
 ## 3. 给新 native 服务加策略（典型）
+
 ```te
 # private/myservice.te
 type myservice, domain;
@@ -4113,19 +4201,23 @@ init_daemon_domain(myservice)        # 从 init 启动的域
 binder_service(myservice)            # 允许注册 binder 服务
 allow myservice system_server:binder { call transfer };
 ```
+
 ```contexts
 # file_contexts
 /system/bin/myservice u:object_r:myservice_exec:s0
 # service_contexts
 myservice u:object_r:myservice_service:s0
 ```
+
 ```te
 # 在 private/ 对应 type 声明
 type myservice_service, service_manager_type;
 ```
+
 编译：`make sepolicy`（或整编）；产物在 `out/.../obj/ETC/`.
 
 ## 4. 调试
+
 ```bash
 adb shell dmesg | grep avc            # 内核态拒绝
 adb logcat | grep avc                 # 用户态
@@ -4135,32 +4227,31 @@ adb shell setenforce 0                # permissive(仅 userdebug/eng)
 adb shell dmesg | grep avc > avc.log
 audit2allow -i avc.log
 ```
+
 ⚠️ `audit2allow` 给的是"能过"的规则，不是"正确"的规则——最终要手工精炼，且不能破坏 `neverallow`。
 
 ## 5. 注意（AOSP 14 / Treble）
+
 - 平台策略：vendor 不可引用 `private/` 里的 type，只能用 `public/`——新增跨域交互的 type 要放 `public/` 或走 `versioned` 接口。
 - `neverallow` 很严，`make sepolicy` 会在违反时直接失败。
 - 改完务必 `setenforce 1` 后实跑验证，别停留在 permissive。
 
 ## 6. 实战小项目
+
 给你已有的 `hal_led_example` 补一份完整策略：`.te` + `file_contexts` + `service_contexts`，做到 `setenforce 1` 下不报 avc。
-
-
-
 
 ---
 
 # 十一、性能 / 排障 (Perfetto/ANR)
 
-
-
 ## perfetto_anr_troubleshooting.md
-
 
 # 性能 / 排障（Perfetto / ANR）深读笔记（AOSP 14）
 
 ## 1. Perfetto（首选 trace 工具）
+
 设备上自带 `perfetto` 二进制，比老 systrace 强。
+
 ```bash
 # 录 10 秒,挑选 datasource
 adb shell perfetto -o /data/misc/perfetto-traces/trace.pftrace -t 10s \
@@ -4168,13 +4259,16 @@ adb shell perfetto -o /data/misc/perfetto-traces/trace.pftrace -t 10s \
 adb pull /data/misc/perfetto-traces/trace.pftrace
 # 用 https://ui.perfetto.dev 打开
 ```
-常用 datasource：`sched`(CPU 调度)、`freq`/`idle`(功耗)、`am`(ActivityManager)、`wm`(窗口)、`gfx`(图形)、`view`(View 系统)、`binder`(Binder 事务)、`memory`。
-也可用 config 文件：`perfetto -c config.pbtx -o out.pftrace`。
+
+常用 datasource：`sched`(CPU 调度)、`freq`/`idle`(功耗)、`am`(ActivityManager)、`wm`(窗口)、`gfx`(图形)、`view`(View 系统)、`binder`(Binder 事务)、`memory`。  
+也可用 config 文件：`perfetto -c config.pbtx -o out.pftrace`。  
 旧 `systrace`(`frameworks/native/cmds/atrace/`)已 deprecated，底层就是 perfetto。
 
 ## 2. ANR 触发与产物
-超时阈值：输入派发 5s、Broadcast 前台 10s/后台 60s、Service 20s、ContentProvider 10s。
+
+超时阈值：输入派发 5s、Broadcast 前台 10s/后台 60s、Service 20s、ContentProvider 10s。  
 检测到后在 `ActivityManagerService`/`ANRHelper` 写 `/data/anr/anr_<pid>_<时间戳>`，同时入 DropBox（`/data/system/dropbox`），`am` 会报告。
+
 ```bash
 adb shell ls /data/anr/
 adb pull /data/anr/anr_xxxx
@@ -4183,12 +4277,14 @@ adb shell kill -3 <pid>            # 触发 Java 线程栈 dump 到 logcat(SIGQU
 ```
 
 ## 3. 分析套路
+
 1. 打开 trace/anr 文件，找**主线程**（如 `main` of `system_server` 或 app）
 2. 看是否 `waiting to lock <0x..> held by thread X`（锁等待）→ 追 thread X
 3. thread X 卡在 Binder 调用？IO？计算？→ 定位具体函数
 4. 系统服务 ANR 重点看 `system_server` 主线程是否被某 binder 同步调用阻塞
 
 ## 4. 内存
+
 ```bash
 adb shell dumpsys meminfo <proc>          # app
 adb shell dumpsys meminfo system_server   # 系统服务
@@ -4196,28 +4292,26 @@ adb shell dumpsys meminfo system_server   # 系统服务
 ```
 
 ## 5. 实战小项目
+
 1. 故意在主线程 `Thread.sleep(8000)` 触发 ANR，用 `kill -3` + perfetto 练定位。
 2. 抓一次开机 trace：`perfetto -t 20s sched freq am wm boot`，找启动慢的服务。
-
-
-
 
 ---
 
 # 十二、新增纯系统服务 (含 AIDL)
 
-
-
 ## system_service_aidl.md
-
 
 # 新增纯系统服务（含 AIDL）深读笔记（AOSP 14）
 
 ## 1. 总体链路
+
 AIDL 定义接口 → 服务端 `extends IMyService.Stub`（常同时 `extends SystemService`）→ `SystemServer` 里 `ServiceManager.addService()` 注册 → 客户端 `asInterface(ServiceManager.getService())`。
 
 ## 2. 定义 AIDL
+
 `frameworks/base/core/java/android/os/IMyService.aidl`：
+
 ```aidl
 package android.os;
 /** @hide */
@@ -4225,10 +4319,13 @@ interface IMyService {
     void doSomething(String arg) throws RemoteException;
 }
 ```
+
 内部接口加 `/** @hide */`；若要进公开 SDK 则去掉 `@hide` 并走 `api` 审核（`make update-api`）。
 
 ## 3. 实现
+
 `frameworks/base/services/core/java/com/android/server/MyService.java`：
+
 ```java
 public class MyService extends SystemService {
     private final IMyService.Stub mBinder = new IMyService.Stub() {
@@ -4246,21 +4343,27 @@ public class MyService extends SystemService {
 ```
 
 ## 4. 注册
+
 在 `SystemServer`（重要性高放 `startBootstrapServices`，普通放 `startOtherServices`）：
+
 ```java
 mMyService = new MyService(context);
 ServiceManager.addService(Context.MY_SERVICE, mMyService);
 // 或走生命周期: mSystemServiceManager.startService(MyService.class);
 ```
+
 并在 `Context.java` 加 `public static final String MY_SERVICE = "myservice";`，`ContextImpl.getSystemService()` 里 case 返回封装 manager。
 
 ## 5. 权限校验
+
 每个方法里 `mContext.enforceCallingPermission(android.Manifest.permission.MY_PERM, msg)`；权限在 `frameworks/base/core/res/AndroidManifest.xml` 定义 `<permission>`。
 
 ## 6. SELinux
+
 见 `selinux_policy.md`：`service_contexts` 加 `myservice u:object_r:myservice_service:s0` + `.te` allow。
 
 ## 7. 客户端调用
+
 ```java
 IBinder b = ServiceManager.getService(Context.MY_SERVICE);
 IMyService svc = IMyService.Stub.asInterface(b);
@@ -4268,6 +4371,7 @@ svc.doSomething("hi");
 ```
 
 ## 8. 验证
+
 ```bash
 adb shell service list | grep myservice
 # 实现 dump() 后:
@@ -4275,6 +4379,5 @@ adb shell dumpsys myservice
 ```
 
 ## 9. 实战小项目
+
 把 HAL-AIDL(`hal_led_example`) 的思路升级：做一个 Java 系统服务 `IMyService`，暴露一个方法给 app 查询"当前是否充电"，`addService` 注册并补 SELinux。
-
-
