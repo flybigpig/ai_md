@@ -131,3 +131,12 @@
 - 推送飞书：bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68092623bcacb3e462bbbca64b8）+ 说明文本含云文档链接（om_x100b680925a84ca0b10fbd99ea15e40），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
 - 云文档：`drive +import --as user --type docx` 导入成功，token VFEFdpLXEo89ADxSvsFcJig0nPc，https://my.feishu.cn/docx/VFEFdpLXEo89ADxSvsFcJig0nPc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。2026-08-06 起 `lark_status.py` 检测报 not_installed(exit3)，但 `auth status` 实际两身份均 ready（bot openId ou_b7d6e2739d5e588fc345f00fb327e5cc、user 王凯 ou_9bb9a536... needs_refresh 自动刷新）；lark-cli 二进制位于 `cli-connector-packages/`，调用需 `MSYS_NO_PATHCONV=1` + 正斜杠绝对路径，参数沿用 `--as/--user-id/--file/--folder-token/--type docx/--name`。已用主题再加：城乡融合/县域发展、民生实事群众点单/全过程人民民主。
+
+## 2026-08-07 执行（08:30）
+- 生成**全新**20题（非复用前几日）：申论1（科技创新自立自强·"把科技的命脉牢牢掌握在自己手中"，四则材料：S省揭榜挂帅克87项卡脖子 / W高校长周期评价量子通信12年 / L市中试基地成果转化率18%→46% / 2024研发强度2.68%全球创新指数第11）+ 综合能力写作1（《把风险的关口前移到未发之时》·H县地灾预警前哨机制短评，人民至上生命至上）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-07.md`（带日期，工作区根目录，约 19KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=122（差等比 1/3/9/27→+81）、第10题=6天（甲15乙10合作）、第11题=85（C(10,3)−C(7,3)）；资料16-18 高技术产业营收 10000/15000/19500/25000 亿 + R&D 800/950/1100/1300 亿，答案 C(50.0%)/D(2024增量+5500最大)/A(5.2%强度)。资料刻意构造"增速最高年(2022,50%) ≠ 增长量最大年(2024,+5500)"分离陷阱。
+- 全套答案：常识 B B B B ｜ 言语 A B C B ｜ 数量 C C C ｜ 判断 D B A A ｜ 资料 C D A。
+- 推送飞书：bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68663fd5acacb174dcebc4b55b6）+ 说明文本含云文档链接与易错点（om_x100b68663c792cacb1778938c1e9bd6），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token XipOddyLfoi3UlxqOfGcarDVnMd，https://my.feishu.cn/docx/XipOddyLfoi3UlxqOfGcarDVnMd ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.84，不影响）。已用主题再加：科技创新自立自强/关键核心技术、风险前置治理/应急管理(人民至上生命至上)。
