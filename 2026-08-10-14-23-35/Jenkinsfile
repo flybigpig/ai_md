@@ -1,0 +1,189 @@
+// =============================================================================
+// Jenkins 声明式 Pipeline —— Android / AOSP 项目 CI/CD
+// 覆盖阶段：Checkout → Build → UnitTest → Lint → Deploy（全部四阶段）
+// 适用：Gradle 构建的 Android App / Library（Android 14 / AGP 8.x / JDK 17）
+//       AOSP 系统应用整编的适配写法见仓库根目录 JENKINS_SETUP.md「AOSP 适配」一节
+// 用法：将本文件放到仓库根目录，Jenkins 新建 Pipeline 任务，
+//       "Definition = Pipeline script from SCM"，指定本仓库与分支即可。
+// =============================================================================
+
+pipeline {
+
+    // ---- 全局参数（在 Jenkins 任务页面可覆盖）------------------------------
+    parameters {
+        choice(
+            name: 'BUILD_TYPE',
+            choices: ['debug', 'release'],
+            description: '构建类型：debug（CI 默认，快） / release（需签名）'
+        )
+        booleanParam(
+            name: 'RUN_DEPLOY',
+            defaultValue: false,
+            description: '是否执行 Deploy 阶段（产物归档 + 上传内部分发/MAVEN）'
+        )
+        string(
+            name: 'TARGET_FLAVOR',
+            defaultValue: '',
+            description: '可选 productFlavor，例如：official / googlePlay，留空则用默认'
+        )
+    }
+
+    // ---- 全局选项 -----------------------------------------------------------
+    options {
+        timestamps()                       // 日志加时间戳
+        timeout(time: 60, unit: 'MINUTES') // 整条流水线超时保护
+        buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '10'))
+        disableConcurrentBuilds()          // 防止同一任务并行抢占构建机资源
+        ansiColor('xterm')                 // 终端颜色（需 AnsiColor 插件）
+    }
+
+    // ---- 构建节点 -----------------------------------------------------------
+    // 推荐做法：用带 Android SDK 的 Docker agent，环境一致性最好。
+    // 也可用 label 指定专用构建机（需预装 JDK17 + Android SDK + CMake/NDK）。
+    agent {
+        docker {
+            image 'cirrusci/android-sdk:latest'   // 已含 cmdline-tools + 常用 build-tools
+            args '-v $HOME/.gradle:/root/.gradle' // 复用 Gradle 缓存，加速后续构建
+            reuseNode true
+            // label 'android-build'             // 若用物理/VM 构建机，改成 label 模式
+        }
+    }
+
+    // ---- 环境变量 / 凭据 ----------------------------------------------------
+    environment {
+        ANDROID_HOME = '/opt/android-sdk'          // Docker 镜像内的 SDK 路径
+        // release 签名凭据（在 Jenkins「Credentials」里配置 secret file，ID 如下）
+        KEYSTORE_FILE     = credentials('android-keystore')   // 类型：Secret file
+        KEYSTORE_PASSWORD = credentials('android-keystore-pass') // 类型：Secret text
+        KEY_ALIAS         = credentials('android-key-alias')
+        KEY_PASSWORD      = credentials('android-key-pass')
+        // 内部分发/MAVEN 上传凭据（Deploy 阶段使用，按需配置）
+        DEPLOY_TOKEN      = credentials('deploy-token')
+        // 可选：静态扫描
+        // SONAR_TOKEN      = credentials('sonar-token')
+    }
+
+    stages {
+
+        // ===== 0. 准备（检出由 SCM 自动完成，这里做环境自检）=================
+        stage('Prepare') {
+            steps {
+                script {
+                    echo "==> 构建参数：BUILD_TYPE=${params.BUILD_TYPE}, FLAVOR=${params.TARGET_FLAVOR ?: 'default'}, DEPLOY=${params.RUN_DEPLOY}"
+                    sh 'java -version'
+                    sh 'chmod +x ./gradlew || true'
+                    sh './gradlew --version'
+                }
+            }
+        }
+
+        // ===== 1. Build ======================================================
+        stage('Build') {
+            steps {
+                script {
+                    def flavor = params.TARGET_FLAVOR ? "${params.TARGET_FLAVOR.capitalize()}" : ''
+                    def task = "assemble${flavor}${params.BUILD_TYPE.capitalize()}"
+                    echo "==> 执行：./gradlew clean ${task}"
+                    // --no-daemon 避免 Jenkins 容器内残留守护进程
+                    sh "./gradlew clean ${task} --no-daemon --stacktrace"
+                }
+            }
+        }
+
+        // ===== 2. Unit Test ==================================================
+        stage('Unit Test') {
+            steps {
+                script {
+                    def flavor = params.TARGET_FLAVOR ? "${params.TARGET_FLAVOR.capitalize()}" : ''
+                    def task = "test${flavor}${params.BUILD_TYPE.capitalize()}UnitTest"
+                    echo "==> 执行：./gradlew ${task}"
+                    sh "./gradlew ${task} --no-daemon"
+                }
+            }
+            post {
+                always {
+                    // 无论成败都收集测试报告，Jenkins JUnit 插件可渲染趋势
+                    junit allowEmptyResults: true,
+                          testResults: '**/build/test-results/test*/*.xml'
+                }
+            }
+        }
+
+        // ===== 3. Lint / 静态检查 ============================================
+        stage('Lint') {
+            parallel {
+                stage('Android Lint') {
+                    steps {
+                        script {
+                            def flavor = params.TARGET_FLAVOR ? "${params.TARGET_FLAVOR.capitalize()}" : ''
+                            def task = "lint${flavor}${params.BUILD_TYPE.capitalize()}"
+                            echo "==> 执行：./gradlew ${task}"
+                            sh "./gradlew ${task} --no-daemon || true" // lint 有警告不阻断，仅记录
+                        }
+                    }
+                    post {
+                        always {
+                            // lint 报告HTML（需在 Jenkins 装 Warnings/HTML Publisher 可选）
+                            publishHTML([
+                                allowMissing: false,
+                                keepAll: true,
+                                reportDir: 'app/build/reports/lint-results.html',
+                                reportFiles: '*.html',
+                                reportName: 'Android Lint Report'
+                            ])
+                        }
+                    }
+                }
+                stage('Checkstyle / ktlint') {
+                    steps {
+                        script {
+                            // 若项目集成了 checkstyle / ktlint / detekt，在此执行
+                            sh "./gradlew checkstyle || true"
+                            sh "./gradlew ktlintCheck || true"
+                        }
+                    }
+                }
+            }
+        }
+
+        // ===== 4. Deploy（归档 + 上传）=======================================
+        stage('Deploy') {
+            when {
+                expression { return params.RUN_DEPLOY }
+            }
+            steps {
+                script {
+                    // 4.1 归档产物到 Jenkins（始终可用，无需外部依赖）
+                    def apkDir = 'app/build/outputs/apk'
+                    def aabDir = 'app/build/outputs/bundle'
+                    archiveArtifacts artifacts: "${apkDir}/**/*.apk, ${aabDir}/**/*.aab",
+                                      fingerprint: true,
+                                      allowEmptyArchive: false
+
+                    // 4.2 上传到内部分发（示例：用 DEPLOY_TOKEN 调内部 API）
+                    // 下面用占位命令，按你的真实分发平台替换：
+                    //   Firebase App Distribution:
+                    //     sh "./gradlew appDistributionUpload${BUILD_TYPE.capitalize()}"
+                    //   内部文件服务器:
+                    //     sh "curl -H 'Token: ${DEPLOY_TOKEN}' -T ${apkDir}/.../*.apk https://files.internal/upload"
+                    echo "==> Deploy 阶段：产物已归档；外部上传请按 JENKINS_SETUP.md 接入真实目标"
+                }
+            }
+        }
+    }
+
+    // ---- 收尾动作 -----------------------------------------------------------
+    post {
+        always {
+            cleanWs() // 清理 workspace，避免磁盘堆积（需 Workspace Cleanup 插件）
+        }
+        success {
+            echo '✅ CI/CD 流水线全部阶段通过'
+            // 可选：失败/成功通知（Slack / 钉钉 / 邮件），接对应插件后启用
+            // slackSend channel: '#android-ci', message: "构建成功：${env.JOB_NAME} #${env.BUILD_NUMBER}"
+        }
+        failure {
+            echo '❌ 流水线失败，请查看上方日志'
+        }
+    }
+}
