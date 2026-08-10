@@ -132,6 +132,15 @@
 - 云文档：`drive +import --as user --type docx` 导入成功，token VFEFdpLXEo89ADxSvsFcJig0nPc，https://my.feishu.cn/docx/VFEFdpLXEo89ADxSvsFcJig0nPc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。2026-08-06 起 `lark_status.py` 检测报 not_installed(exit3)，但 `auth status` 实际两身份均 ready（bot openId ou_b7d6e2739d5e588fc345f00fb327e5cc、user 王凯 ou_9bb9a536... needs_refresh 自动刷新）；lark-cli 二进制位于 `cli-connector-packages/`，调用需 `MSYS_NO_PATHCONV=1` + 正斜杠绝对路径，参数沿用 `--as/--user-id/--file/--folder-token/--type docx/--name`。已用主题再加：城乡融合/县域发展、民生实事群众点单/全过程人民民主。
 
+## 2026-08-08 执行（08:32）
+- 生成**全新**20题（非复用前几日）：申论1（教育强国·"办好人民满意的教育，加快建设教育强国"，四则材料：县域优质均衡/集团化办学+教师轮岗 / 职教产教融合产业学院订单班 / 教育数字化国家智慧教育平台+专递课堂 / 总书记论述+2024高教毛入学率超60%）+ 综合能力写作1（"把'试点'变'示范'"·D市"一件事一次办"试点推广短评，因地制宜以点带面）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-08.md`（带日期，工作区根目录，约 21KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=92（差 2²/3²/4²/5²→6²）、第10题=12天（甲20乙30合作）、第11题=70种（C(9,3)−C(5,3)−C(4,3)）；资料16-18 太阳能装机 3.0/4.2/5.6/7.2 亿千瓦 + 全国装机 23.8/25.6/29.2/33.5 亿千瓦，答案 B(40.0%)/D(2024增量1.6最大)/B(21.5%比重)。资料刻意构造"增速最高年(2022,40%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B C B C ｜ 言语 B B B B ｜ 数量 C C D ｜ 判断 C A A A ｜ 资料 B D B。
+- 推送飞书：bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b6853deb0a8a0b2716c1ac841212）+ 说明文本含云文档链接（om_x100b6853df6308b0b48a5d4c6a7d937），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：`drive +import --as user --type docx` 导入成功，token OrohdPSMdo1lWLxGdDKcUQbSnGe，https://my.feishu.cn/docx/OrohdPSMdo1lWLxGdDKcUQbSnGe ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。连接器面板虽显"disconnected"，但本地 lark-cli 两身份令牌均 ready（user tokenStatus valid，scope 含 docx:document:create / docs:document:import / im:message），不影响推送。lark-cli 1.0.82（提示可升 1.0.85，不影响）。已用主题再加：教育强国/教育公平优质均衡、试点推广/典型引路(以点带面)。
+
 ## 2026-08-07 执行（08:30）
 - 生成**全新**20题（非复用前几日）：申论1（科技创新自立自强·"把科技的命脉牢牢掌握在自己手中"，四则材料：S省揭榜挂帅克87项卡脖子 / W高校长周期评价量子通信12年 / L市中试基地成果转化率18%→46% / 2024研发强度2.68%全球创新指数第11）+ 综合能力写作1（《把风险的关口前移到未发之时》·H县地灾预警前哨机制短评，人民至上生命至上）= 行测18（常识4/言语4/数量3/判断4/资料3）。
 - 产出文件：`公务员事业编练习题_2026-08-07.md`（带日期，工作区根目录，约 19KB）。
@@ -140,3 +149,21 @@
 - 推送飞书：bot 身份 P2P 直发用户 王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68663fd5acacb174dcebc4b55b6）+ 说明文本含云文档链接与易错点（om_x100b68663c792cacb1778938c1e9bd6），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
 - 云文档：`drive +import --as user --type docx` 导入成功，token XipOddyLfoi3UlxqOfGcarDVnMd，https://my.feishu.cn/docx/XipOddyLfoi3UlxqOfGcarDVnMd ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.84，不影响）。已用主题再加：科技创新自立自强/关键核心技术、风险前置治理/应急管理(人民至上生命至上)。
+
+## 2026-08-09 执行（08:30）
+- 生成**全新**20题（非复用前几日）：申论1（法治政府建设·"以良法善治，护航高质量发展"，四则材料：综合执法改革"进一次门查多项事"企业迎检降40% / 重大决策法定程序听证论证风险评估合法性审查集体讨论 / 权责清单晒权力 / 习近平法治思想论述法治政府是重点任务主体工程）+ 综合应用写作1（《把"生态优势"变"发展胜势"》·两山转化，碳汇/林下经济/生态旅游/生态补偿）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-09.md`（带日期，工作区根目录，约 23KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=93（差 2²/3²/4²/5²→6²）、第10题=6天（甲15乙10合作）、第11题=135（C(11,3)−C(6,3)−C(5,3)）；资料16-18 实物商品网上零售额 8.0/10.0/11.5/13.8 万亿 + 社零 44.1/44.0/47.1/48.8 万亿，答案 B(25.0%)/D(2024增量2.3最大)/B(28.3%比重)。资料刻意构造"增速最高年(2022,25.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A C C B ｜ 言语 B B A B ｜ 数量 C B C ｜ 判断 C A A B ｜ 资料 B D B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b6848ee60e4a0b4a35d4e5e135e7）+ 说明文本含云文档链接（om_x100b6848ef2b80a8b03a28dd5d784fa），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：`drive +import --as user --type docx` 导入成功，token W4lQd85FHowWgsxERQpcoeqtnWd，https://my.feishu.cn/docx/W4lQd85FHowWgsxERQpcoeqtnWd ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.85，不影响）。已用主题再加：法治政府建设/良法善治、两山转化/生态价值实现(生态优势变发展胜势)。
+
+## 2026-08-10 执行（08:31）
+- 生成**全新**20题（非复用前几日）：申论1（共同富裕·"在高质量发展中扎实推进共同富裕"，四则材料：浙江示范区扩中提低/山海协作、西部县共富工坊"企业+村集体+农户"、第三次分配慈善公益、习近平论述）+ 综合应用写作1（《把"施工图"变"实景图"》·抓落实/因地制宜/久久为功/重实效）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-10.md`（带日期，工作区根目录，约 23KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=125（差等比4/8/16/32→+64）、第10题=9天（甲12乙36合作，1/(1/12+1/36)）、第11题=12人（70−12=58，40+30−58）；资料16-18 全国居民人均可支配收入 32000/36000/39000/41000/46000 元，答案 C(12.5%)/D(2024增量+5000最大)/C(43.8%较2020)。资料刻意构造"增速最高年(2021,12.5%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B B A A ｜ 言语 A B A B ｜ 数量 C B B ｜ 判断 C B B B ｜ 资料 C D C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68a5f03f90a0b2b47f787d1d9ce）+ 说明文本含云文档链接（om_x100b68a58ea750a8b15a0cf05ccc347），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：`drive +import --as user --type docx` 导入成功，token W3HodGGWWonQgfxcNoSc5YpfnAh，https://my.feishu.cn/docx/W3HodGGWWonQgfxcNoSc5YpfnAh ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。连接器面板虽显"disconnected"，本地 lark-cli 1.0.82 两身份令牌均 ready（user tokenStatus valid，scope 含 docx:document:create / docs:document:import / im:message），不影响推送。已用主题再加：共同富裕/三次分配、抓落实/施工图变实景图。
