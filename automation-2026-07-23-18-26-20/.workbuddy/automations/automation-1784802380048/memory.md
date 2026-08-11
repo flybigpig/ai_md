@@ -157,3 +157,10 @@
 - 飞书推送成功: 「user 上传(--folder-token PJWMfGhfflNSLndN66lcix7wnOh, file_token B7SxbUHbgowEmjxCARocm995nJe, url https://my.feishu.cn/file/B7SxbUHbgowEmjxCARocm995nJe) + bot 私聊(message_id om_x100b68a5f6dae4a0b15eb00c2e5e0f4)」组合**第二十次一次成功**。lark-cli 1.0.82(1.0.85 可用, 不影响功能)。仍用 PowerShell 原生 Windows Set-Location 到工作区再上传, 规避 Git Bash 双写盘符 MODULE_NOT_FOUND。
 - 注意: user 身份 refreshExpiresAt 约 2026-08-10 前有效, 今日仍自动刷新成功, 后续需关注 token 失效风险(若失效需重新 device-flow 授权)。
 - 后续真·未覆盖角度所剩: Perfetto SQL 扩充(input延迟/GPU计数器/battery耗电细分)、真题大乱斗 vol.2、KMP/skiko 非Android target运行时深水区(第十五篇已部分覆盖Android侧差异)。
+
+### 2026-08-11（第二十五篇·Perfetto SQL 实战扩充：input 延迟 / GPU 计数器 / battery 耗电细分）
+- 角度选择：前 24 篇(约166专题)已闭环, 落点 = 把第 21 篇 Perfetto SQL 库明确留白的 input/GPU/battery 三块补成可复用范例(已对照 trace_processor stdlib 源码核对表名)。
+- 产出 `Android_Framework面试题_PerfettoSQL扩充_input延迟GPU计数器battery_2026-08-11.md`(389行/16883字符/U+FFFD=0, 单Write一次成型): 三大新增专题(①Input 延迟定界: android_input_events 表 dispatch/handling/ack/end_to_end 四段延迟定责 InputDispatcher 系统侧 vs App 主线程; ②GPU 计数器渲染负载: gpu_counter/gpu_counter_track/android_gpu_frequency/android_gpu_memory + GPU bound vs CPU bound 判定 + Overlay vs GPU 合成; ③Battery 耗电细分: android.power battery_counters/counter 表 + 掉电速率 LEAD 窗口 + 唤醒源 + 按 UID 归因靠 dumpsys batterystats) + 三条跨表混合 SQL(input×frame / gpu_freq×frame / battery×cpu_freq×jank) + 数据源 pbtxt 配置 + 易错红榜TOP18 + 三追问链 + AOSP路径清单 + 25篇交叉索引。累计约 170 专题。
+- 联网锚定：Perfetto stdlib android_input_events 已成标准(由 sendMessage/receiveMessage 切片配对算出四段延迟); A17 QPR2 stable 预计2026-12; A18 桌面融合/跨设备 Handoff/EU DMA 仍路线图中。
+- 飞书推送成功：「user 上传(--folder-token PJWMfGhfflNSLndN66lcix7wnOh, file_token GT4qbAZ5XoASzKxO2M2chsFGnvh, url https://my.feishu.cn/file/GT4qbAZ5XoASzKxO2M2chsFGnvh) + bot 私聊(message_id om_x100b68929e27ecb0b15cc102fe5399e)」组合**第二十一次一次成功**。user 身份 refreshExpiresAt(~2026-08-10) 虽临界但仍自动刷新成功。lark-cli 1.0.82(1.0.85 可用, 不影响功能)。仍用 PowerShell 原生 Windows Set-Location 到工作区再上传, 规避 Git Bash 双写盘符 MODULE_NOT_FOUND。
+- 后续真·未覆盖角度所剩：真题大乱斗 vol.2(更刁钻多子系统叠加)、KMP/skiko 非 Android target 运行时深水区、ART 镜像 odex 布局优化实战(第二十四篇已部分覆盖)。

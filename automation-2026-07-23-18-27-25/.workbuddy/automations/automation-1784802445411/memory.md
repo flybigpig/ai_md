@@ -167,3 +167,12 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68a5f03f90a0b2b47f787d1d9ce）+ 说明文本含云文档链接（om_x100b68a58ea750a8b15a0cf05ccc347），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
 - 云文档：`drive +import --as user --type docx` 导入成功，token W3HodGGWWonQgfxcNoSc5YpfnAh，https://my.feishu.cn/docx/W3HodGGWWonQgfxcNoSc5YpfnAh ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。连接器面板虽显"disconnected"，本地 lark-cli 1.0.82 两身份令牌均 ready（user tokenStatus valid，scope 含 docx:document:create / docs:document:import / im:message），不影响推送。已用主题再加：共同富裕/三次分配、抓落实/施工图变实景图。
+
+## 2026-08-11 执行（08:28）
+- 生成**全新**20题（非复用前几日）：申论1（高水平对外开放·"以高水平对外开放拓展中国式现代化发展空间"，四则材料：自贸试验区/海南自贸港制度型开放试验田 / 一带一路中欧班列9万列、对世界增长贡献超30% / 进博会矩阵+制造业外资准入清零 / 对接CPTPP、DEPA）+ 综合应用写作1（《把"办公桌"搬到一线》·四下基层/一线工作法，作风之变+关键在常实）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：`公务员事业编练习题_2026-08-11.md`（带日期，工作区根目录，约 17KB）。
+- 行测答案已用 python 复算（ALL CHECKS PASSED）：数量第9题=48（二级差 5/7/9/11→13）、第10题=10天（甲15乙30合作）、第11题=150元（进价100、九折、35%利润）；资料16-18 进出口 3.0/5.6/6.2/9.0 万亿，答案 A(86.7%)/D(2024增量2.8最大)/A(较2021+200%)。资料刻意构造"增速最高年(2022,86.7%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B B B C ｜ 言语 A A A B ｜ 数量 C C C ｜ 判断 A B A B ｜ 资料 A D A。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b689285f410a0b10cc99bcef4b7b）+ 说明文本含云文档链接（om_x100b689282680d3cb186a615d20bc1f），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：`drive +import --as user --type docx` 首调遇 transient socket 错误（Only one usage of each socket address），重试成功，token Bt3jdIzZgos4ivxHNqEcq9x6nBh，https://my.feishu.cn/docx/Bt3jdIzZgos4ivxHNqEcq9x6nBh ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：drive import 偶发 socket 占用型网络错误，重试即可；其余流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.85，不影响）。已用主题再加：高水平对外开放/制度型开放、四下基层/一线工作法(把办公桌搬到一线)。
