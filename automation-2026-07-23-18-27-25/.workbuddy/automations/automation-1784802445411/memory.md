@@ -176,3 +176,16 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b689285f410a0b10cc99bcef4b7b）+ 说明文本含云文档链接（om_x100b689282680d3cb186a615d20bc1f），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 云文档：`drive +import --as user --type docx` 首调遇 transient socket 错误（Only one usage of each socket address），重试成功，token Bt3jdIzZgos4ivxHNqEcq9x6nBh，https://my.feishu.cn/docx/Bt3jdIzZgos4ivxHNqEcq9x6nBh ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：drive import 偶发 socket 占用型网络错误，重试即可；其余流程稳定沿用（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.85，不影响）。已用主题再加：高水平对外开放/制度型开放、四下基层/一线工作法(把办公桌搬到一线)。
+
+## 2026-08-12 执行（补记，文件已生成但记忆未落）
+- 申论1（总体国家安全观·统筹发展和安全，四则材料：国安委首次提出/五大要素、粮食安全1.3万亿斤+种业振兴、网络安全三法+产业500→1500亿、生物安全+全球安全倡议）+ 综合应用写作1（全面从严治党·把"严管"做成"厚爱"）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-12.md（工作区根目录）。（推送细节本次未记录，仅补主题备忘。）
+
+## 2026-08-13 执行（08:31）
+- 生成**全新**20题（非复用前几日）：申论1（海洋强国·"向海图强，写好经略海洋大文章"，四则材料：战略要地/关心认识经略海洋、海洋生产总值首破10万亿+海工装备领先+海上风电世界第一、蛟龙7062/奋斗者10909深潜+雪龙2+卡脖子短板、蓝色海湾整治+红树林修复+伏季休渔/碧海银滩也是金山银山）+ 综合应用写作1（《把"流量"变"留量"》·文旅融合网红城市长红，真功夫/细服务/延链条）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-13.md（带日期，工作区根目录，约 19KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=56（差4/6/8/10/12，n(n+1)）、第10题=6天（甲10乙15合作）、第11题=80克（盐水200g×30%→50%，溶质守恒）；资料16-18 海洋生产总值 9.0/9.9/10.5/11.5 万亿，答案 B(10.0%)/D(2024增量1.0最大)/B(27.8%间隔)。资料刻意构造"增速最高年(2022,10.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B A B B ｜ 言语 A B B B ｜ 数量 C B C ｜ 判断 A B A C ｜ 资料 B D B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68e54be400a8b48e673bae6b0eb）+ 说明文本含云文档链接（om_x100b68e549ff60a4b2c2e50a2fb6100），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：drive +import --as user --type docx 成功，token OBO4dKBm2o9ppPxRXXOc3cCwnk6，https://my.feishu.cn/docx/OBO4dKBm2o9ppPxRXXOc3cCwnk6 ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.86，不影响）。已用主题再加：海洋强国/经略海洋、文旅融合/把流量变留量。
