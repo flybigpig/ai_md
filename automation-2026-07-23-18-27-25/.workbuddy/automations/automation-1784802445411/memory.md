@@ -189,3 +189,12 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68e54be400a8b48e673bae6b0eb）+ 说明文本含云文档链接（om_x100b68e549ff60a4b2c2e50a2fb6100），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
 - 云文档：drive +import --as user --type docx 成功，token OBO4dKBm2o9ppPxRXXOc3cCwnk6，https://my.feishu.cn/docx/OBO4dKBm2o9ppPxRXXOc3cCwnk6 ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.86，不影响）。已用主题再加：海洋强国/经略海洋、文旅融合/把流量变留量。
+
+## 2026-08-14 执行（08:30）
+- 生成**全新**20题（非复用前几日）：申论1（区域协调发展·"下好'一盘棋'，绘就区域协调发展新图景"，四则材料：四大板块+区域重大战略/全国一盘棋、京津冀疏解非首都功能+雄安"未来之城"、长三角1/26国土贡献1/4经济总量+1小时通勤圈、粤港澳"硬联通+软联通"+区域不平衡短板）+ 综合应用写作1（《把"呼声"变"掌声"》·走好新时代群众路线/民呼我应/接诉即办）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-14.md（带日期，工作区根目录，约 21KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=129（差等比2/4/8/16/32→64，通项2ⁿ+1）、第10题=12天（甲20乙30合作）、第11题=450元（进价300、八折、20%利润反验）；资料16-18 协调发展重点区GDP 10.0/13.0/15.6/20.0 万亿，答案 A(30.0%)/D(2024增量4.4最大)/C(100%间隔)。资料刻意构造"增速最高年(2022,30.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A B A D ｜ 言语 A B B B ｜ 数量 B C B ｜ 判断 A A A C ｜ 资料 A D C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b68d252f664a8b39a7977b1dcb8e）+ 说明文本含云文档链接（om_x100b68d253d944acb22399fe147ccc1），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：drive +import --as user --type docx 成功，token LVx4dr8UAoqMYjxQtg7cu6Qrnuj，https://my.feishu.cn/docx/LVx4dr8UAoqMYjxQtg7cu6Qrnuj ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.87，不影响）。已用主题再加：区域协调发展/全国一盘棋、新时代群众路线(把呼声变掌声)。
