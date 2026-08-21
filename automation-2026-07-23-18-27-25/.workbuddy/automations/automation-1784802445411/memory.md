@@ -234,3 +234,21 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b677bc21c48b4b4a5d0f976a04fb）+ 说明文本含云文档链接（om_x100b677bc04bbca4b25505a3a3c5f99），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 云文档：drive +import --as user --type docx 成功，token QNxjdTAdxoahoqxbD8oc2t1wn8e，https://my.feishu.cn/docx/QNxjdTAdxoahoqxbD8oc2t1wn8e ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.82（提示可升 1.0.87，不影响）。已用主题再加：全国统一大市场/畅通国内大循环、立破并举/破除地方保护(大市场释放大活力)。
+
+## 2026-08-20 执行（08:46）
+- 生成**全新**20题（非复用前几日）：申论1（浦江经验/领导下访接访·"把信访工作做到群众心坎上"，四则材料：2003年习近平同志浦江首开省级下访/信访超市一站式95%化解率/90%矛盾在基层/信访是送上门的群众工作）+ 综合应用写作1（《把"辛苦指数"化为"幸福指数"》·干部担当作为与为民造福短评）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-20.md（带日期，工作区根目录，约 18.6KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=42（n(n+1)）、第10题=10天（甲20乙30、合作x+乙独5：5x+10=60→x=10）、第11题=8人（60−8=52，32+28−52）；资料16-18 跨境电商进出口 1.0/1.5/2.0/2.9 万亿，答案 C(190%)/C(2024年0.9增量最大)/C(4.2万亿)。资料刻意构造"增速最高年(2022,50%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B C C B ｜ 言语 A B A C ｜ 数量 C C B ｜ 判断 B A A B ｜ 资料 C C C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b6750ab628ca8b32d9820b77c928）+ 说明文本含云文档链接（om_x100b6750a99380acb24ab529a073e42，首调遇 socket 占用错误重试成功），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token GcN7dNi1Po0aZXx4S5DcaxrJnft，https://my.feishu.cn/docx/GcN7dNi1Po0aZXx4S5DcaxrJnft ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。说明文本偶发 socket 占用型网络错误，重试即可。已用主题再加：浦江经验/领导下访接访(信访工作做到群众心坎上)、干部担当作为/把辛苦指数化为幸福指数。
+
+## 2026-08-21 执行（08:46）
+- 生成**全新**20题（非复用前几日）：申论1（民营经济/两个毫不动摇·"厚植民营经济发展沃土"，四则材料：两个毫不动摇定调/促进民营经济发展壮大意见、某省金融平台2.8万家授信1200亿+融资成本降1.2pct、民企维权中心+首违不罚+产权保护、玻璃门旋转门弹簧门政策兑现）+ 综合能力写作1（"把'一阵风'变成'持久功'"·长效机制/防运动式治理，路长制网格化随手拍）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-21.md（带日期，工作区根目录，约 18.7KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=63（2ⁿ−1）、第10题=6天（甲12乙18合作x+乙独3天：5x+6=36→x=6）、第11题=200元（进价150、九折、20%利润反验180/30/20%）；资料16-18 民营企业数量 100/140/180/240 万户，答案 C(140%)/C(2024年+60增量最大)/C(320万户)。资料刻意构造"增速最高年(2022,40.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 B C D C ｜ 言语 A B A C ｜ 数量 C B B ｜ 判断 B A A B ｜ 资料 C C C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b674db096fca0b3ee721624693ac）+ 说明文本含云文档链接（om_x100b674db1c51538b100289cf3bf0ac），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token Tx4LdvZq9oDU6mxVj59c6ARunzg，https://my.feishu.cn/docx/Tx4LdvZq9oDU6mxVj59c6ARunzg ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。本会话 lark-cli 两身份令牌均 ready（user tokenStatus valid，scope 含 docx:document:create / docs:document:import / drive:file:upload / im:message），预检脚本 lark_status.py 仍误报 not_installed(exit3)但不影响实际调用。已用主题再加：民营经济/两个毫不动摇、长效机制/防止运动式治理(把一阵风变持久功)。
