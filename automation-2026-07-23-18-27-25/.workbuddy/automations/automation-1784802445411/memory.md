@@ -252,3 +252,30 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b674db096fca0b3ee721624693ac）+ 说明文本含云文档链接（om_x100b674db1c51538b100289cf3bf0ac），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 云文档：drive +import --as user --type docx 成功，token Tx4LdvZq9oDU6mxVj59c6ARunzg，https://my.feishu.cn/docx/Tx4LdvZq9oDU6mxVj59c6ARunzg ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。本会话 lark-cli 两身份令牌均 ready（user tokenStatus valid，scope 含 docx:document:create / docs:document:import / drive:file:upload / im:message），预检脚本 lark_status.py 仍误报 not_installed(exit3)但不影响实际调用。已用主题再加：民营经济/两个毫不动摇、长效机制/防止运动式治理(把一阵风变持久功)。
+
+## 2026-08-23 执行（08:45）
+- 生成**全新**20题（非复用前几日）：申论1（数据要素/数字经济·"释放数据要素价值，点燃高质量发展新引擎"，四则材料：数据二十条"三权分置"第五大生产要素 / H市公共数据开放平台"免申即享"但数据孤岛 / 装备制造企业工业数据空间降耗提效但中小微"用不起" / 数据安全违规收集泄露+统筹发展与安全）+ 综合应用写作1（《让"微服务"传递"大温暖"》·社区微治理短评，快/准/众）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-23.md（带日期，工作区根目录，约 18.7KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=9天（甲20乙30、甲先5天余3/4、合效1/12）、第10题=150元（进价x、1.5x×0.8=1.2x、0.2x=30）、第11题=100种（C(10,3)−C(6,3)）；资料16-18 工业机器人产量 30/36/41/49 万套，答案 B(20.0%)/D(2024年+8.0增量最大)/B(49/30≈1.6倍)。资料刻意构造"增速最高年(2022,20.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A B D B ｜ 言语 A A C B ｜ 数量 C B C ｜ 判断 C A A B ｜ 资料 B D B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b67906501d0a8b248051177037e3）+ 说明文本含云文档链接（om_x100b6790630ae8a0b4a4ebf06ac9bd5），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token Xm38dscVtoBiyrxa4HVcVlCSnGg，https://my.feishu.cn/docx/Xm38dscVtoBiyrxa4HVcVlCSnGg ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。run.js 路径须 `C:/Users/...`（drive-letter+正斜杠）+ `MSYS_NO_PATHCONV=1`，用 `/c/Users/...` 会被 MSYS 错拼成 `C:\c\Users` 报 MODULE_NOT_FOUND。lark-cli 1.0.88（提示可升 1.0.89，不影响）。已用主题再加：数据要素/数字经济(数据二十条)、社区微治理/微服务传递大温暖。
+
+## 2026-08-22 执行（08:51）
+- 生成**全新**20题（非复用前几日）：申论1（宜居宜业和美乡村·"建设和美乡村，既要塑形也要铸魂"，四则材料：千万工程浙江蝶变/中部县人居环境"干部干群众看"管护难/西部镇小木耳产业同质化/2023一号文件硬件软件一起抓）+ 综合应用写作1（《以"绣花"功夫做好精细治理》·老旧小区精细治理短评，细/准/常）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-22.md（带日期，工作区根目录，约 18.3KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=8天（三人对两两合作 甲+乙=1/8、乙+丙=1/12、甲+丙=1/24→合计1/8→8天，新结构首用）、第10题=240元（进价200、九折、获利8%→售价216、标价240）、第11题=185种（C(12,3)−C(7,3)，正面分类法验证一致）；资料16-18 休闲农业与乡村旅游综合收入 3000/3900/4700/6000 亿，答案 B(30.0%)/D(2024年+1300增量最大)/C(2.0倍翻一番)。资料刻意构造"增速最高年(2022,30.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A C B B ｜ 言语 B A C B ｜ 数量 B B C ｜ 判断 D B A C ｜ 资料 B D C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b67bb67277ca0b2a2fe235f75271）+ 说明文本含云文档链接（om_x100b67bb65158ca4b48eb1fe7281a76），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token Th7Hd71ego9S9wxDLBkcEsGWnHg，https://my.feishu.cn/docx/Th7Hd71ego9S9wxDLBkcEsGWnHg ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。本会话 lark-cli 1.0.88（提示可升 1.0.89，不影响）。已用主题再加：宜居宜业和美乡村/塑形铸魂、精细化治理/绣花功夫。
+
+## 2026-08-24 执行（08:46）
+- 生成**全新**20题（非复用前几日）：申论1（铸牢中华民族共同体意识·"绘就民族团结进步新画卷"，四则材料：2021中央民族工作会"主线"/十二个必须、历史交融昭君出塞到瓦氏夫人抗倭、西部互嵌式社区实践+嵌入式不足短板、推普与依法保护多样性并重+防极端化）+ 综合应用写作1（《让"一刻钟"圈出"幸福圈"》·一刻钟便民生活圈/小修小补回归短评）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-24.md（带日期，工作区根目录，约 19.4KB）。
+- 行测答案已用 python 复算（ALL CHECKS PASSED）：数量第9题=4天（甲12乙15、合作x+乙独6：3x/20+2/5=1→x=4）、第10题=200元（进价x、1.3×0.9=1.17、0.17x=34）、第11题=130种（C(11,3)−C(7,3)，分类法验证一致）；资料16-18 人工智能核心产业规模 800/1200/1560/2100 亿，答案 C(50.0%)/D(2024年+540增量最大)/C(2.6倍)。资料刻意构造"增速最高年(2022,50.0%) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A B B B ｜ 言语 B B A B ｜ 数量 B A B ｜ 判断 C A A B ｜ 资料 C D C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b678d092e00a8b1146691fb71cdc）+ 说明文本含云文档链接（om_x100b678d075f5cb8b32aacef3842464），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token Y6uqdOVHHodgE0xZtuKc9q2gnRd，https://my.feishu.cn/docx/Y6uqdOVHHodgE0xZtuKc9q2gnRd ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.88（提示可升 1.0.89，不影响）。已用主题再加：铸牢中华民族共同体意识/民族团结、一刻钟便民生活圈/小修小补回归(微服务大幸福)。
