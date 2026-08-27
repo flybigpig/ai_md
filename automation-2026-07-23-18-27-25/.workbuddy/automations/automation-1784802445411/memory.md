@@ -297,3 +297,12 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b678d092e00a8b1146691fb71cdc）+ 说明文本含云文档链接（om_x100b678d075f5cb8b32aacef3842464），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 云文档：drive +import --as user --type docx 成功，token Y6uqdOVHHodgE0xZtuKc9q2gnRd，https://my.feishu.cn/docx/Y6uqdOVHHodgE0xZtuKc9q2gnRd ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.88（提示可升 1.0.89，不影响）。已用主题再加：铸牢中华民族共同体意识/民族团结、一刻钟便民生活圈/小修小补回归(微服务大幸福)。
+
+## 2026-08-27 执行（08:45）
+- 生成**全新**20题（非复用前几日）：申论1（廉洁文化建设/党风廉政建设·"以廉洁文化涵养清风正气"，四则材料：习近平"用廉洁文化滋养身心"论述/红色资源+数字展馆+村规民约实践/形式化短板/三不腐一体推进与长久立制）+ 综合能力写作1（《把"当下改"与"长久立"结合起来》·作风建设标本兼治短评，快准与制常二分法）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-27.md（带日期，工作区根目录，约 19KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第11题=720（阶乘 n!）、第12题=9天（甲20乙30、合作x天+甲独5天：5x+15=60→x=9）、第13题=180元（进价120、八五折？更正：八折、获利20%→售价144、标价180）；资料16-18 立案数 18.0/21.6/25.2/30.0 万件，答案 C(1.7倍)/A(2022年20.0%增速最高)/C(2024年+4.8增量最大)。资料刻意构造"增速最高年(2022) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 D C B D ｜ 言语 A A B B ｜ 数量 C C B ｜ 判断 C B A D ｜ 资料 C A C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b67ccc4e87cb4b1b1c86390bab1f）+ 说明文本（om_x100b67ccc46020acb14c79c94537493），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
+- 云文档：drive +import --as user --type docx 成功，token H3QbdTKfJoAKESxXSqlcmjlPnOf，https://my.feishu.cn/docx/H3QbdTKfJoAKESxXSqlcmjlPnOf ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.89（提示可升 1.0.90，不影响）。已用主题再加：廉洁文化建设/党风廉政建设(以廉洁文化涵养清风正气)、作风建设标本兼治/当下改与长久立结合。
