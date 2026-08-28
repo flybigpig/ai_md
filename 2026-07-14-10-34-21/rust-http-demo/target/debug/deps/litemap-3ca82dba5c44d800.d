@@ -1,0 +1,10 @@
+C:\Users\YTO-02231406\WorkBuddy\2026-07-14-10-34-21\rust-http-demo\target\debug\deps\litemap-3ca82dba5c44d800.d: C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\lib.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\map.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\mod.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\slice_impl.rs
+
+C:\Users\YTO-02231406\WorkBuddy\2026-07-14-10-34-21\rust-http-demo\target\debug\deps\liblitemap-3ca82dba5c44d800.rlib: C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\lib.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\map.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\mod.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\slice_impl.rs
+
+C:\Users\YTO-02231406\WorkBuddy\2026-07-14-10-34-21\rust-http-demo\target\debug\deps\liblitemap-3ca82dba5c44d800.rmeta: C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\lib.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\map.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\mod.rs C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\slice_impl.rs
+
+C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\lib.rs:
+C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\map.rs:
+C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\mod.rs:
+C:/c/Users/YTO-02231406/.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\litemap-0.8.3\src\store\slice_impl.rs:
