@@ -578,105 +578,220 @@ classDiagram
     BpBinder o-- DeathRecipient_nat : obituaries
 ```
 
-### 11.3 Kernel 层（drivers/android/binder.c，结构体图）
+### 11.3 Kernel 层（drivers/android/binder.c，结构体完整图）
+
+字段取自内核源码，关系按四组组织：**归属资源 → 引用反查 → 事务一生 → 队列调度**。
 
 ```mermaid
 classDiagram
     direction LR
 
     class binder_proc {
+        <<struct>>
+        +proc_node : struct hlist_node
+        +threads : struct rb_root
         +nodes : struct rb_root
         +refs_by_desc : struct rb_root
         +refs_by_node : struct rb_root
-        +threads : struct rb_root
-        +todo : struct list_head
-        +max_threads : int
         +pid : int
-        +vm_start : unsigned long
-        +buffer : struct binder_buffer*
+        +tsk : struct task_struct*
+        +is_dead : bool
+        +todo : struct list_head
+        +delivered_death : struct list_head
+        +stats : struct binder_stats
+        +max_threads : int
+        +requested_threads : int
+        +requested_threads_started : int
+        +ready_threads : int
+        +default_priority : long
+        +alloc : struct binder_alloc
     }
 
     class binder_node {
-        +proc : struct binder_proc*
+        <<struct>>
+        +debug_id : int
+        +work : struct binder_work
         +rb_node : struct rb_node
+        +dead_node : struct hlist_node
+        +proc : struct binder_proc*
         +refs : struct hlist_head
         +ptr : void __user*
         +cookie : void __user*
         +internal_strong_refs : int
+        +local_weak_refs : int
+        +local_strong_refs : int
+        +tmp_refs : int
+        +has_strong_ref : bool
+        +has_weak_ref : bool
+        +pending_strong_ref : bool
+        +pending_weak_ref : bool
         +has_async_transaction : bool
+        +accept_fds : bool
+        +min_priority : int
+        +async_todo : struct list_head
     }
 
     class binder_ref {
-        +proc : struct binder_proc*
-        +node : struct binder_node*
-        +desc : uint32_t
+        <<struct>>
+        +data : struct binder_ref_data
         +rb_node_desc : struct rb_node
         +rb_node_node : struct rb_node
         +node_entry : struct hlist_node
+        +proc : struct binder_proc*
+        +node : struct binder_node*
         +death : struct binder_ref_death*
     }
 
-    class binder_ref_death {
-        +work : struct binder_work
-        +cookie : void __user*
+    class binder_ref_data {
+        <<struct>>
+        +debug_id : int
+        +desc : uint32_t
+        +strong : int
+        +weak : int
     }
 
-    class binder_buffer {
-        +data : void __user*
-        +data_size : size_t
-        +offsets_size : size_t
-        +transaction : struct binder_transaction*
-        +target_node : struct binder_node*
-        +async_transaction : bool
-        +free : bool
+    class binder_ref_death {
+        <<struct>>
+        +work : struct binder_work
+        +cookie : void __user*
     }
 
     class binder_thread {
+        <<struct>>
         +proc : struct binder_proc*
         +rb_node : struct rb_node
+        +waiting_thread_node : struct list_head
+        +pid : int
+        +looper : int
+        +looper_need_return : bool
+        +transaction_stack : struct binder_transaction*
         +todo : struct list_head
+        +process_todo : bool
         +return_error : int
-        +stats
     }
 
     class binder_transaction {
-        +target_node : struct binder_node*
+        <<struct>>
+        +debug_id : int
+        +work : struct binder_work
         +from : struct binder_thread*
+        +from_parent : struct binder_transaction*
         +to_proc : struct binder_proc*
         +to_thread : struct binder_thread*
+        +to_parent : struct binder_transaction*
+        +need_reply : unsigned
         +buffer : struct binder_buffer*
-        +flags : uint32_t
-        +need_reply : bool
-        +work : struct binder_work
+        +code : unsigned int
+        +flags : unsigned int
+        +priority : long
+        +saved_priority : long
+        +sender_euid : kuid_t
+    }
+
+    class binder_buffer {
+        <<struct>>
+        +entry : struct list_head
+        +rb_node : struct rb_node
+        +free : unsigned
+        +allow_user_free : unsigned
+        +async_transaction : unsigned
+        +transaction : struct binder_transaction*
+        +target_node : struct binder_node*
+        +data_size : size_t
+        +offsets_size : size_t
+        +extra_buffers_size : size_t
+        +user_data : void __user*
+        +pid : int
+    }
+
+    class binder_alloc {
+        <<struct>>
+        +mutex : struct mutex
+        +vma : struct vm_area_struct*
+        +vma_vm_mm : struct mm_struct*
+        +buffer : void __user*
+        +buffers : struct list_head
+        +free_buffers : struct rb_root
+        +allocated_buffers : struct rb_root
+        +free_async_space : size_t
+        +pages : struct binder_lru_page*
+        +buffer_size : size_t
+        +buffer_free : uint32_t
+        +pid : int
     }
 
     class binder_work {
+        <<struct>>
         +entry : struct list_head
-        +type : enum
+        +type : enum binder_work_type
+    }
+
+    class binder_work_type {
+        <<enumeration>>
+        BINDER_WORK_TRANSACTION
+        BINDER_WORK_TRANSACTION_COMPLETE
+        BINDER_WORK_RETURN_ERROR
+        BINDER_WORK_NODE
+        BINDER_WORK_DEAD_BINDER
+        BINDER_WORK_DEAD_BINDER_AND_CLEAR
+        BINDER_WORK_CLEAR_DEATH_NOTIFICATION
     }
 
     class flat_binder_object {
-        +type : uint32_t
-        +flags : uint32_t
-        +binder_ptr : void __user*
-        +handle : uint32_t
-        +cookie : void __user*
+        <<struct>>
+        +hdr : binder_object_header
+        +type : __u32
+        +flags : __u32
+        +binder : binder_uintptr_t (union, type=BINDER)
+        +handle : __u32 (union, type=HANDLE)
+        +cookie : binder_uintptr_t
     }
 
-    binder_proc "1" o-- "0..*" binder_node : nodes 树
-    binder_proc "1" o-- "0..*" binder_ref : refs_by_desc 双树
-    binder_proc "1" o-- "0..*" binder_thread : threads 树
-    binder_proc "1" *-- "0..*" binder_buffer : mmap 缓冲池
+    %% ── 组1 归属: 进程拥有的三类资源 + 内存池 ───────
+    binder_proc "1" o-- "0..*" binder_node : nodes 红黑树
+    binder_proc "1" o-- "0..*" binder_ref : refs_by_desc + refs_by_node 双树
+    binder_proc "1" o-- "0..*" binder_thread : threads 红黑树
+    binder_proc "1" *-- "1" binder_alloc : 值成员 alloc
+    binder_alloc "1" *-- "0..*" binder_buffer : buffers 链表 + 空闲/已用双树
+
+    %% ── 组2 反查: ref→node→proc 事务路由唯一路径 ────
     binder_ref "0..*" --> "1" binder_node : node
     binder_ref "0..*" --> "1" binder_proc : proc
-    binder_ref "0..1" --> "0..1" binder_ref_death : death
     binder_node "0..*" --> "1" binder_proc : proc
-    binder_node "1" o-- "0..*" binder_ref : refs 链表
-    binder_transaction "0..*" --> "1" binder_node : target_node
-    binder_transaction "0..*" --> "1" binder_buffer : buffer 互指
-    binder_transaction --> binder_thread : from / to_thread
-    binder_buffer --> flat_binder_object : 内含于 data
+    binder_node "1" o-- "0..*" binder_ref : refs 链表·保活实体
+    binder_ref "0..1" o-- "0..1" binder_ref_death : death
+
+    %% ── 组3 事务: 一次 IPC 的一生 ────────────────
+    binder_transaction "0..*" --> "0..1" binder_node : target_node
+    binder_transaction "0..*" --> "1" binder_proc : to_proc
+    binder_transaction "0..*" --> "0..1" binder_thread : from 发起
+    binder_transaction "0..*" --> "0..1" binder_thread : to_thread 接收
+    binder_transaction --> binder_transaction : from_parent·to_parent 链
+    binder_transaction "0..*" --> "0..1" binder_buffer : buffer·互指
+    binder_buffer "0..*" --> "0..1" binder_node : target_node·oneway
+    binder_buffer --> flat_binder_object : 内含于 user_data·驱动原地改写 type
+
+    %% ── 组4 队列: binder_work 在 todo 间流转 ─────────
+    binder_proc "1" o-- "0..*" binder_work : todo
+    binder_thread "1" o-- "0..*" binder_work : todo
+    binder_work --> binder_work_type : type
+    binder_thread --> binder_transaction : transaction_stack
 ```
+
+**结构体职责速查表：**
+
+| 结构体 | 实例粒度 | 一句话职责 |
+|--------|---------|-----------|
+| `binder_proc` | 每 open(/dev/binder) 进程 1 个 | 进程上下文，持有 nodes / refs / threads 三棵红黑树 |
+| `binder_node` | 每个服务实体 1 个（全局唯一） | 实体锚点，ptr/cookie 指回用户态 BBinder |
+| `binder_ref` | 每进程 × 每 node 1 条 | 句柄实体化，data.desc=handle，反查 node |
+| `binder_thread` | 每参与线程 1 个 | 线程上下文，有自己的 todo 与事务栈 transaction_stack |
+| `binder_transaction` | 每次同步 IPC 1 个（存活期） | 事务本体，from/to 四指针 + 双亲链实现嵌套调用 |
+| `binder_buffer` | 每事务数据 1 块 | mmap 共享区里的实际数据块，与 transaction 互指 |
+| `binder_alloc` | 每进程 1 个（内嵌 proc） | mmap 区管理：空闲/已分配双树 + LRU 页表 |
+| `binder_work` | 每个待处理事件 1 个 | 调度单元，在 proc/thread 的 todo 间流转 |
+| `binder_ref_death` | 每次 linkToDeath 1 个 | 死亡通知注册记录，其 work 触发 BR_DEAD_BINDER |
+| `flat_binder_object` | Parcel 中每传 1 个 Binder 对象 1 个 | 跨进程传递 Binder 的序列化载体，type 可被驱动原地改写 |
 
 ### 11.4 跨层指针关联（三层串成一张图）
 
