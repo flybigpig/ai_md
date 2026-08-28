@@ -119,6 +119,8 @@ onFinishedWakingUp()        -> 亮屏完成（显示锁屏并等待输入）
 
 这是一个关键的时序点：`onFinishedGoingToSleep` 时锁屏尚未显示，`onStartedWakingUp` 时才真正把锁屏窗口挂载到 WMS。
 
+> **深度解析：** 详见[第十二章 — Keyguard 状态机深度解析](#十二keyguard-状态机深度解析)，包含完整的状态变量体系、Handler 消息串行机制、状态转移矩阵、睡眠唤醒生命周期状态机、窗口可见性决策树以及三重竞态防护。
+
 ---
 
 ## 三、启动方法完整解析
@@ -760,3 +762,413 @@ system_server                    SystemUI 进程
 | `PhoneWindowManager` | `frameworks/base/services/core/java/com/android/server/policy/PhoneWindowManager.java` | system_server 侧发起 Service 绑定 |
 | `IKeyguardService.aidl` | `frameworks/base/core/java/android/app/IKeyguardService.aidl` | Binder 接口定义 |
 | `SystemUIFactory` | `packages/apps/SystemUI/src/com/android/systemui/SystemUIFactory.java` | 创建 StatusBarKeyguardViewManager 等 |
+
+---
+
+## 十二、Keyguard 状态机深度解析
+
+`KeyguardViewMediator`（KVM）是整个锁屏体系的**决策核心**，维护一个有限状态机，管理锁屏的显示、隐藏、遮挡、锁定的全部状态迁移。
+
+### 12.1 状态变量体系
+
+KVM 内部使用一组 `boolean` 状态位（AOSP 10 共 8 个，AOSP 13+ 精简为 6 个）来描述锁屏当前所处阶段：
+
+```java
+// KeyguardViewMediator.java 核心状态声明
+private boolean mSystemReady;          // 系统是否就绪
+private boolean mShowing;              // 锁屏是否当前显示
+private boolean mOccluded;             // 被全屏应用遮挡（来电/导航）
+private boolean mScreenOn;             // 屏幕是否亮着
+private boolean mInputRestricted;      // 输入是否受限
+private boolean mDeviceLocked;         // 设备是否已锁定
+private boolean mSwitchingUser;        // 用户切换中
+private boolean mDeviceInteractive;    // (AOSP 13+) 设备是否交互中
+```
+
+**状态位完整定义：**
+
+| 状态位 | 初始值 | 典型设 true | 典型设 false | 影响范围 |
+|--------|--------|-------------|-------------|---------|
+| `mSystemReady` | false | `handleSystemReady()` | 永不回退 | 整个状态机是否启用 |
+| `mShowing` | true | `handleShow()`、`showLocked()` | `handleHide()`、`handleGoingAway()` | KEYGUARD_DIALOG 窗口可见性 |
+| `mOccluded` | false | `handleSetOccluded(true)` | `handleSetOccluded(false)` | 锁屏是否被遮挡 |
+| `mScreenOn` | false | `onScreenTurnedOn()` | `onScreenTurnedOff()` | 灭屏时不更新锁屏 UI |
+| `mInputRestricted` | true | 设备锁定/锁屏显示 | 解锁完成 | 按键/触摸拦截 |
+| `mDeviceLocked` | true | `onStartedGoingToSleep()` 自然灭屏 | `handleSystemReady()` 或无安全锁 | 区分超时灭屏 vs 设备锁定 |
+| `mSwitchingUser` | false | `onUserSwitching()` | `onUserSwitchComplete()` | 切换期间锁屏冻结 |
+| `mDeviceInteractive` | false | `onStartedWakingUp()` | `onStartedGoingToSleep()` | (AOSP 13+) 交互状态 |
+
+### 12.2 状态间依赖关系
+
+状态位之间存在明确的依赖与互斥关系，并非正交：
+
+```
+mSystemReady == false → 所有状态机操作被跳过
+    |
+    v
+mShowing true 时：
+  ├── mOccluded true  → KEYGUARD_DIALOG 窗口隐藏（被遮挡）
+  │                     但 mInputRestricted 仍为 true
+  └── mOccluded false → KEYGUARD_DIALOG 窗口正常显示
+    |
+mInputRestricted true 时：
+  ├── 系统键（HOME/BACK/RECENT）被拦截
+  ├── 触摸事件分发受限
+  └── 状态栏下拉被禁止
+    |
+mDeviceLocked true + mShowing true → 必须解锁
+mDeviceLocked false + mShowing true → 滑动即解锁（仅超时灭屏）
+```
+
+**关键规则：** `mShowing` 与 `mOccluded` 组合决定窗口可见性：
+
+| `mShowing` | `mOccluded` | KEYGUARD_DIALOG 窗口 | 用户可见 |
+|:----------:|:-----------:|---------------------|---------|
+| false | false | 无窗口 | 正常使用 |
+| false | true | 无窗口（不可能出现） | — |
+| true | false | 显示，全屏可见 | 锁屏界面 |
+| true | true | 窗口存在但隐藏 | 全屏应用可见 |
+
+### 12.3 Handler 消息驱动的串行状态机
+
+KVM 内部使用 `Handler` 将所有状态变更请求串行化到主线程消息队列中，这是**避免竞态的核心机制**：
+
+```java
+// 内部 Handler，接收所有锁屏状态变化请求
+class KeyguardViewMediatorHandler extends Handler {
+    @Override
+    public void handleMessage(Message msg) {
+        switch (msg.what) {
+            case KEYGUARD_SHOW:
+                handleShow();
+                break;
+            case KEYGUARD_HIDE:
+                handleHide( (KeyguardHideArguments) msg.obj );
+                break;
+            case KEYGUARD_DONE:
+                handleDone();
+                break;
+            case KEYGUARD_GOING_AWAY:
+                handleGoingAway();
+                break;
+            case SET_OCCLUDED:
+                handleSetOccluded(msg.arg1 != 0);
+                break;
+            case KEYGUARD_TIMEOUT:
+                doKeyguardTimeout();
+                break;
+            case DOZE_CHANGED:
+                handleDozeChanged(msg.arg1 != 0);
+                break;
+            case USER_SWITCHING:
+                handleUserSwitching(msg.arg1);
+                break;
+        }
+    }
+}
+```
+
+**消息投递方式与优先级：**
+
+| 消息 | 投递方式 | 触发源 | 延迟 |
+|------|---------|--------|------|
+| KEYGUARD_SHOW | `sendMessage()` | WMS 回调、屏幕唤醒 | 立即队列 |
+| KEYGUARD_HIDE | `sendMessage()` | 解锁成功 | 立即队列 |
+| KEYGUARD_DONE | `sendMessage()` | 解锁验证通过 | 立即队列 |
+| KEYGUARD_GOING_AWAY | `sendMessage()` | unlock 动画开始 | 立即队列 |
+| SET_OCCLUDED | `sendMessage()` | Activity 显示/隐藏 | 立即队列 |
+| KEYGUARD_TIMEOUT | `sendMessageDelayed()` | 用户配置超时 | 可配置秒 |
+| DOZE_CHANGED | `sendMessage()` | Doze 状态变化 | 立即队列 |
+| USER_SWITCHING | `sendMessage()` | 用户切换 | 立即队列 |
+
+**为什么 Handler 串行化如此重要？**
+
+KVM 的多个接口可以由完全不同的线程同时调用：
+- `onStartedGoingToSleep()` — PowerManagerService 回调（binder 线程）
+- `onScreenTurningOn()` — WindowManagerPolicy 回调（binder 线程）
+- `setOccluded()` — ActivityStack 决策（AMS 线程）
+- `keyguardDone()` — 解锁回调（生物识别 listener 线程）
+
+如果没有 Handler 串行化，可能出现：
+```
+Thread A (PMS): handleShow() → 开始挂载窗口
+Thread B (Bio):  handleDone() → 解锁成功，开始移除窗口
+    → 窗口状态不一致：正在挂载的同时被移除
+```
+
+通过 Handler 队列，这些操作按接收顺序串行执行，消除竞态。
+
+### 12.4 核心状态转移
+
+#### 12.4.1 显示锁屏：handleShow() → showLocked()
+
+```
+外部事件: 屏幕唤醒 / 系统就绪 / 设备锁定
+    |
+    v
+handleShow()                                     Handler 线程
+    |
+    ├─ if (!mSystemReady) return                 系统未就绪则跳过
+    ├─ if (mShowing) return                      已经显示则跳过
+    ├─ mShowing = true                           更新状态
+    ├─ mStatusBarKeyguardViewManager.show()       通知视图管理器
+    │   ├─ mStatusBarWindowController.setKeyguardShowing(true)
+    │   ├─ mKeyguardMonitor.notifyKeyguardState()
+    │   └─ adjustStatusBarLocked()              调整状态栏可见性
+    ├─ setShowingLocked(true)                    持久化到 Settings
+    └─ mUpdateMonitor.sendKeyguardVisibilityChanged(true)
+```
+
+#### 12.4.2 隐藏锁屏：handleDone() → handleGoingAway() → handleHide()
+
+解锁过程的**三阶段迁移**：
+
+```
+解锁验证成功
+    |
+    v
+第一阶段: handleDone()                          通知 KVM 解锁完成
+    ├─ mOccluded = false                        恢复非遮挡
+    ├─ mInputRestricted = false                  恢复输入
+    ├─ adjustStatusBarLocked()                   恢复状态栏
+    └─ sendMessage(KEYGUARD_GOING_AWAY)          进入第二阶段
+    |
+    v
+第二阶段: handleGoingAway()                     解锁动画
+    ├─ mShowing = false                          标记锁屏不再显示
+    ├─ mStatusBarKeyguardViewManager.goToSleep()? 准备动画
+    ├─ 通知 WMS startKeyguardExitAnimation()     触发解锁动画
+    │   (窗口淡出 / Activity 缩放恢复)
+    └─ WMS 动画完成回调 → keyguardGone()
+    |
+    v
+第三阶段: handleHide()                          锁屏窗口完全移除
+    ├─ mStatusBarKeyguardViewManager.hide()      移除窗口
+    ├─ setShowingLocked(false)                   持久化
+    ├─ sendBroadcast(ACTION_USER_PRESENT)         通知所有 App
+    └─ mUpdateMonitor.clearBiometricRecognized()  重置生物识别
+```
+
+#### 12.4.3 遮挡状态迁移：setOccluded()
+
+```
+全屏 Activity 启动 → mOccluded = true
+    |
+    ├─ 锁屏窗口隐藏（KEYGUARD_DIALOG 不可见）
+    ├─ 状态栏仍受限（mInputRestricted 不改变）
+    └─ 用户可见 Activity 内容
+    |
+全屏 Activity 退出 → mOccluded = false
+    |
+    ├─ 锁屏窗口恢复显示
+    └─ 如果距上次交互超时 → 重新锁定
+```
+
+### 12.5 睡眠唤醒生命周期状态机
+
+这是 KVM 最复杂的部分，涉及 PowerManagerService 的 4 个阶段回调与 KVM 内部状态的精确配合：
+
+```
+                  ┌──────────────────────────────┐
+                  │        屏幕亮着（交互态）      │
+                  │  mScreenOn=true               │
+                  │  mDeviceInteractive=true      │
+                  │  mShowing=true（锁屏时）       │
+                  └──────────────┬───────────────┘
+                                 │ onStartedGoingToSleep()
+                                 │ (PowerManager 开始灭屏流程)
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │       → 灭屏第一阶段 ←        │
+                  │  onStartedGoingToSleep()      │
+                  │  mDeviceLocked=true           │
+                  │  保存当前锁屏状态             │
+                  │  准备进入 Doze/灭屏           │
+                  └──────────────┬───────────────┘
+                                 │ 灭屏过程完成
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │       → 灭屏第二阶段 ←        │
+                  │  onFinishedGoingToSleep()     │
+                  │  mScreenOn=false              │
+                  │  mDeviceInteractive=false     │
+                  │  锁屏窗口隐藏（进入 Doze）    │
+                  │  准备 AOD 显示（如启用）      │
+                  └──────────────┬───────────────┘
+                                 │ 用户按下电源键 / 抬手 / 双击
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │       → 亮屏第一阶段 ←        │
+                  │  onStartedWakingUp()          │
+                  │  mDeviceInteractive=true      │
+                  │  退出 Doze 模式               │
+                  │  恢复 KEYGUARD_DIALOG 窗口    │
+                  └──────────────┬───────────────┘
+                                 │ 亮屏过程完成
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │       → 亮屏第二阶段 ←        │
+                  │  onFinishedWakingUp()         │
+                  │  mScreenOn=true               │
+                  │  锁屏完全显示，等待用户输入    │
+                  │  指纹/人脸开始扫描            │
+                  └──────────────┬───────────────┘
+                                 │
+                                 │ 用户解锁成功 → handleDone()
+                                 │
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │        正常使用（解锁后）      │
+                  │  mShowing=false               │
+                  │  mInputRestricted=false       │
+                  └──────────────┬───────────────┘
+                                 │ 下次灭屏 → 回到顶部
+                                 ▼
+                  ┌──────────────────────────────┐
+                  │        屏幕亮着（交互态）      │
+                  │  ...但 mDeviceLocked 在上次    │
+                  │  灭屏时已设为 true             │
+                  └──────────────────────────────┘
+```
+
+### 12.6 窗口可见性决策树
+
+KVM 状态位最终通过 WMS 的 `KeyguardController` 决策锁屏窗口的可见性。决策逻辑可以表示为：
+
+```
+系统是否就绪？
+├── No → 一切跳过
+└── Yes
+    ├── Doze 模式？
+    │   ├── Yes → 隐藏 KEYGUARD_DIALOG，显示 AOD（如配置）
+    │   └── No
+    │       ├── mShowing？
+    │       │   ├── No → 无锁屏窗口
+    │       │   └── Yes
+    │       │       ├── mOccluded？
+    │       │       │   ├── Yes → 窗口存在但隐藏（Activity 显示在上）
+    │       │       │   │         锁屏仍然 active（mInputRestricted=true）
+    │       │       │   └── No → 窗口全屏可见，等待输入
+    │       │       └── mDeviceLocked？
+    │       │           ├── Yes → 需要解锁（显示 Bouncer 或滑动提示）
+    │       │           └── No → 滑动即解锁（超时灭屏无安全锁）
+```
+
+### 12.7 竞态防护机制
+
+KVM 使用三重防护：
+
+**第一重：Handler 串行化**
+所有外部接口（Binder 回调）不直接操作状态，而是 `sendMessage()` 投递到主线程 Handler 队列。
+
+```java
+// 示例：onScreenTurnedOff() 不是直接处理，而是投递消息
+public void onScreenTurnedOff() {
+    // 直接操作仅有 mScreenOn 这个轻量状态
+    mScreenOn = false;
+    // 重量操作投递到 Handler
+    mHandler.sendMessage(mHandler.obtainMessage(KEYGUARD_SHOW));
+}
+```
+
+**第二重：synchronized 块**
+关键内部方法的共享数据访问加锁：
+
+```java
+private void handleSystemReady() {
+    synchronized (this) {
+        mSystemReady = true;
+        doKeyguardLocked(null);  // 在锁内执行
+        mUpdateMonitor.registerCallback(mUpdateCallback);
+    }
+}
+```
+
+**第三重：状态前置检查**
+每个 Handler 处理方法开头都检查状态前置条件：
+
+```java
+private void handleShow() {
+    if (!mSystemReady) return;     // 系统未就绪
+    if (mShowing) return;          // 已经显示
+    // ... 实际操作
+}
+
+private void handleSetOccluded(boolean isOccluded) {
+    if (!mSystemReady) return;
+    if (!mShowing && isOccluded) return;  // 没锁屏就不能被遮挡
+    // ... 实际操作
+}
+```
+
+### 12.8 关键调试日志节点
+
+```bash
+# 开启 KVM 详细日志
+adb shell setprop log.tag.KeyguardViewMediator VERBOSE
+
+# 开启锁屏窗口日志
+adb shell setprop log.tag.KeyguardController VERBOSE
+
+# 开启解锁动画日志
+adb shell setprop log.tag.KeyguardGoingAway VERBOSE
+
+# 观察状态变化（典型输出）
+logcat -s KeyguardViewMediator
+# 输出示例:
+# D KeyguardViewMediator: handleShow()
+# D KeyguardViewMediator: showLocked() - mShowing=true, mOccluded=false
+# D KeyguardViewMediator: handleDone()
+# D KeyguardViewMediator: handleGoingAway() - start exit animation
+# D KeyguardViewMediator: handleHide() - sending ACTION_USER_PRESENT
+# D KeyguardViewMediator: onStartedGoingToSleep() - mDeviceLocked=true
+# D KeyguardViewMediator: onFinishedGoingToSleep() - mScreenOn=false
+# D KeyguardViewMediator: onStartedWakingUp() - mDeviceInteractive=true
+# D KeyguardViewMediator: onFinishedWakingUp() - mScreenOn=true, show keyguard
+```
+
+### 12.9 AOSP 10 vs 13+ 状态机差异
+
+| 维度 | AOSP 10 | AOSP 13+ |
+|------|---------|----------|
+| 状态位数 | 8 个 boolean | 6 个 boolean（精简） |
+| `mDeviceInteractive` | 不存在 | 新增（替代部分 `mScreenOn` 职责） |
+| `mShowing` 持久化 | `setShowingLocked()` 写入 Settings | 同左，但增加了 `KeyguardStateController` 接口封装 |
+| occluded 处理 | KVM 内部直接处理 | 委派 `KeyguardViewControllerImpl` |
+| doze 处理 | `handleDozeChanged()` 在 KVM 内 | 增加了 `DozeController` 辅助类 |
+| 动画状态 | 与 WMS 通过 `startKeyguardExitAnimation()` 直接交互 | 通过 `KeyguardTransitionController` 状态机管理 |
+| 生物识别状态 | 由 `BiometricUnlockController` 管理，KVM 不直接维护 | 新增 `BiometricSourceType` 等细化状态 |
+
+### 12.10 状态机总结图
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                   外部事件（输入）                                │
+│  systemReady  screenOn/Off  goingToSleep  wakeUp  unlock  occlude│
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+                           ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              Handler 消息队列（串行化，消除竞态）                 │
+│  SHOW → HIDE → DONE → GOING_AWAY → SET_OCCLUDED → DOZE → ...    │
+└──────────────────────────┬───────────────────────────────────────┘
+                           │
+                           ▼
+┌──────────────────────────────────────────────────────────────────┐
+│              KeyguardViewMediator 状态寄存器                     │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────┐ │
+│  │ mShowing │ │mOccluded │ │ mScreenOn│ │mInputRest│ │mDevice│ │
+│  │          │ │          │ │          │ │ ricted   │ │Locked │ │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └───┬───┘ │
+└────────┼────────────┼────────────┼────────────┼────────────┼────┘
+         │            │            │            │            │
+         ▼            ▼            ▼            ▼            ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                       输出动作                                   │
+│  KEYGUARD_DIALOG 窗口显隐  │  Bouncer 弹出/收起                  │
+│  状态栏调整                │  解锁动画触发                        │
+│  ACTION_USER_PRESENT 广播  │  生物识别启用/禁用                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+KVM 状态机的设计核心是：**所有外部事件先入 Handler 队列串行化，再按当前状态位组合决策输出动作**。理解这 6-8 个状态位和它们之间的约束关系，就掌握了整个锁屏系统的行为逻辑。
