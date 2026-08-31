@@ -306,3 +306,21 @@
 - 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b67ccc4e87cb4b1b1c86390bab1f）+ 说明文本（om_x100b67ccc46020acb14c79c94537493），均落地（chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af）。
 - 云文档：drive +import --as user --type docx 成功，token H3QbdTKfJoAKESxXSqlcmjlPnOf，https://my.feishu.cn/docx/H3QbdTKfJoAKESxXSqlcmjlPnOf ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
 - 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.89（提示可升 1.0.90，不影响）。已用主题再加：廉洁文化建设/党风廉政建设(以廉洁文化涵养清风正气)、作风建设标本兼治/当下改与长久立结合。
+
+## 2026-08-29 执行（08:48）
+- 生成**全新**20题（非复用前几日）：申论1（碳达峰碳中和/绿色低碳发展·「以『绿』为笔，绘就低碳发展新图景」，四则材料：双碳目标2030/2060、可再生与新能源汽车产业全球领先、运动式减碳/碳市场短板/绿色消费叫好不叫座、某市绿氢+碳普惠实践）+ 综合应用写作1（「把『低碳』融入『日常』」·绿色生活方式短评，轻出行/绿消费/会循环）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-29.md（带日期，工作区根目录，约 14KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=37（n²+1）、第10题=6天（甲12乙20合作x+乙独4天：8x/60+1/5=1→x=6）、第11题=300元（进价200、八折、20%利润反验240/40/20%）；资料16-18 风电光伏装机 6.0/8.4/10.5/13.0 亿千瓦，答案 B(2022年40.0%增速最高)/D(2024年+2.5增量最大)/C(13.0/6.0≈2.17倍)。资料刻意构造「增速最高年(2022) ≠ 增量最大年(2024)」分离陷阱。
+- 全套答案：常识 B A B D ｜ 言语 B B B A ｜ 数量 C C C ｜ 判断 A A A B ｜ 资料 B D C。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b66168941d4b4b3977e34c8de59e）+ 说明文本（om_x100b6616879874acb30323dc1277a44），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：drive +import --as user --type docx 成功，token FtSHdWSeLoCGqUxGbhucAuDXnpc，https://my.feishu.cn/docx/FtSHdWSeLoCGqUxGbhucAuDXnpc ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。本会话 lark-cli 1.0.90（提示可升 1.0.91，不影响）。已用主题再加：碳达峰碳中和/绿色低碳发展、绿色生活方式/低碳融入日常。
+
+## 2026-08-31 执行（08:45）
+- 生成**全新**20题（非复用前几日）：申论1（体育强国建设·"以体育之强，筑强国之基"，四则材料：2035建成体育强国/东亚病夫到奥运劲旅、巴黎奥运突破+三大球短板与科技助训、人均场地提升但健身去哪儿城乡失衡+青少年体质、体育产业总规模+马拉松拉动消费"办好一个赛提升一座城"）+ 综合应用写作1（《把"赛场拼搏"化为"实干劲头"》·机关干事创业短评，钻劲/韧劲/齐心）= 行测18（常识4/言语4/数量3/判断4/资料3）。
+- 产出文件：公务员事业编练习题_2026-08-31.md（带日期，工作区根目录，约 17KB）。
+- 行测答案预校验（python 复算，ALL CHECKS PASSED）：数量第9题=27（差3/4/5/6/7）、第10题=8天（甲20乙30、合作x+乙独10：5x/60+20/60=60/60→x=8）、第11题=375元（进价250、八折、20%利润反验300/50/20%）；资料16-18 体育产业总规模 3.0/3.6/4.0/4.7 万亿，答案 B(2022年20.0%增速最高)/D(2024年+0.7增量最大)/B(4.7/3.0≈1.6倍)。资料刻意构造"增速最高年(2022) ≠ 增量最大年(2024)"分离陷阱。
+- 全套答案：常识 A A B C ｜ 言语 A A B A ｜ 数量 C B C ｜ 判断 A A A B ｜ 资料 B D B。
+- 推送飞书：bot 身份 P2P 直发王凯（ou_9bb9a536eb5ca6ec98914b4982e2bafb）文件（om_x100b6678a4c4b0acb250fd8ab5ebf02）+ 说明文本含云文档链接（om_x100b6678a576e4a4b1aa568f01221fc），chat_id oc_0cdb87ca7048b320a26c5e5fed7ca7af。
+- 云文档：drive +import --as user --type docx 成功，token NuPMdtznVo7PAhxxF8FcJJsyn2c，https://my.feishu.cn/docx/NuPMdtznVo7PAhxxF8FcJJsyn2c ，存入文件夹 SkSRfzxXwlTenmdWVBwc09Awnje。
+- 经验：流程完全稳定（生成→python复算→bot P2P发文件→drive import docx→发说明文本）。lark-cli 1.0.90（提示可升 1.0.92，不影响）。已用主题再加：体育强国建设/体育之强筑强国之基、拼搏精神融入实干(赛场拼搏化实干劲头)。
