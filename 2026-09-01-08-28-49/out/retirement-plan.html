@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家庭养老退休规划方案 · 40岁夫妻 · 60岁退休</title>
+<style>
+:root{
+  --bg:#FAF6F0; --paper:#FFFFFF; --paper2:#FDFAF6;
+  --ink:#2A2724; --ink2:#6E6459; --ink3:#A2978A;
+  --line:#ECE2D5; --line2:#F5EEE4;
+  --brand:#A8622C; --brand2:#C98A4B; --brand-soft:#FAF0E6;
+  --gold:#C9A227; --gold-soft:#FBF3DC;
+  --green:#2F7D6B; --green-soft:#EAF3F0;
+  --red:#C0563F; --red-soft:#FBEEEA;
+  --r:18px;
+  --sh:0 1px 2px rgba(90,66,40,.04), 0 8px 28px rgba(90,66,40,.07);
+  --shs:0 1px 2px rgba(90,66,40,.05), 0 4px 14px rgba(90,66,40,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.65; -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px 72px}
+
+/* ---------- hero ---------- */
+.hero{
+  background:linear-gradient(160deg,#FDF7EE 0%,#FAF3EA 42%,#F7F2EC 100%);
+  border-bottom:1px solid var(--line);
+  position:relative; overflow:hidden;
+}
+.hero::after{
+  content:"";position:absolute;right:-140px;top:-120px;width:460px;height:460px;border-radius:50%;
+  background:radial-gradient(circle at 38% 38%,rgba(201,162,39,.13),rgba(201,162,39,0) 68%);
+}
+.hero-in{max-width:1160px;margin:0 auto;padding:46px 24px 40px;position:relative;z-index:1}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-size:12.5px;letter-spacing:.1em;
+  color:var(--brand);background:var(--paper);border:1px solid var(--line);
+  padding:5px 13px;border-radius:999px;box-shadow:var(--shs);
+}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--gold);display:block}
+h1{font-size:31px;line-height:1.3;font-weight:700;letter-spacing:-.4px;margin:16px 0 10px}
+h1 em{font-style:normal;color:var(--brand);position:relative;white-space:nowrap}
+h1 em::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:8px;background:rgba(201,162,39,.24);border-radius:3px;z-index:-1}
+.sub{color:var(--ink2);font-size:14.5px;max-width:760px}
+.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.chip{
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  padding:7px 13px;font-size:12.5px;color:var(--ink2);box-shadow:var(--shs);
+}
+.chip b{color:var(--ink);font-weight:600}
+
+/* ---------- section ---------- */
+section{margin-top:38px}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sec-no{
+  width:26px;height:26px;flex:none;border-radius:8px;background:var(--brand-soft);
+  color:var(--brand);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  border:1px solid #F0E0CE; align-self:center;
+}
+h2{font-size:19.5px;font-weight:700;letter-spacing:-.2px}
+.sec-desc{font-size:13px;color:var(--ink3);margin-left:auto}
+
+/* ---------- card ---------- */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+.pad{padding:22px 24px}
+.grid{display:grid;gap:16px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+
+/* ---------- 家庭信息小卡 ---------- */
+.mini{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:15px 16px;box-shadow:var(--shs)}
+.mini .k{font-size:12px;color:var(--ink3);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+.mini .k i{width:5px;height:5px;border-radius:50%;background:var(--brand2);display:block;flex:none}
+.mini .v{font-size:22px;font-weight:700;letter-spacing:-.3px;margin-top:6px;line-height:1.2}
+.mini .v small{font-size:12.5px;font-weight:500;color:var(--ink2);margin-left:2px}
+.mini .n{font-size:11.5px;color:var(--ink3);margin-top:4px}
+
+/* ---------- 家庭概况表 ---------- */
+.kv{display:grid;grid-template-columns:repeat(2,1fr);gap:0 28px}
+.kv .row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px dashed var(--line2);font-size:13.5px}
+.kv .row:last-child,.kv .row:nth-last-child(2){border-bottom:none}
+.kv .rk{color:var(--ink2)}
+.kv .rv{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- 缺口结论 ---------- */
+.verdict{
+  background:linear-gradient(140deg,#FFFDFA 0%,#FDF7EF 100%);
+  border:1px solid #F0DFC8;border-radius:var(--r);padding:26px 28px;box-shadow:var(--sh);
+  display:grid;grid-template-columns:1.05fr 1fr 1fr 1.15fr;gap:0;align-items:stretch;
+}
+.vcell{padding:0 22px;border-left:1px solid #F2E4D2;display:flex;flex-direction:column;justify-content:center}
+.vcell:first-child{padding-left:0;border-left:none}
+.vcell:last-child{padding-right:0}
+.vk{font-size:12.5px;color:var(--ink3);letter-spacing:.02em}
+.vv{font-size:29px;font-weight:700;letter-spacing:-1px;margin:4px 0 2px;line-height:1.15}
+.vv small{font-size:14px;font-weight:600;margin-left:3px}
+.vn{font-size:11.5px;color:var(--ink3);line-height:1.5}
+.c-red{color:var(--red)} .c-green{color:var(--green)} .c-brand{color:var(--brand)} .c-ink{color:var(--ink)}
+.gap-badge{
+  display:inline-block;background:var(--red-soft);color:var(--red);border:1px solid #F3D8D0;
+  border-radius:7px;padding:2px 8px;font-size:11.5px;font-weight:600;margin-top:6px;
+}
+
+/* ---------- 图例 ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:12.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:11px;height:11px;border-radius:3px;display:block}
+.legend i.dash{background:repeating-linear-gradient(45deg,var(--red) 0 3px,transparent 3px 6px);border:1px solid #E9B7A8}
+.legend i.line{width:16px;height:3px;border-radius:2px}
+
+/* ---------- 支柱明细 ---------- */
+.pillar{display:flex;flex-direction:column;gap:12px}
+.p-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--paper2)}
+.p-dot{width:9px;height:34px;border-radius:5px;flex:none}
+.p-main{flex:1;min-width:0}
+.p-name{font-size:14px;font-weight:650}
+.p-note{font-size:11.5px;color:var(--ink3);margin-top:2px;line-height:1.5}
+.p-val{text-align:right;flex:none}
+.p-amt{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.p-pct{font-size:11.5px;color:var(--ink3)}
+.p-bar{height:5px;border-radius:3px;background:var(--line2);overflow:hidden;margin-top:7px}
+.p-bar i{display:block;height:100%;border-radius:3px}
+
+/* ---------- 建议 ---------- */
+.acts{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.act{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shs);position:relative;overflow:hidden}
+.act::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--brand2)}
+.act.a2::before{background:var(--gold)} .act.a3::before{background:var(--green)} .act.a4::before{background:var(--blue)}
+.act-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:9px}
+.act-idx{width:24px;height:24px;flex:none;border-radius:7px;background:var(--brand-soft);color:var(--brand);font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.act.a2 .act-idx{background:var(--gold-soft);color:#9A7C15}
+.act.a3 .act-idx{background:var(--green-soft);color:var(--green)}
+.act.a4 .act-idx{background:var(--blue-soft);color:var(--blue)}
+.act-t{font-size:15.5px;font-weight:680;letter-spacing:-.1px}
+.act-s{font-size:11.5px;color:var(--ink3);margin-top:1px}
+.act-b{font-size:13.3px;color:var(--ink2);line-height:1.72}
+.act-b b{color:var(--ink);font-weight:600}
+.act-f{margin-top:13px;padding-top:12px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.act-eff{font-size:12px;color:var(--ink3)}
+.act-eff b{color:var(--green);font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.act-tag{font-size:11px;padding:3px 9px;border-radius:6px;background:var(--green-soft);color:var(--green);font-weight:600;white-space:nowrap}
+.act-sum{margin-top:16px;background:linear-gradient(120deg,#F6FBF9,#FDFAF5);border:1px solid #DDEBE5;border-radius:14px;padding:16px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.act-sum .t{font-size:13px;color:var(--ink2)}
+.act-sum .t b{font-size:17px;color:var(--green);font-weight:700;font-variant-numeric:tabular-nums}
+
+/* ---------- 表格 ---------- */
+.tbl-wrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
+.tbl-scroll{max-height:520px;overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  position:sticky;top:0;z-index:2;background:var(--paper2);
+  font-size:11.5px;font-weight:600;color:var(--ink2);letter-spacing:.03em;
+  padding:10px 14px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+thead th:first-child{text-align:left}
+tbody td{padding:8px 14px;text-align:right;border-bottom:1px solid var(--line2);font-variant-numeric:tabular-nums;color:var(--ink2)}
+tbody td:first-child{text-align:left;font-weight:600;color:var(--ink)}
+tbody tr:hover td{background:var(--paper2)}
+tbody tr.neg td{background:var(--red-soft)}
+tbody tr.neg td:first-child{color:var(--red)}
+tbody tr.neg .bal{color:var(--red);font-weight:700}
+.tbl-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--paper2);border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);flex-wrap:wrap;gap:8px}
+
+/* ---------- 假设 & 风险 ---------- */
+.assum{display:grid;grid-template-columns:repeat(3,1fr);gap:0 26px}
+.assum .row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line2);font-size:13px}
+.assum .row span:first-child{color:var(--ink2)}
+.assum .row span:last-child{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.risks{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.risk{display:flex;gap:11px;padding:13px 15px;border:1px solid var(--line);border-radius:13px;background:var(--paper2)}
+.risk .ic{width:22px;height:22px;flex:none;border-radius:7px;background:var(--red-soft);color:var(--red);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.risk .rt{font-size:13.3px;font-weight:650;margin-bottom:2px}
+.risk .rd{font-size:12.2px;color:var(--ink2);line-height:1.65}
+.risk .rd b{color:var(--ink)}
+
+.note{font-size:11.8px;color:var(--ink3);line-height:1.75;margin-top:14px}
+.note b{color:var(--ink2)}
+footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3);line-height:1.8}
+
+@media (max-width:960px){
+  .g6{grid-template-columns:repeat(3,1fr)}
+  .g4,.g3,.g2,.acts,.risks,.assum{grid-template-columns:1fr}
+  .verdict{grid-template-columns:1fr 1fr;gap:16px 0}
+  .vcell{padding:0 18px}
+  .vcell:nth-child(3){padding-left:0;border-left:none}
+  .kv{grid-template-columns:1fr}
+  .kv .row:nth-last-child(2){border-bottom:1px dashed var(--line2)}
+  h1{font-size:25px}
+  .sec-desc{margin-left:0}
+}
+@media (max-width:560px){
+  .g6{grid-template-columns:repeat(2,1fr)}
+  .verdict{grid-template-columns:1fr}
+  .vcell{border-left:none;padding:0 0 14px}
+  .wrap{padding:0 16px 56px}
+  .hero-in{padding:34px 16px 30px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="hero">
+  <div class="hero-in">
+    <div class="eyebrow"><i></i>家 庭 财 富 规 划 书 · RETIREMENT PLAN</div>
+    <h1>从 40 岁到 85 岁，<br>把 <em>1,462 万</em> 的养老需求，稳稳落到地上</h1>
+    <p class="sub">针对一对 40 岁双职工夫妻、计划 60 岁退休的家庭，我们用 20 年积累期 + 25 年领取期做完整测算：当前规划可覆盖 <b>86.7%</b> 的养老需求，存在 <b>¥194 万</b> 缺口，通过 4 项调整即可补齐并留出安全垫。</p>
+    <div class="hero-meta">
+      <div class="chip">规划基准日 <b>2026 年</b></div>
+      <div class="chip">积累期 <b>20 年（40→60 岁）</b></div>
+      <div class="chip">领取期 <b>26 年（60→85 岁）</b></div>
+      <div class="chip">币种 <b>人民币 ¥</b></div>
+      <div class="chip">性质 <b>测算示意，非投资建议</b></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ============ 1. 家庭信息与目标 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">1</div>
+    <h2>家庭画像与退休目标</h2>
+    <div class="sec-desc">所有金额均为名义值，未特别说明则为家庭合计</div>
+  </div>
+
+  <div class="grid g6">
+    <div class="mini"><div class="k"><i></i>家庭成员</div><div class="v">3<small> 人</small></div><div class="n">夫妻均 40 岁 + 子女 12 岁</div></div>
+    <div class="mini"><div class="k"><i></i>目标退休年龄</div><div class="v">60<small> 岁</small></div><div class="n">2046 年同步退休</div></div>
+    <div class="mini"><div class="k"><i></i>退休后年支出</div><div class="v">¥36<small> 万/年</small></div><div class="n">今日购买力，月均 ¥3.0 万</div></div>
+    <div class="mini"><div class="k"><i></i>60 岁当年支出</div><div class="v">¥59<small> 万/年</small></div><div class="n">按 2.5% 通胀折算名义值</div></div>
+    <div class="mini"><div class="k"><i></i>当前可投资产</div><div class="v">¥120<small> 万</small></div><div class="n">另有企业年金 ¥28 万</div></div>
+    <div class="mini"><div class="k"><i></i>可用于养老年结余</div><div class="v">¥10<small> 万/年</small></div><div class="n">50 岁后提升至 ¥21.4 万</div></div>
+  </div>
+
+  <div class="card pad" style="margin-top:16px">
+    <div class="kv">
+      <div class="row"><span class="rk">家庭年税后收入</span><span class="rv">¥66.0 万</span></div>
+      <div class="row"><span class="rk">家庭年支出</span><span class="rv">¥42.0 万</span></div>
+      <div class="row"><span class="rk">　├ 日常生活（剔除房贷/教育）</span><span class="rv">¥24.6 万</span></div>
+      <div class="row"><span class="rk">　├ 住房贷款月供（剩余 10 年）</span><span class="rv">¥11.4 万</span></div>
+      <div class="row"><span class="rk">　└ 子女教育专项</span><span class="rv">¥6.0 万</span></div>
+      <div class="row"><span class="rk">自住房市值 / 房贷余额</span><span class="rv">¥480 万 / ¥90 万</span></div>
+      <div class="row"><span class="rk">家庭年结余</span><span class="rv">¥24.0 万</span></div>
+      <div class="row"><span class="rk">　├ 养老专项储蓄</span><span class="rv">¥10.0 万</span></div>
+      <div class="row"><span class="rk">　├ 教育金专项</span><span class="rv">¥6.0 万</span></div>
+      <div class="row"><span class="rk">　└ 应急金 / 保障 / 生活改善</span><span class="rv">¥8.0 万</span></div>
+      <div class="row"><span class="rk">现有养老账户</span><span class="rv">金融资产 ¥120 万 + 年金 ¥28 万</span></div>
+      <div class="row"><span class="rk">风险偏好</span><span class="rv">稳健偏平衡（可承受约 15% 回撤）</span></div>
+    </div>
+    <div class="note">
+      <b>退休后年支出 ¥36 万是怎么来的：</b>退休后不再有房贷与子女教育支出（释放 ¥17.4 万），但主动上调生活品质预算——日常开支由 ¥24.6 万提升至 ¥28.0 万，另增列旅游休闲 ¥4.0 万、健康管理 ¥2.0 万、长期护理预备金 ¥2.0 万，合计 <b>¥36 万/年</b>（今日购买力）。这是"品质养老"口径，而非"基本生存"口径。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. 缺口结论 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">2</div>
+    <h2>缺口结论：需求 vs 覆盖</h2>
+    <div class="sec-desc">统一折算至 60 岁退休时点的现值</div>
+  </div>
+
+  <div class="verdict">
+    <div class="vcell">
+      <div class="vk">养老资金总需求</div>
+      <div class="vv c-ink">1,462<small>万</small></div>
+      <div class="vn">生活支出需求 1,362 万<br>+ 医疗与长期护理储备 100 万</div>
+    </div>
+    <div class="vcell">
+      <div class="vk">三支柱可覆盖</div>
+      <div class="vv c-green">1,268<small>万</small></div>
+      <div class="vn">一支柱 327 万 · 二支柱 143 万<br>· 三支柱 798 万</div>
+    </div>
+    <div class="vcell">
+      <div class="vk">养老金缺口</div>
+      <div class="vv c-red">194<small>万</small></div>
+      <div class="vn">折合今日购买力约 <b>¥118 万</b><br>≈ 3.3 年退休支出</div>
+    </div>
+    <div class="vcell">
+      <div class="vk">当前覆盖率</div>
+      <div class="vv c-brand">86.7<small>%</small></div>
+      <div class="vn">按现有节奏，资产池将在 <b>84 岁</b> 用尽<br>较 85 岁目标提前 1 年
+        <span class="gap-badge">需干预</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card pad" style="margin-top:16px">
+    <div id="chartGap"></div>
+    <div class="legend">
+      <span><i style="background:#C98A4B"></i>退休生活支出需求</span>
+      <span><i style="background:#E8CE9E"></i>医疗与长期护理储备</span>
+      <span><i style="background:#2F7D6B"></i>第一支柱 · 基本养老金</span>
+      <span><i style="background:#6FA695"></i>第二支柱 · 企业/职业年金</span>
+      <span><i style="background:#A8622C"></i>第三支柱 · 个人养老储备</span>
+      <span><i class="dash"></i>缺口（待补齐）</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3. 积累曲线 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">3</div>
+    <h2>资产积累路径：40 → 60 岁</h2>
+    <div class="sec-desc">分两阶段：40–50 岁年化 6.0%，50–60 岁降至 4.5%</div>
+  </div>
+  <div class="card pad">
+    <div id="chartAccum"></div>
+    <div class="legend">
+      <span><i style="background:#A8622C"></i>个人金融资产组合</span>
+      <span><i style="background:#C9A227"></i>个人养老金账户（税优）</span>
+      <span><i style="background:#2F7D6B"></i>企业/职业年金账户</span>
+      <span><i class="line" style="background:#C0563F"></i>房贷结清节点（50 岁，月供转投）</span>
+    </div>
+    <div class="note">
+      <b>关键节点：</b>50 岁房贷结清后，原 ¥11.4 万/年的月供转为养老定投，养老储蓄由 ¥10 万/年跃升至 <b>¥21.4 万/年</b>，这是后 10 年积累提速的主因。到第 20 年（60 岁），养老资产池合计 <b>¥941 万</b>（金融资产 ¥722.8 万 + 个人养老金 ¥75.3 万 + 企业年金 ¥142.8 万）。
+    </div>
+  </div>
+</section>
+
+<!-- ============ 4. 三支柱 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">4</div>
+    <h2>三支柱构成与充实空间</h2>
+    <div class="sec-desc">占比基于 60 岁时点的折现价值</div>
+  </div>
+  <div class="grid g2">
+    <div class="card pad">
+      <div id="chartPie"></div>
+      <div class="legend" style="justify-content:center;margin-top:6px">
+        <span><i style="background:#2F7D6B"></i>第一支柱</span>
+        <span><i style="background:#6FA695"></i>第二支柱</span>
+        <span><i style="background:#A8622C"></i>第三支柱</span>
+      </div>
+    </div>
+    <div class="card pad">
+      <div class="pillar">
+        <div class="p-item">
+          <div class="p-dot" style="background:#2F7D6B"></div>
+          <div class="p-main">
+            <div class="p-name">第一支柱 · 基本养老保险</div>
+            <div class="p-note">夫妻合计首年约 ¥15 万/年，按 2.0% 年调整；终身领取、抗长寿</div>
+            <div class="p-bar"><i style="width:25.8%;background:#2F7D6B"></i></div>
+          </div>
+          <div class="p-val"><div class="p-amt">¥327 万</div><div class="p-pct">占 25.8%</div></div>
+        </div>
+        <div class="p-item">
+          <div class="p-dot" style="background:#6FA695"></div>
+          <div class="p-main">
+            <div class="p-name">第二支柱 · 企业/职业年金</div>
+            <div class="p-note">现有 ¥28 万，年缴费 ¥2.4 万（含单位配比），年化 4.5%</div>
+            <div class="p-bar"><i style="width:11.3%;background:#6FA695"></i></div>
+          </div>
+          <div class="p-val"><div class="p-amt">¥143 万</div><div class="p-pct">占 11.3%</div></div>
+        </div>
+        <div class="p-item">
+          <div class="p-dot" style="background:#A8622C"></div>
+          <div class="p-main">
+            <div class="p-name">第三支柱 · 个人养老储备</div>
+            <div class="p-note">金融资产定投 + 个人养老金账户，是当前支撑主力，也是可提升空间最大的一块</div>
+            <div class="p-bar"><i style="width:62.9%;background:#A8622C"></i></div>
+          </div>
+          <div class="p-val"><div class="p-amt c-brand">¥798 万</div><div class="p-pct">占 62.9%</div></div>
+        </div>
+      </div>
+      <div class="note" style="margin-top:14px">
+        <b>结构诊断：</b>第三支柱占比 <b>62.9%</b>，家庭养老高度依赖自主投资，而第一支柱仅覆盖 25.8%——意味着长寿、市场波动、通胀三大风险主要由家庭自行承担。建议在做大第三支柱的同时，用<b>终身领取型商业年金</b>把其中一部分"年金化"，对冲活得太久的风险。
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============ 5. 退休后现金流 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">5</div>
+    <h2>退休后逐年现金流：60 → 85 岁</h2>
+    <div class="sec-desc">左轴：年度收支（万元） · 右轴：养老资产池余额（万元）</div>
+  </div>
+  <div class="card pad">
+    <div id="chartFlow"></div>
+    <div class="legend">
+      <span><i style="background:#2F7D6B"></i>基本养老金收入（柱底部）</span>
+      <span><i style="background:#D9B45A"></i>需从资产池提取（柱上部）</span>
+      <span><i style="background:#EFEAE3;border:1px solid #E0D6C9"></i>柱总高 = 年度总支出</span>
+      <span><i class="line" style="background:#A8622C"></i>资产池年末余额（右轴）</span>
+    </div>
+    <div class="note" style="margin-bottom:16px">
+      <b>怎么读这张图：</b>灰色柱是每年要花的钱（随通胀逐年抬高），绿色柱是国家发的基本养老金（年调 2.0%，增长更慢），两者之间不断扩大的<b>金色差额</b>就是必须从资产池里提取的部分——这是全图最值得警惕的趋势。棕色折线是资产池余额，<b>当前规划下 84 岁归零</b>。
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>年龄</th><th>年度支出</th><th>基本养老金</th><th>资产池提取</th>
+              <th>年初余额</th><th>投资收益(3.5%)</th><th>年末余额</th>
+            </tr>
+          </thead>
+          <tbody id="flowBody"></tbody>
+        </table>
+      </div>
+      <div class="tbl-foot">
+        <span>投资收益 = 年初余额 × 3.5%；年末余额 = 年初余额 + 投资收益 − 资产池提取</span>
+        <span>红色行表示当年资产池已不足以支付，缺口需额外资金来源</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. 行动建议 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">6</div>
+    <h2>四条行动建议：补齐 ¥194 万缺口</h2>
+    <div class="sec-desc">补足额均折算至 60 岁时点的现值</div>
+  </div>
+
+  <div class="acts">
+    <div class="act">
+      <div class="act-top">
+        <div class="act-idx">1</div>
+        <div>
+          <div class="act-t">提高养老专项储蓄</div>
+          <div class="act-s">现在开始 · 每月多存 ¥2,000</div>
+        </div>
+      </div>
+      <div class="act-b">
+        把养老专项储蓄从 <b>¥10 万/年</b> 提高到 <b>¥12.4 万/年</b>，即从月结余中再多拿出 ¥2,000 定投。这笔钱在 40–49 岁投入后，还能完整享受后 10 年的复利滚存，是四条建议中<b>性价比最高</b>的一条。建议走工资代扣的自动定投，避免"有钱就存、没钱就停"。
+      </div>
+      <div class="act-f">
+        <span class="act-eff">预计补足 <b>¥49 万</b></span>
+        <span class="act-tag">立即执行</span>
+      </div>
+    </div>
+
+    <div class="act a2">
+      <div class="act-top">
+        <div class="act-idx">2</div>
+        <div>
+          <div class="act-t">优化资产配置，争取 +0.5% 年化</div>
+          <div class="act-s">40–50 岁权益中枢 55% · 50–60 岁降至 35%</div>
+        </div>
+      </div>
+      <div class="act-b">
+        把积累期收益假设从 <b>6.0% / 4.5%</b> 提升到 <b>6.5% / 5.0%</b>，靠的是结构而非择时：宽基指数 + 红利资产打底，配置少量 REITs 与黄金对冲通胀，随年龄递减股债比。关键是<b>退休前 5 年启动"降波动"</b>，把临近退休的权益仓位逐步搬到短债与存款，规避"退休撞上熊市"。
+      </div>
+      <div class="act-f">
+        <span class="act-eff">预计补足 <b>¥50 万</b></span>
+        <span class="act-tag">本季度完成</span>
+      </div>
+    </div>
+
+    <div class="act a3">
+      <div class="act-top">
+        <div class="act-idx">3</div>
+        <div>
+          <div class="act-t">设计弹性退休：60–64 岁半退休</div>
+          <div class="act-s">顾问 / 兼职收入 ¥8 万/年，连续 5 年</div>
+        </div>
+      </div>
+      <div class="act-b">
+        60 岁不是"一刀切"，而是切成 <b>弹性过渡期</b>：60–64 岁保留顾问、培训、兼职等轻量工作，年入 ¥8 万。这不只是钱——它同时<b>推迟了资产池的首次大额提取</b>，让本金多滚 5 年复利。可同步考虑延迟申领基本养老金，换取更高的终身计发基数。
+      </div>
+      <div class="act-f">
+        <span class="act-eff">预计补足 <b>¥37 万</b></span>
+        <span class="act-tag">提前规划</span>
+      </div>
+    </div>
+
+    <div class="act a4">
+      <div class="act-top">
+        <div class="act-idx">4</div>
+        <div>
+          <div class="act-t">用足制度红利：年金加缴 + 税优账户</div>
+          <div class="act-s">企业年金提到 ¥4.0 万/年 · 个人养老金顶格</div>
+        </div>
+      </div>
+      <div class="act-b">
+        把企业年金年缴费（含单位配比）从 ¥2.4 万提到 <b>¥4.0 万</b>，可多积累约 ¥50 万；个人养老金夫妻合计顶格 <b>¥2.4 万/年</b>，每年省税约 ¥4,800 元，把省下的税<b>继续投入</b>可再滚出约 ¥15 万。这两块都是"税前"资金，实际成本低于同等金额的自有储蓄。
+      </div>
+      <div class="act-f">
+        <span class="act-eff">预计补足 <b>¥65 万</b></span>
+        <span class="act-tag">与 HR 确认</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="act-sum">
+    <div class="t">四项合计可补足 <b>¥201 万</b>，覆盖 <b>¥194 万</b> 缺口后仍余约 <b>¥7 万</b> 安全垫</div>
+    <div class="t" style="margin-left:auto;color:var(--ink3)">调整后覆盖率 ≈ 100.5% · 资产池可支撑至 85 岁以上</div>
+  </div>
+</section>
+
+<!-- ============ 7. 假设与风险 ============ -->
+<section>
+  <div class="sec-head">
+    <div class="sec-no">7</div>
+    <h2>关键假设与风险提示</h2>
+    <div class="sec-desc">测算结果对以下假设高度敏感</div>
+  </div>
+
+  <div class="grid g2">
+    <div class="card pad">
+      <div style="font-size:14px;font-weight:680;margin-bottom:10px">关键假设</div>
+      <div class="assum" style="grid-template-columns:1fr">
+        <div class="row"><span>长期通货膨胀率</span><span>2.5% / 年</span></div>
+        <div class="row"><span>积累期投资年化（40–50 岁）</span><span>6.0%</span></div>
+        <div class="row"><span>积累期投资年化（50–60 岁）</span><span>4.5%</span></div>
+        <div class="row"><span>退休后组合年化（60 岁+）</span><span>3.5%</span></div>
+        <div class="row"><span>基本养老金首年（夫妻合计）</span><span>¥15.0 万</span></div>
+        <div class="row"><span>基本养老金年调整幅度</span><span>2.0%</span></div>
+        <div class="row"><span>企业年金 / 个人养老金账户收益</span><span>4.5%</span></div>
+        <div class="row"><span>规划终止年龄</span><span>85 岁</span></div>
+        <div class="row"><span>医疗与长期护理专项储备</span><span>¥100 万</span></div>
+        <div class="row"><span>自住房与房贷</span><span>不计入养老资产</span></div>
+      </div>
+      <div class="note">
+        <b>口径说明：</b>需求与供给均折算至 60 岁退休时点现值，退休期折现时同步扣除 2.5% 通胀，等价于使用约 <b>0.98%</b> 的实际贴现率。基本养老金按终身领取、年调 2.0% 估算，实际调整幅度受政策与基金收支影响。
+      </div>
+    </div>
+
+    <div class="card pad">
+      <div style="font-size:14px;font-weight:680;margin-bottom:12px">主要风险</div>
+      <div class="risks">
+        <div class="risk">
+          <div class="ic">长</div>
+          <div>
+            <div class="rt">长寿风险</div>
+            <div class="rd">规划只算到 85 岁。若任一方活到 90 岁以上，按当前节奏<b>资产池已于 84 岁归零</b>，后续将完全依赖基本养老金。建议将第三支柱中的 ¥120 万配置为<b>终身领取型年金</b>。</div>
+          </div>
+        </div>
+        <div class="risk">
+          <div class="ic">市</div>
+          <div>
+            <div class="rt">市场时序风险</div>
+            <div class="rd">退休前 5 年若遭遇 30% 级别回撤，60 岁资产池可能缩水 <b>¥150–200 万</b>。需在 55 岁起逐步降低权益仓位，并预留 2 年生活费的现金类缓冲。</div>
+          </div>
+        </div>
+        <div class="risk">
+          <div class="ic">胀</div>
+          <div>
+            <div class="rt">医疗通胀风险</div>
+            <div class="rd">医疗与护理费用涨幅常年高于 CPI。若实际通胀达 <b>3.5%</b>，总需求将升至约 ¥1,720 万，缺口扩大至 <b>¥450 万</b>。需配置百万医疗险 + 重疾险 + 长期护理险转移。</div>
+          </div>
+        </div>
+        <div class="risk">
+          <div class="ic">策</div>
+          <div>
+            <div class="rt">政策与流动性风险</div>
+            <div class="rd">养老金调整放缓、个人养老金税优额度变化、延迟退休政策均会影响测算。同时家庭资产高度集中于自住房（市值 ¥480 万），<b>变现能力弱</b>，需保证金融资产部分的流动性分层。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <b>免责声明：</b>本方案为基于既定假设的<b>测算示意</b>，所用家庭财务数据为示例设定，不构成投资建议、税务建议或保险产品销售意见。所有收益率为假设值，不代表实际可得收益，投资有风险，过往业绩不预示未来表现。实际规划请结合家庭真实收支、社保缴费记录、年金方案条款及最新政策，咨询持牌理财顾问后确定。<br>
+  <span style="color:#B9ADA0">方案生成于 2026 年 · 建议每年复核一次，或在收入、家庭结构、政策发生重大变化时即时更新</span>
+</footer>
+
+</div><!-- /wrap -->
+
+<script>
+/* =============== 数据（由测算模型生成） =============== */
+var NEED = { life: 1362, reserve: 100, total: 1462 };
+var COVER = { p1: 327, p2: 143, p3: 798, total: 1268, gap: 194 };
+
+/* [年龄, 金融资产, 个人养老金, 企业年金, 合计] —— 40 岁为起点 */
+var CURVE = [
+  [40, 120.0, 0.0, 28.0, 148.0],
+  [41, 134.8, 2.4, 31.7, 168.9], [42, 150.5, 4.9, 35.5, 190.9],
+  [43, 167.1, 7.5, 39.5, 214.1], [44, 184.7, 10.3, 43.7, 238.7],
+  [45, 203.4, 13.1, 48.0, 264.6], [46, 223.2, 16.1, 52.6, 291.9],
+  [47, 244.2, 19.2, 57.4, 320.8], [48, 266.5, 22.5, 62.3, 351.3],
+  [49, 290.1, 25.9, 67.5, 383.5], [50, 315.1, 29.5, 73.0, 417.5],
+  [51, 348.3, 33.2, 78.7, 460.1], [52, 382.9, 37.1, 84.6, 504.6],
+  [53, 419.2, 41.2, 90.8, 551.1], [54, 457.0, 45.4, 97.3, 599.7],
+  [55, 496.6, 49.9, 104.1, 650.5], [56, 537.9, 54.5, 111.2, 703.6],
+  [57, 581.1, 59.4, 118.6, 759.1], [58, 626.3, 64.5, 126.3, 817.0],
+  [59, 673.5, 69.8, 134.4, 877.6], [60, 722.8, 75.3, 142.8, 940.9]
+];
+
+/* 退休后逐年 {age, out, pen, draw, open} */
+var FLOW = [
+  {age:60,out:59.0,pen:15.0,open:940.9},{age:61,out:60.5,pen:15.3,open:929.8},
+  {age:62,out:62.0,pen:15.6,open:917.2},{age:63,out:63.5,pen:15.9,open:903.0},
+  {age:64,out:65.1,pen:16.2,open:886.9},{age:65,out:66.7,pen:16.6,open:869.1},
+  {age:66,out:68.4,pen:16.9,open:849.4},{age:67,out:70.1,pen:17.2,open:827.6},
+  {age:68,out:71.9,pen:17.6,open:803.6},{age:69,out:73.7,pen:17.9,open:777.5},
+  {age:70,out:75.5,pen:18.3,open:748.9},{age:71,out:77.4,pen:18.7,open:717.9},
+  {age:72,out:79.3,pen:19.0,open:684.3},{age:73,out:81.3,pen:19.4,open:647.9},
+  {age:74,out:83.4,pen:19.8,open:608.7},{age:75,out:85.4,pen:20.2,open:566.4},
+  {age:76,out:87.6,pen:20.6,open:521.0},{age:77,out:89.8,pen:21.0,open:472.3},
+  {age:78,out:92.0,pen:21.4,open:420.0},{age:79,out:94.3,pen:21.9,open:364.2},
+  {age:80,out:96.7,pen:22.3,open:304.5},{age:81,out:99.1,pen:22.7,open:240.7},
+  {age:82,out:101.6,pen:23.2,open:172.8},{age:83,out:104.1,pen:23.7,open:100.5},
+  {age:84,out:106.7,pen:24.1,open:23.6},{age:85,out:109.4,pen:24.6,open:0.0}
+];
+
+var C = {
+  brand:'#A8622C', brand2:'#C98A4B', brandLite:'#E8CE9E',
+  gold:'#C9A227', goldLite:'#D9B45A',
+  green:'#2F7D6B', greenLite:'#6FA695',
+  red:'#C0563F', line:'#ECE2D5', grid:'#F3EBDF',
+  ink:'#2A2724', ink2:'#6E6459', ink3:'#A2978A'
+};
+var FONT = '"PingFang SC","Microsoft YaHei","Hiragino Sans GB",system-ui,sans-serif';
+
+function el(id){ return document.getElementById(id); }
+function svg(w,h){ return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" style="display:block;font-family:'+FONT+'">'; }
+function txt(x,y,s,o){
+  o = o || {};
+  return '<text x="'+x+'" y="'+y+'" fill="'+(o.fill||C.ink2)+'" font-size="'+(o.size||11.5)+'"'
+    +' font-weight="'+(o.weight||400)+'" text-anchor="'+(o.anchor||'start')+'"'
+    +(o.opacity?' opacity="'+o.opacity+'"':'')
+    +(o.style?' style="'+o.style+'"':'')+'>'+s+'</text>';
+}
+function rect(x,y,w,h,fill,r,o){
+  o = o || {};
+  return '<rect x="'+x+'" y="'+y+'" width="'+Math.max(0,w)+'" height="'+Math.max(0,h)+'" fill="'+fill+'" rx="'+(r||0)+'"'
+    +(o.dash?' stroke-dasharray="'+o.dash+'"':'')+(o.stroke?' stroke="'+o.stroke+'" stroke-width="'+(o.sw||1)+'"':'')+'/>';
+}
+function line(x1,y1,x2,y2,stroke,w,dash){
+  return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+stroke+'" stroke-width="'+(w||1)+'"'
+    +(dash?' stroke-dasharray="'+dash+'"':'')+'/>';
+}
+function fmt(n){ return n.toLocaleString('zh-CN'); }
+
+/* ================= 1. 缺口对比条 ================= */
+(function(){
+  var W=900,H=250, L=118, R=104, TOP=34, MAX=1500;
+  var pw = W-L-R, k = pw/MAX;
+  var s = svg(W,H);
+
+  // x 轴刻度
+  [0,300,600,900,1200,1500].forEach(function(v){
+    var x = L + v*k;
+    s += line(x, TOP-8, x, H-30, C.grid, 1);
+    s += txt(x, H-14, v===0?'0':fmt(v), {anchor:'middle', size:10.5, fill:C.ink3});
+  });
+  s += txt(W-R+8, H-14, '万元', {size:10.5, fill:C.ink3});
+
+  function bar(y, label, segs, total, opt){
+    opt = opt || {};
+    var bh = 46, x = L;
+    s += txt(L-14, y+21, label, {anchor:'end', size:13, fill:C.ink, weight:600});
+    s += rect(L, y, pw, bh, '#F8F3EC', 8);
+    segs.forEach(function(sg){
+      var w = sg.v * k;
+      s += rect(x, y, w, bh, sg.c, 0);
+      if (w > 52) s += txt(x+w/2, y+27, fmt(sg.v), {anchor:'middle', size:12.5, fill:'#fff', weight:600});
+      if (w > 118) s += txt(x+w/2, y+40, sg.n, {anchor:'middle', size:10, fill:'#fff', opacity:.85});
+      x += w;
+    });
+    // 缺口虚线框
+    if (opt.gap){
+      s += rect(x, y, opt.gap*k, bh, 'url(#hatch)', 0, {stroke:C.red, sw:1.4, dash:'4 3'});
+      s += txt(x+opt.gap*k/2, y+27, fmt(opt.gap), {anchor:'middle', size:12.5, fill:C.red, weight:700});
+      s += txt(x+opt.gap*k/2, y+40, '缺口', {anchor:'middle', size:10, fill:C.red});
+      x += opt.gap*k;
+    }
+    // 圆角遮罩
+    s += '<rect x="'+L+'" y="'+y+'" width="'+pw+'" height="'+bh+'" rx="9" fill="none" stroke="'+C.line+'" stroke-width="1"/>';
+    s += txt(W-R+12, y+21, fmt(total), {size:19, fill:opt.vc||C.ink, weight:700});
+    s += txt(W-R+12, y+36, '万元', {size:10.5, fill:C.ink3});
+  }
+
+  s += '<defs><pattern id="hatch" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">'
+     + '<rect width="8" height="8" fill="#FBEEEA"/><line x1="0" y1="0" x2="0" y2="8" stroke="#E9B7A8" stroke-width="3"/></pattern></defs>';
+
+  s += txt(L, TOP-14, '养老资金总需求（60 岁现值）', {size:11.5, fill:C.ink3});
+  bar(TOP, '', [
+    {v:NEED.life,  c:C.brand2,   n:'生活支出'},
+    {v:NEED.reserve,c:C.brandLite,n:'医疗护理'}
+  ], NEED.total, {});
+
+  s += txt(L, TOP+80, '三支柱可覆盖 + 缺口', {size:11.5, fill:C.ink3});
+  bar(TOP+94, '', [
+    {v:COVER.p1, c:C.green,     n:'一支柱'},
+    {v:COVER.p2, c:C.greenLite, n:'二支柱'},
+    {v:COVER.p3, c:C.brand,     n:'三支柱'}
+  ], COVER.total, {gap:COVER.gap, vc:C.green});
+
+  // 覆盖条下方的缺口引线
+  var gx = L + COVER.total*k, gw = COVER.gap*k;
+  s += line(gx+gw/2, TOP+94+46, gx+gw/2, TOP+94+72, C.red, 1.2, '3 3');
+  s += txt(gx+gw/2, TOP+94+86, '需通过 4 项调整补齐 ¥194 万', {anchor:'middle', size:11.5, fill:C.red, weight:600});
+
+  s += '</svg>';
+  el('chartGap').innerHTML = s;
+})();
+
+/* ================= 2. 资产积累曲线 ================= */
+(function(){
+  var W=900,H=380, L=54, R=92, TOP=26, BOT=42, MAXY=1000;
+  var pw = W-L-R, ph = H-TOP-BOT;
+  var kx = pw/20, ky = ph/MAXY;
+  function X(a){ return L + (a-40)*kx; }
+  function Y(v){ return TOP + ph - v*ky; }
+
+  var s = svg(W,H);
+  // 网格 + Y 轴
+  [0,250,500,750,1000].forEach(function(v){
+    var y = Y(v);
+    s += line(L, y, L+pw, y, C.grid, 1, v===0?null:'3 4');
+    s += txt(L-10, y+4, fmt(v), {anchor:'end', size:10.5, fill:C.ink3});
+  });
+  s += txt(L-10, TOP-10, '万元', {anchor:'end', size:10.5, fill:C.ink3});
+
+  // X 轴刻度
+  [40,44,48,52,56,60].forEach(function(a){
+    s += line(X(a), TOP, X(a), TOP+ph, C.grid, 1, '3 4');
+    s += txt(X(a), TOP+ph+20, a+' 岁', {anchor:'middle', size:10.5, fill:C.ink3});
+  });
+
+  // 三层堆叠面积
+  function stackPath(idxFn){
+    var up='';
+    CURVE.forEach(function(d,i){
+      var x=X(d[0]), y=Y(idxFn(d));
+      up += (i?' L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+    });
+    return up + ' L'+X(60).toFixed(1)+' '+Y(0).toFixed(1)
+              + ' L'+X(40).toFixed(1)+' '+Y(0).toFixed(1) + ' Z';
+  }
+  var layers = [
+    {f:function(d){return d[4];},            c:'#A8622C', o:.92}, // 合计→底
+    {f:function(d){return d[1]+d[2];},       c:'#C9A227', o:.92},
+    {f:function(d){return d[1];},            c:'#2F7D6B', o:.95}
+  ];
+  // 由底向上：合计层(金融资产色)→ 金融资产+个人养老金(金色)→ 金融资产(绿)
+  // 颜色自下而上：绿(金融资产) 在最上会覆盖，故按 合计/上两层/最上层 顺序绘制
+  s += '<path d="'+stackPath(layers[0].f)+'" fill="'+C.brand+'" opacity=".95"/>';
+  s += '<path d="'+stackPath(layers[1].f)+'" fill="'+C.gold+'" opacity=".95"/>';
+  s += '<path d="'+stackPath(layers[2].f)+'" fill="'+C.green+'" opacity=".95"/>';
+
+  // 合计轮廓线
+  var top='';
+  CURVE.forEach(function(d,i){ var x=X(d[0]),y=Y(d[4]); top += (i?' L':'M')+x.toFixed(1)+' '+y.toFixed(1); });
+  s += '<path d="'+top+'" fill="none" stroke="#7E4519" stroke-width="1.6" opacity=".5"/>';
+
+  // 50 岁：房贷结清节点
+  var x50 = X(50), y50 = Y(417.5);
+  s += line(x50, TOP, x50, TOP+ph, C.red, 1.4, '5 4');
+  s += '<circle cx="'+x50+'" cy="'+y50+'" r="5" fill="#fff" stroke="'+C.red+'" stroke-width="2.2"/>';
+  s += rect(x50-92, TOP+6, 176, 36, 'rgba(255,255,255,.94)', 8, {stroke:'#F0D5CD', sw:1});
+  s += txt(x50-80, TOP+20, '50 岁房贷结清', {size:11.5, fill:C.red, weight:600});
+  s += txt(x50-80, TOP+34, '月供 ¥11.4 万/年 转为养老定投', {size:10.5, fill:C.ink3});
+
+  // 终点标注
+  var xe = X(60), ye = Y(940.9);
+  s += '<circle cx="'+xe+'" cy="'+ye+'" r="5.5" fill="'+C.brand+'"/>';
+  s += rect(xe+10, ye-46, 118, 44, 'rgba(255,255,255,.96)', 9, {stroke:'#EFDCC8', sw:1});
+  s += txt(xe+20, ye-29, '60 岁养老资产池', {size:10.5, fill:C.ink3});
+  s += txt(xe+20, ye-9, '¥940.9 万', {size:16, fill:C.brand, weight:700});
+
+  // 起点
+  s += '<circle cx="'+X(40)+'" cy="'+Y(148)+'" r="4" fill="'+C.brand+'" opacity=".8"/>';
+  s += txt(X(40)+6, Y(148)-10, '起点 ¥148 万', {size:10.5, fill:C.ink3});
+
+  // 右上角目标提示
+  s += rect(L+pw-206, TOP+ph-96, 200, 52, 'rgba(250,240,230,.95)', 10, {stroke:'#EFDCC8', sw:1});
+  s += txt(L+pw-190, TOP+ph-76, '60 岁资金需求 ¥1,462 万', {size:11, fill:C.ink2});
+  s += txt(L+pw-190, TOP+ph-56, '资产池 ¥941 万 · 缺口 ¥194 万', {size:12, fill:C.red, weight:650});
+
+  s += '</svg>';
+  el('chartAccum').innerHTML = s;
+})();
+
+/* ================= 3. 三支柱环形图 ================= */
+(function(){
+  var W=360,H=300, cx=180, cy=148, rO=104, rI=64;
+  var data = [
+    {v:COVER.p1, c:C.green,      n:'第一支柱', d:'基本养老金'},
+    {v:COVER.p2, c:C.greenLite,  n:'第二支柱', d:'企业/职业年金'},
+    {v:COVER.p3, c:C.brand,      n:'第三支柱', d:'个人养老储备'}
+  ];
+  var total = COVER.total, s = svg(W,H), a0 = -Math.PI/2;
+
+  data.forEach(function(d){
+    var a1 = a0 + d.v/total*Math.PI*2;
+    var large = (a1-a0) > Math.PI ? 1 : 0;
+    var x0=cx+rO*Math.cos(a0), y0=cy+rO*Math.sin(a0);
+    var x1=cx+rO*Math.cos(a1), y1=cy+rO*Math.sin(a1);
+    var x2=cx+rI*Math.cos(a1), y2=cy+rI*Math.sin(a1);
+    var x3=cx+rI*Math.cos(a0), y3=cy+rI*Math.sin(a0);
+    s += '<path d="M'+x0.toFixed(2)+' '+y0.toFixed(2)
+       + ' A'+rO+' '+rO+' 0 '+large+' 1 '+x1.toFixed(2)+' '+y1.toFixed(2)
+       + ' L'+x2.toFixed(2)+' '+y2.toFixed(2)
+       + ' A'+rI+' '+rI+' 0 '+large+' 0 '+x3.toFixed(2)+' '+y3.toFixed(2)+' Z"'
+       + ' fill="'+d.c+'" opacity=".93"/>';
+    a0 = a1;
+  });
+
+  s += txt(cx, cy-14, '覆盖合计', {anchor:'middle', size:11.5, fill:C.ink3});
+  s += txt(cx, cy+12, '¥1,268', {anchor:'middle', size:27, fill:C.ink, weight:700});
+  s += txt(cx, cy+30, '万元 · 覆盖率 86.7%', {anchor:'middle', size:11, fill:C.ink3});
+
+  // 下方图注
+  var ly = 274;
+  data.forEach(function(d,i){
+    var x = 30 + i*106;
+    s += rect(x, ly-8, 9, 9, d.c, 2.5);
+    s += txt(x+15, ly, d.n, {size:11.5, fill:C.ink, weight:600});
+    s += txt(x, ly+16, d.d+' · '+(d.v/total*100).toFixed(1)+'%', {size:10.5, fill:C.ink3});
+  });
+  s += '</svg>';
+  el('chartPie').innerHTML = s;
+})();
+
+/* ================= 4. 退休后现金流 ================= */
+(function(){
+  var W=900,H=400, L=52, R=64, TOP=30, BOT=48;
+  var pw = W-L-R, ph = H-TOP-BOT;
+  var MAXL=120, MAXR=1000;
+  var n = FLOW.length, step = pw/n, bw = Math.min(20, step*0.46);
+  function X(i){ return L + step*i + step/2; }
+  function YL(v){ return TOP + ph - v/MAXL*ph; }
+  function YR(v){ return TOP + ph - v/MAXR*ph; }
+
+  var s = svg(W,H);
+  // 网格
+  [0,30,60,90,120].forEach(function(v){
+    var y=YL(v);
+    s += line(L, y, L+pw, y, C.grid, 1, v===0?null:'3 4');
+    s += txt(L-9, y+4, fmt(v), {anchor:'end', size:10.5, fill:C.ink3});
+  });
+  s += txt(L-9, TOP-10, '万元/年', {anchor:'end', size:10.5, fill:C.ink3});
+  // 右轴
+  [0,250,500,750,1000].forEach(function(v){
+    s += txt(L+pw+9, YR(v)+4, fmt(v), {size:10.5, fill:'#C08B5E'});
+  });
+  s += txt(L+pw+9, TOP-10, '余额(万)', {size:10.5, fill:'#C08B5E'});
+
+  // X 轴
+  [60,65,70,75,80,85].forEach(function(a){
+    var i = a-60;
+    s += line(X(i), TOP, X(i), TOP+ph, C.grid, 1, '3 4');
+    s += txt(X(i), TOP+ph+20, a+' 岁', {anchor:'middle', size:10.5, fill:C.ink3});
+  });
+
+  // 堆叠柱：养老金(下) + 提取(上)，总高 = 支出
+  FLOW.forEach(function(d,i){
+    var x = X(i)-bw/2, draw = d.out - d.pen;
+    var yOut = YL(d.out), yPen = YL(d.pen), yBase = YL(0);
+    var short = (d.open + d.open*0.035) < draw;
+    // 支出总高（浅灰底）
+    s += rect(x, yOut, bw, yBase-yOut, '#EFEAE3', 3);
+    // 养老金
+    s += rect(x, yPen, bw, yBase-yPen, C.green, 0);
+    // 提取
+    s += rect(x, yOut, bw, yPen-yOut, short ? C.red : C.goldLite, 0);
+    if (i%5===0){
+      s += txt(X(i), yOut-6, Math.round(d.out), {anchor:'middle', size:10, fill:C.ink3});
+    }
+  });
+
+  // 余额折线（右轴）
+  var bal = [], pt='';
+  FLOW.forEach(function(d,i){
+    var inc = d.open*0.035;
+    var close = Math.max(0, d.open + inc - (d.out-d.pen));
+    bal.push(close);
+    pt += (i?' L':'M')+X(i).toFixed(1)+' '+YR(close).toFixed(1);
+  });
+  var area = pt + ' L'+X(n-1).toFixed(1)+' '+YR(0).toFixed(1)+' L'+X(0).toFixed(1)+' '+YR(0).toFixed(1)+' Z';
+  s += '<path d="'+area+'" fill="'+C.brand+'" opacity=".07"/>';
+  s += '<path d="'+pt+'" fill="none" stroke="'+C.brand+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
+  FLOW.forEach(function(d,i){
+    if(i%5===0||i===n-1) s += '<circle cx="'+X(i).toFixed(1)+'" cy="'+YR(bal[i]).toFixed(1)+'" r="3.4" fill="#fff" stroke="'+C.brand+'" stroke-width="2"/>';
+  });
+
+  // 归零标注
+  var i84 = 24, x84 = X(i84);
+  s += line(x84, YR(0), x84, YR(bal[i84])-4, C.red, 1.2, '3 3');
+  s += rect(x84-132, TOP+8, 130, 40, 'rgba(251,238,234,.96)', 9, {stroke:'#F0D5CD', sw:1});
+  s += txt(x84-120, TOP+24, '84 岁资产池归零', {size:11.5, fill:C.red, weight:650});
+  s += txt(x84-120, TOP+39, '较 85 岁目标提前 1 年', {size:10.5, fill:C.ink3});
+
+  // 差额扩大提示
+  s += rect(L+8, TOP+ph-58, 236, 46, 'rgba(251,243,220,.95)', 9, {stroke:'#F0E3C4', sw:1});
+  s += txt(L+20, TOP+ph-42, '金色部分逐年扩大：60 岁 ¥44.0 万', {size:10.5, fill:C.ink2});
+  s += txt(L+20, TOP+ph-25, '→ 85 岁 ¥84.8 万，靠基本养老金追不上', {size:10.5, fill:C.ink2});
+
+  s += '</svg>';
+  el('chartFlow').innerHTML = s;
+})();
+
+/* ================= 5. 现金流表格 ================= */
+(function(){
+  var h = '';
+  FLOW.forEach(function(d){
+    var draw = d.out - d.pen;
+    var inc = d.open*0.035;
+    var close = d.open + inc - draw;
+    var short = close < 0;
+    var show = Math.max(0, close);
+    h += '<tr class="'+(short?'neg':'')+'">'
+      + '<td>'+d.age+' 岁</td>'
+      + '<td>'+d.out.toFixed(1)+'</td>'
+      + '<td>'+d.pen.toFixed(1)+'</td>'
+      + '<td>'+draw.toFixed(1)+'</td>'
+      + '<td>'+d.open.toFixed(1)+'</td>'
+      + '<td>'+inc.toFixed(1)+'</td>'
+      + '<td class="bal">'+(short? '0.0（缺口 '+Math.abs(close).toFixed(1)+'）' : show.toFixed(1))+'</td>'
+      + '</tr>';
+  });
+  el('flowBody').innerHTML = h;
+})();
+</script>
+</body>
+</html>
