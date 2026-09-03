@@ -1,0 +1,746 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1056" height="1480.5" viewBox="0 0 1056 1480.5">
+<rect width="1056" height="1480.5" fill="#fbfcfe"/>
+<defs>
+<marker id='ar_eq' viewBox='0 0 10 10' refX='9.2' refY='5' markerWidth='6.6' markerHeight='6.6' orient='auto-start-reverse'><path d='M 0 0.6 L 10 5 L 0 9.4 z' fill='#2f6fa8'/></marker>
+<marker id='ar_ptr' viewBox='0 0 10 10' refX='9.2' refY='5' markerWidth='6.6' markerHeight='6.6' orient='auto-start-reverse'><path d='M 0 0.6 L 10 5 L 0 9.4 z' fill='#3f8f60'/></marker>
+<marker id='ar_idx' viewBox='0 0 10 10' refX='9.2' refY='5' markerWidth='6.6' markerHeight='6.6' orient='auto-start-reverse'><path d='M 0 0.6 L 10 5 L 0 9.4 z' fill='#c07a2a'/></marker>
+<marker id='ar_copy' viewBox='0 0 10 10' refX='9.2' refY='5' markerWidth='6.6' markerHeight='6.6' orient='auto-start-reverse'><path d='M 0 0.6 L 10 5 L 0 9.4 z' fill='#a8456b'/></marker>
+<marker id='ar_back' viewBox='0 0 10 10' refX='9.2' refY='5' markerWidth='6.6' markerHeight='6.6' orient='auto-start-reverse'><path d='M 0 0.6 L 10 5 L 0 9.4 z' fill='#7a5aa8'/></marker>
+<filter id='sh' x='-30%' y='-30%' width='160%' height='160%'><feDropShadow dx='0' dy='1' stdDeviation='1.4' flood-color='#8fa2b5' flood-opacity='0.30'/></filter>
+</defs>
+<text x='40' y='34' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='19' font-weight='700' fill='#243447'>Binder 字段引用图 · AOSP 17</text>
+<text x='40' y='56' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='10.5' fill='#7c8a99'>字段级引用关系 · 箭头方向 = 值的流向（谁写 → 谁读）· 基于 AOSP 17 (API 37 / Cinnamon Bun) 与内核 GKI 6.18 源码核对 · 字段名后 + = Android 10 之后新增或改型</text>
+<line x1='40' y1='66' x2='1036' y2='66' stroke='#d7dfe8' stroke-width='1'/>
+<rect x='40' y='84' width='240' height='30' rx='6' fill='#4a6d8c'/>
+<text x='51' y='97' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='11.5' font-weight='700' fill='#ffffff'>① 用户态 libbinder</text>
+<text x='51' y='109' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#ffffff' opacity='0.82'>frameworks/native/libs/binder</text>
+<rect x='390' y='84' width='240' height='30' rx='6' fill='#8a5a9e'/>
+<text x='401' y='97' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='11.5' font-weight='700' fill='#ffffff'>② 内核 ABI 线格式（uapi）</text>
+<text x='401' y='109' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#ffffff' opacity='0.82'>include/uapi/linux/android/binder.h</text>
+<rect x='740' y='84' width='240' height='30' rx='6' fill='#3f7f8f'/>
+<text x='751' y='97' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='11.5' font-weight='700' fill='#ffffff'>③ 内核驱动内部</text>
+<text x='751' y='109' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#ffffff' opacity='0.82'>drivers/android/binder{,_internal}.c</text>
+<g filter='url(#sh)'><rect x='40' y='128' width='240' height='196.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 40 133 Q 40 128 45 128 L 275 128 Q 280 128 280 133 L 280 149 L 40 149 Z' fill='#eef2f7'/>
+<rect x='40' y='128' width='3' height='21' fill='#4a6d8c'/>
+<text x='49' y='142.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>Parcel</text>
+<text x='272' y='142.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>用户态</text>
+<text x='53' y='164.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mError</text>
+<text x='272' y='164.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>status_t</text>
+<rect x='41' y='169.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='170.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='179.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mData</text>
+<text x='272' y='179.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>uint8_t*</text>
+<rect x='41' y='184.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='185.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='194.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mDataSize</text>
+<text x='272' y='194.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<text x='53' y='209.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDataCapacity</text>
+<text x='272' y='209.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<text x='53' y='224.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDataPos</text>
+<text x='272' y='224.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<rect x='41' y='229.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='230.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='239.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mObjects</text>
+<text x='272' y='239.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t*</text>
+<rect x='41' y='244.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='245.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='254.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mObjectsSize</text>
+<text x='272' y='254.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<text x='53' y='269.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mVariantFields<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='269.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>variant&lt;Kernel,Rpc&gt;</text>
+<text x='53' y='284.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mAllowFds</text>
+<text x='272' y='284.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<text x='53' y='299.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDeallocZero<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='299.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<text x='53' y='314.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mOwner</text>
+<text x='272' y='314.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>release_func</text>
+<g filter='url(#sh)'><rect x='40' y='344.5' width='240' height='196.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 40 349.5 Q 40 344.5 45 344.5 L 275 344.5 Q 280 344.5 280 349.5 L 280 365.5 L 40 365.5 Z' fill='#eef2f7'/>
+<rect x='40' y='344.5' width='3' height='21' fill='#4a6d8c'/>
+<text x='49' y='359' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>IPCThreadState</text>
+<text x='272' y='359' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>TLS · 每线程</text>
+<rect x='41' y='371' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='372' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='381' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mOut</text>
+<text x='272' y='381' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>Parcel</text>
+<rect x='41' y='386' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='387' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='396' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mIn</text>
+<text x='272' y='396' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>Parcel</text>
+<text x='53' y='411' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mProcess</text>
+<text x='272' y='411' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>sp&lt;ProcessState&gt;</text>
+<text x='53' y='426' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mServingStackPointer</text>
+<text x='272' y='426' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>const void*</text>
+<rect x='41' y='431' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='432' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='441' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mCallingPid</text>
+<text x='272' y='441' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>pid_t</text>
+<rect x='41' y='446' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='447' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='456' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mCallingUid</text>
+<text x='272' y='456' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>uid_t</text>
+<text x='53' y='471' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mCallingSid<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='471' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>const char*</text>
+<text x='53' y='486' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mWorkSource<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='486' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<text x='53' y='501' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mStrictModePolicy</text>
+<text x='272' y='501' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<text x='53' y='516' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mLastTransactionBinderFlags</text>
+<text x='272' y='516' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<text x='53' y='531' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mLastError</text>
+<text x='272' y='531' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>status_t</text>
+<g filter='url(#sh)'><rect x='40' y='561' width='240' height='181.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 40 566 Q 40 561 45 561 L 275 561 Q 280 561 280 566 L 280 582 L 40 582 Z' fill='#eef2f7'/>
+<rect x='40' y='561' width='3' height='21' fill='#4a6d8c'/>
+<text x='49' y='575.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>ProcessState</text>
+<text x='272' y='575.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>每进程单例</text>
+<text x='53' y='597.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDriverName</text>
+<text x='272' y='597.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>String8</text>
+<text x='53' y='612.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDriverFD</text>
+<text x='272' y='612.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int</text>
+<text x='53' y='627.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mVMStart</text>
+<text x='272' y='627.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>void*</text>
+<rect x='41' y='632.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='633.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='642.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mHandleToObject</text>
+<text x='272' y='642.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>Vector&lt;handle_entry&gt;</text>
+<text x='53' y='657.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mExecutingThreadsCount<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='657.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic_size_t</text>
+<text x='53' y='672.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mMaxThreads</text>
+<text x='272' y='672.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic_size_t</text>
+<text x='53' y='687.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mCurrentThreads<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='687.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic_size_t</text>
+<text x='53' y='702.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mKernelStartedThreads<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='702.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic_size_t</text>
+<text x='53' y='717.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mThreadPoolSeq</text>
+<text x='272' y='717.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic_int32_t</text>
+<text x='53' y='732.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mCallRestriction<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='732.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>CallRestriction</text>
+<g filter='url(#sh)'><rect x='40' y='762.5' width='240' height='151.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 40 767.5 Q 40 762.5 45 762.5 L 275 762.5 Q 280 762.5 280 767.5 L 280 783.5 L 40 783.5 Z' fill='#eef2f7'/>
+<rect x='40' y='762.5' width='3' height='21' fill='#4a6d8c'/>
+<text x='49' y='777' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>BpBinder</text>
+<text x='272' y='777' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>远端代理</text>
+<rect x='41' y='789' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='790' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='799' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mHandle<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='799' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>variant&lt;Binder,Rpc&gt;</text>
+<text x='53' y='814' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mStability<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='814' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<text x='53' y='829' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mAlive</text>
+<text x='272' y='829' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>volatile int32_t</text>
+<text x='53' y='844' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mObitsSent</text>
+<text x='272' y='844' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>volatile int32_t</text>
+<rect x='41' y='849' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='850' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='859' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mObituaries</text>
+<text x='272' y='859' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>Vector&lt;Obituary&gt;*</text>
+<text x='53' y='874' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mFrozen<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='874' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>unique_ptr&lt;Frozen&gt;</text>
+<text x='53' y='889' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mDescriptorCache<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='889' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>String16</text>
+<text x='53' y='904' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mTrackedUid<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='904' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<g filter='url(#sh)'><rect x='40' y='934' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 40 939 Q 40 934 45 934 L 275 934 Q 280 934 280 939 L 280 955 L 40 955 Z' fill='#eef2f7'/>
+<rect x='40' y='934' width='3' height='21' fill='#4a6d8c'/>
+<text x='49' y='948.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>BBinder</text>
+<text x='272' y='948.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>本地实体</text>
+<rect x='41' y='960.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='41' y='961.5' width='2.2' height='12' fill='#4a6d8c'/>
+<text x='53' y='970.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>mExtras<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='970.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>atomic&lt;Extras*&gt;</text>
+<text x='53' y='985.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mStability<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='985.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int16_t</text>
+<text x='53' y='1000.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mParceled<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='1000.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<text x='53' y='1015.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mRecordingOn<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='272' y='1015.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<text x='53' y='1030.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>mReserved1</text>
+<text x='272' y='1030.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int32_t</text>
+<rect x='40' y='1060.5' width='240' height='86' rx='5' fill='#ffffff' stroke='#4a6d8c' stroke-width='1' stroke-dasharray='3 2'/>
+<text x='50' y='1073.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#4a6d8c'>★ 核心等价式</text>
+<text x='50' y='1087.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BpBinder.mHandle</text>
+<text x='50' y='1099.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  └ variant::BinderHandle.handle</text>
+<text x='50' y='1111.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>≡ tr.target.handle</text>
+<text x='50' y='1123.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>≡ binder_ref.data.desc</text>
+<text x='50' y='1135.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>进程局部：desc 由 proc-&gt;dmap 分配</text>
+<g filter='url(#sh)'><rect x='390' y='128' width='240' height='121.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 390 133 Q 390 128 395 128 L 625 128 Q 630 128 630 133 L 630 149 L 390 149 Z' fill='#eef2f7'/>
+<rect x='390' y='128' width='3' height='21' fill='#8a5a9e'/>
+<text x='399' y='142.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_write_read</text>
+<text x='622' y='142.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>ioctl 参数</text>
+<text x='403' y='164.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>write_size</text>
+<text x='622' y='164.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<text x='403' y='179.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>write_consumed</text>
+<text x='622' y='179.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<rect x='391' y='184.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='185.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='194.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>write_buffer</text>
+<text x='622' y='194.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<text x='403' y='209.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>read_size</text>
+<text x='622' y='209.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<text x='403' y='224.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>read_consumed</text>
+<text x='622' y='224.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<rect x='391' y='229.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='230.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='239.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>read_buffer</text>
+<text x='622' y='239.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<g filter='url(#sh)'><rect x='390' y='269.5' width='240' height='196.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 390 274.5 Q 390 269.5 395 269.5 L 625 269.5 Q 630 269.5 630 274.5 L 630 290.5 L 390 290.5 Z' fill='#eef2f7'/>
+<rect x='390' y='269.5' width='3' height='21' fill='#8a5a9e'/>
+<text x='399' y='284' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_transaction_data</text>
+<text x='622' y='284' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>★ 核心 · ABI 冻结</text>
+<rect x='391' y='296' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='297' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='306' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>target.handle</text>
+<text x='622' y='306' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='311' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='312' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='321' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>target.ptr</text>
+<text x='622' y='321' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='391' y='326' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='327' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='336' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie</text>
+<text x='622' y='336' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='391' y='341' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='342' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='351' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>code</text>
+<text x='622' y='351' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='356' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='357' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='366' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>flags</text>
+<text x='622' y='366' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='371' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='372' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='381' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>sender_pid</text>
+<text x='622' y='381' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__kernel_pid_t</text>
+<rect x='391' y='386' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='387' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='396' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>sender_euid</text>
+<text x='622' y='396' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__kernel_uid32_t</text>
+<rect x='391' y='401' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='402' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='411' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data_size</text>
+<text x='622' y='411' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<rect x='391' y='416' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='417' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='426' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>offsets_size</text>
+<text x='622' y='426' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_size_t</text>
+<rect x='391' y='431' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='432' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='441' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data.ptr.buffer</text>
+<text x='622' y='441' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='391' y='446' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='447' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='456' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data.ptr.offsets</text>
+<text x='622' y='456' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<g filter='url(#sh)'><rect x='390' y='486' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 390 491 Q 390 486 395 486 L 625 486 Q 630 486 630 491 L 630 507 L 390 507 Z' fill='#eef2f7'/>
+<rect x='390' y='486' width='3' height='21' fill='#8a5a9e'/>
+<text x='399' y='500.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>flat_binder_object</text>
+<text x='622' y='500.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>随数据区传输</text>
+<rect x='391' y='512.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='513.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='522.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>hdr.type</text>
+<text x='622' y='522.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<text x='403' y='537.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>flags<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='537.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='542.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='543.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='552.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>binder</text>
+<text x='622' y='552.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='391' y='557.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='558.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='567.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>handle</text>
+<text x='622' y='567.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='572.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='573.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='582.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie</text>
+<text x='622' y='582.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<g filter='url(#sh)'><rect x='390' y='612.5' width='240' height='61.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 390 617.5 Q 390 612.5 395 612.5 L 625 612.5 Q 630 612.5 630 617.5 L 630 633.5 L 390 633.5 Z' fill='#eef2f7'/>
+<rect x='390' y='612.5' width='3' height='21' fill='#8a5a9e'/>
+<text x='399' y='627' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_handle_cookie</text>
+<text x='622' y='627' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>死亡 / 冻结通知</text>
+<rect x='391' y='639' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='640' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='649' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>handle</text>
+<text x='622' y='649' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>__u32</text>
+<rect x='391' y='654' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='655' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='664' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie</text>
+<text x='622' y='664' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<g filter='url(#sh)'><rect x='390' y='694' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 390 699 Q 390 694 395 694 L 625 694 Q 630 694 630 699 L 630 715 L 390 715 Z' fill='#eef2f7'/>
+<rect x='390' y='694' width='3' height='21' fill='#8a5a9e'/>
+<text x='399' y='708.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>★ 17 新增 ABI 结构体</text>
+<text x='622' y='708.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>Android 13+</text>
+<rect x='391' y='720.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='721.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='730.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>binder_freeze_info<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='730.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>{pid,enable,ms}</text>
+<rect x='391' y='735.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='736.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='745.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>binder_frozen_status_info<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='745.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>{sync,async}</text>
+<rect x='391' y='750.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='751.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='760.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>binder_frozen_state_info<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='760.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>{cookie,frozen}</text>
+<rect x='391' y='765.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='766.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='775.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>binder_extended_error<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='775.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>{id,cmd,param}</text>
+<rect x='391' y='780.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='391' y='781.5' width='2.2' height='12' fill='#8a5a9e'/>
+<text x='403' y='790.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data_secctx.secctx<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='622' y='790.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='390' y='820.5' width='240' height='110' rx='5' fill='#ffffff' stroke='#8a5a9e' stroke-width='1' stroke-dasharray='3 2'/>
+<text x='400' y='833.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#8a5a9e'>★ 32 / 64 位双宽</text>
+<text x='400' y='847.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>binder_size_t / binder_uintptr_t：</text>
+<text x='400' y='859.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  32 位进程 = __u32，64 位 = __u64</text>
+<text x='400' y='871.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>binder_transaction_data：</text>
+<text x='400' y='883.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  64bit 64B / 32bit 40B</text>
+<text x='400' y='895.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>差值直接编码进 BC_* 命令码：</text>
+<text x='400' y='907.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  BINDER_CURRENT_PROTOCOL_VERSION</text>
+<text x='400' y='919.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  = 8 (64bit) / 7 (32bit)</text>
+<rect x='390' y='950.5' width='240' height='110' rx='5' fill='#ffffff' stroke='#8a5a9e' stroke-width='1' stroke-dasharray='3 2'/>
+<text x='400' y='963.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#8a5a9e'>★ BC ⇄ BR 命令对（17）</text>
+<text x='400' y='977.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BC_TRANSACTION → BR_TRANSACTION</text>
+<text x='400' y='989.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BC_REPLY → BR_REPLY</text>
+<text x='400' y='1001.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BC_REQUEST_DEATH_NOTIFICATION</text>
+<text x='400' y='1013.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  → BR_DEAD_BINDER</text>
+<text x='400' y='1025.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BC_REQUEST_FREEZE_NOTIFICATION</text>
+<text x='400' y='1037.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>  → BR_FROZEN_BINDER（13+）</text>
+<text x='400' y='1049.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.6' fill='#5c6b7a'>BC_FREE_BUFFER → 无 BR</text>
+<g filter='url(#sh)'><rect x='740' y='128' width='240' height='136.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 133 Q 740 128 745 128 L 975 128 Q 980 128 980 133 L 980 149 L 740 149 Z' fill='#eef2f7'/>
+<rect x='740' y='128' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='142.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_proc</text>
+<text x='972' y='142.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>每进程一份</text>
+<rect x='741' y='154.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='155.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='164.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>threads</text>
+<text x='972' y='164.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>rb_root</text>
+<rect x='741' y='169.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='170.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='179.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>nodes</text>
+<text x='972' y='179.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>rb_root</text>
+<rect x='741' y='184.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='185.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='194.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>refs_by_desc</text>
+<text x='972' y='194.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>rb_root</text>
+<rect x='741' y='199.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='200.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='209.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>alloc</text>
+<text x='972' y='209.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_alloc</text>
+<rect x='741' y='214.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='215.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='224.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>todo</text>
+<text x='972' y='224.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>list_head</text>
+<rect x='741' y='229.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='230.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='239.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>tsk<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='239.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>task_struct*</text>
+<text x='753' y='254.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>is_frozen / sync_recv<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='254.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<g filter='url(#sh)'><rect x='740' y='284.5' width='240' height='136.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 289.5 Q 740 284.5 745 284.5 L 975 284.5 Q 980 284.5 980 289.5 L 980 305.5 L 740 305.5 Z' fill='#eef2f7'/>
+<rect x='740' y='284.5' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='299' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_ref</text>
+<text x='972' y='299' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>一个远端引用</text>
+<rect x='741' y='311' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='312' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='321' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data.desc<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='321' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>uint32_t</text>
+<rect x='741' y='326' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='327' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='336' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data.strong<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='336' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int</text>
+<rect x='741' y='341' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='342' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='351' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data.weak<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='351' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int</text>
+<rect x='741' y='356' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='357' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='366' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>node</text>
+<text x='972' y='366' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_node*</text>
+<text x='753' y='381' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>proc</text>
+<text x='972' y='381' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_proc*</text>
+<rect x='741' y='386' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='387' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='396' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>death</text>
+<text x='972' y='396' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_ref_death*</text>
+<text x='753' y='411' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>freeze<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='411' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_ref_freeze*</text>
+<g filter='url(#sh)'><rect x='740' y='441' width='240' height='121.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 446 Q 740 441 745 441 L 975 441 Q 980 441 980 446 L 980 462 L 740 462 Z' fill='#eef2f7'/>
+<rect x='740' y='441' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='455.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_node</text>
+<text x='972' y='455.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>一个本地实体</text>
+<rect x='741' y='467.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='468.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='477.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>ptr</text>
+<text x='972' y='477.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<rect x='741' y='482.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='483.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='492.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie</text>
+<text x='972' y='492.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<text x='753' y='507.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>proc</text>
+<text x='972' y='507.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_proc*</text>
+<rect x='741' y='512.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='513.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='522.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>refs</text>
+<text x='972' y='522.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>hlist_head</text>
+<rect x='741' y='527.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='528.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='537.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>async_todo</text>
+<text x='972' y='537.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>list_head</text>
+<text x='753' y='552.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>sched_policy:2 / inherit_rt:1<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='552.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bitfield</text>
+<g filter='url(#sh)'><rect x='740' y='582.5' width='240' height='61.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 587.5 Q 740 582.5 745 582.5 L 975 582.5 Q 980 582.5 980 587.5 L 980 603.5 L 740 603.5 Z' fill='#eef2f7'/>
+<rect x='740' y='582.5' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='597' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_ref_death</text>
+<text x='972' y='597' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>死亡通知登记</text>
+<text x='753' y='619' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>work</text>
+<text x='972' y='619' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_work</text>
+<rect x='741' y='624' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='625' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='634' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie</text>
+<text x='972' y='634' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<g filter='url(#sh)'><rect x='740' y='664' width='240' height='76.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 669 Q 740 664 745 664 L 975 664 Q 980 664 980 669 L 980 685 L 740 685 Z' fill='#eef2f7'/>
+<rect x='740' y='664' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='678.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_ref_freeze</text>
+<text x='972' y='678.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>冻结通知登记（13+）</text>
+<text x='753' y='700.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>work<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='700.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_work</text>
+<rect x='741' y='705.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='706.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='715.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>cookie<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='715.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_uintptr_t</text>
+<text x='753' y='730.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>is_frozen:1<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='730.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>bool</text>
+<g filter='url(#sh)'><rect x='740' y='760.5' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 765.5 Q 740 760.5 745 760.5 L 975 760.5 Q 980 760.5 980 765.5 L 980 781.5 L 740 781.5 Z' fill='#eef2f7'/>
+<rect x='740' y='760.5' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='775' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_thread</text>
+<text x='972' y='775' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>每线程一份</text>
+<rect x='741' y='787' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='788' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='797' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>transaction_stack</text>
+<text x='972' y='797' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_transaction*</text>
+<rect x='741' y='802' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='803' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='812' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>todo</text>
+<text x='972' y='812' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>list_head</text>
+<text x='753' y='827' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>task<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='827' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>task_struct*</text>
+<text x='753' y='842' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>looper</text>
+<text x='972' y='842' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>int</text>
+<text x='753' y='857' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>ee<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='857' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_extended_error</text>
+<g filter='url(#sh)'><rect x='740' y='887' width='240' height='121.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 892 Q 740 887 745 887 L 975 887 Q 980 887 980 892 L 980 908 L 740 908 Z' fill='#eef2f7'/>
+<rect x='740' y='887' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='901.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_transaction</text>
+<text x='972' y='901.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>一次事务</text>
+<rect x='741' y='913.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='914.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='923.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>code</text>
+<text x='972' y='923.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>unsigned int</text>
+<rect x='741' y='928.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='929.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='938.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>flags</text>
+<text x='972' y='938.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>unsigned int</text>
+<rect x='741' y='943.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='944.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='953.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>sender_euid</text>
+<text x='972' y='953.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>kuid_t</text>
+<rect x='741' y='958.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='959.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='968.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>to_proc</text>
+<text x='972' y='968.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_proc*</text>
+<rect x='741' y='973.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='974.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='983.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>to_thread</text>
+<text x='972' y='983.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_thread*</text>
+<rect x='741' y='988.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='989.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='998.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>buffer</text>
+<text x='972' y='998.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_buffer*</text>
+<g filter='url(#sh)'><rect x='740' y='1028.5' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 1033.5 Q 740 1028.5 745 1028.5 L 975 1028.5 Q 980 1028.5 980 1033.5 L 980 1049.5 L 740 1049.5 Z' fill='#eef2f7'/>
+<rect x='740' y='1028.5' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='1043' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_buffer</text>
+<text x='972' y='1043' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>mmap 区中的一块</text>
+<rect x='741' y='1055' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1056' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1065' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>user_data<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='1065' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>unsigned long</text>
+<rect x='741' y='1070' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1071' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1080' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>data_size</text>
+<text x='972' y='1080' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<rect x='741' y='1085' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1086' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1095' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>offsets_size</text>
+<text x='972' y='1095' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<rect x='741' y='1100' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1101' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1110' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>transaction</text>
+<text x='972' y='1110' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_transaction*</text>
+<rect x='741' y='1115' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1116' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1125' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>target_node</text>
+<text x='972' y='1125' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>binder_node*</text>
+<g filter='url(#sh)'><rect x='740' y='1155' width='240' height='106.5' rx='5' fill='#ffffff' stroke='#c3cdd8' stroke-width='1'/></g>
+<path d='M 740 1160 Q 740 1155 745 1155 L 975 1155 Q 980 1155 980 1160 L 980 1176 L 740 1176 Z' fill='#eef2f7'/>
+<rect x='740' y='1155' width='3' height='21' fill='#3f7f8f'/>
+<text x='749' y='1169.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='10.2' font-weight='700' fill='#243447'>binder_alloc</text>
+<text x='972' y='1169.5' text-anchor='end' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.4' fill='#7c8a99'>缓冲区分配器</text>
+<rect x='741' y='1181.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1182.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1191.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>vm_start<tspan font-size='8' fill='#c0392b'> +</tspan></text>
+<text x='972' y='1191.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>unsigned long</text>
+<rect x='741' y='1196.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1197.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1206.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>buffers</text>
+<text x='972' y='1206.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>list_head</text>
+<rect x='741' y='1211.5' width='238' height='14' fill='#f4f8fc'/>
+<rect x='741' y='1212.5' width='2.2' height='12' fill='#3f7f8f'/>
+<text x='753' y='1221.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#152534' font-weight='600'>free_buffers</text>
+<text x='972' y='1221.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>rb_root</text>
+<text x='753' y='1236.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>free_async_space</text>
+<text x='972' y='1236.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>size_t</text>
+<text x='753' y='1251.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='8.6' fill='#4d5c6b' font-weight='400'>pages</text>
+<text x='972' y='1251.5' text-anchor='end' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.2' fill='#9aa8b6'>struct page**</text>
+<path d='M 280 176.5 L 377 176.5 Q 383 176.5 383 182.5 L 383 432 Q 383 438 389 438 L 390 438' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 191.5 L 368 191.5 Q 374 191.5 374 197.5 L 374 402 Q 374 408 380 408 L 390 408' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 236.5 L 359 236.5 Q 365 236.5 365 242.5 L 365 447 Q 365 453 371 453 L 390 453' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 251.5 L 350 251.5 Q 356 251.5 356 257.5 L 356 417 Q 356 423 362 423 L 390 423' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 378 L 341 378 Q 347 378 347 372 L 347 197.5 Q 347 191.5 353 191.5 L 390 191.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 393 L 332 393 Q 338 393 338 387 L 338 242.5 Q 338 236.5 344 236.5 L 390 236.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 796 L 323 796 Q 329 796 329 790 L 329 309 Q 329 303 335 303 L 390 303' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 856 L 314 856 Q 320 856 320 850 L 320 652 Q 320 646 326 646 L 390 646' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 856 L 305 856 Q 311 856 311 850 L 311 667 Q 311 661 317 661 L 390 661' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 967.5 L 296 967.5 Q 302 967.5 302 961.5 L 302 555.5 Q 302 549.5 308 549.5 L 390 549.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 967.5 L 287 967.5 Q 293 967.5 293 961.5 L 293 585.5 Q 293 579.5 299 579.5 L 390 579.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 390 378 L 294 378 Q 288 378 288 384 L 288 432 Q 288 438 282 438 L 280 438' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 390 393 L 289 393 Q 283 393 283 399 L 283 447 Q 283 453 277 453 L 280 453' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 303 L 710 303 Q 716 303 716 309 L 716 312 Q 716 318 722 318 L 740 318' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 333 L 702 333 Q 708 333 708 339 L 708 483.5 Q 708 489.5 714 489.5 L 740 489.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 348 L 694 348 Q 700 348 700 354 L 700 914.5 Q 700 920.5 706 920.5 L 740 920.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 363 L 686 363 Q 692 363 692 369 L 692 929.5 Q 692 935.5 698 935.5 L 740 935.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 393 L 678 393 Q 684 393 684 399 L 684 944.5 Q 684 950.5 690 950.5 L 740 950.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 408 L 670 408 Q 676 408 676 414 L 676 1071 Q 676 1077 682 1077 L 740 1077' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 423 L 662 423 Q 668 423 668 429 L 668 1086 Q 668 1092 674 1092 L 740 1092' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 438 L 654 438 Q 660 438 660 444 L 660 1056 Q 660 1062 666 1062 L 740 1062' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 549.5 L 646 549.5 Q 652 549.5 652 543.5 L 652 480.5 Q 652 474.5 658 474.5 L 740 474.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 579.5 L 630 579.5 Q 636 579.5 636 573.5 L 636 495.5 Q 636 489.5 642 489.5 L 740 489.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 630 564.5 L 638 564.5 Q 644 564.5 644 558.5 L 644 324 Q 644 318 650 318 L 740 318' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 740 474.5 L 638 474.5 Q 632 474.5 632 468.5 L 632 324 Q 632 318 626 318 L 630 318' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 206.5 L 998 206.5 Q 1004 206.5 1004 212.5 L 1004 1197.5 Q 1004 1203.5 998 1203.5 L 980 1203.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 191.5 L 992 191.5 Q 998 191.5 998 197.5 L 998 312 Q 998 318 992 318 L 980 318' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 176.5 L 986 176.5 Q 992 176.5 992 182.5 L 992 468.5 Q 992 474.5 986 474.5 L 980 474.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 161.5 L 980 161.5 Q 986 161.5 986 167.5 L 986 818 Q 986 824 980 824 L 980 824' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 363 L 1004 363 Q 1010 363 1010 369 L 1010 468.5 Q 1010 474.5 1004 474.5 L 980 474.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 393 L 1010 393 Q 1016 393 1016 399 L 1016 625 Q 1016 631 1010 631 L 980 631' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 408 L 1016 408 Q 1022 408 1022 414 L 1022 706.5 Q 1022 712.5 1016 712.5 L 980 712.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 794 L 1022 794 Q 1028 794 1028 800 L 1028 914.5 Q 1028 920.5 1022 920.5 L 980 920.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 995.5 L 1034 995.5 Q 1040 995.5 1040 1001.5 L 1040 1056 Q 1040 1062 1034 1062 L 980 1062' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 965.5 L 1028 965.5 Q 1034 965.5 1034 959.5 L 1034 242.5 Q 1034 236.5 1028 236.5 L 980 236.5' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 980 1203.5 L 1040 1203.5 Q 1046 1203.5 1046 1197.5 L 1046 1068 Q 1046 1062 1040 1062 L 980 1062' fill='none' stroke='#ffffff' stroke-width='4.6' stroke-linecap='round' stroke-linejoin='round' opacity='0.95'/>
+<path d='M 280 176.5 L 377 176.5 Q 383 176.5 383 182.5 L 383 432 Q 383 438 389 438 L 390 438' fill='none' stroke='#a8456b' stroke-width='2.1' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_copy)'/>
+<circle cx='280' cy='176.5' r='2.9' fill='#a8456b' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 191.5 L 368 191.5 Q 374 191.5 374 197.5 L 374 402 Q 374 408 380 408 L 390 408' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='191.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 236.5 L 359 236.5 Q 365 236.5 365 242.5 L 365 447 Q 365 453 371 453 L 390 453' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='236.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 251.5 L 350 251.5 Q 356 251.5 356 257.5 L 356 417 Q 356 423 362 423 L 390 423' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='251.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 378 L 341 378 Q 347 378 347 372 L 347 197.5 Q 347 191.5 353 191.5 L 390 191.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='378' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 393 L 332 393 Q 338 393 338 387 L 338 242.5 Q 338 236.5 344 236.5 L 390 236.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='393' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 796 L 323 796 Q 329 796 329 790 L 329 309 Q 329 303 335 303 L 390 303' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='796' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 856 L 314 856 Q 320 856 320 850 L 320 652 Q 320 646 326 646 L 390 646' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='856' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 856 L 305 856 Q 311 856 311 850 L 311 667 Q 311 661 317 661 L 390 661' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='856' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 967.5 L 296 967.5 Q 302 967.5 302 961.5 L 302 555.5 Q 302 549.5 308 549.5 L 390 549.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='967.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 280 967.5 L 287 967.5 Q 293 967.5 293 961.5 L 293 585.5 Q 293 579.5 299 579.5 L 390 579.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='280' cy='967.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 390 378 L 294 378 Q 288 378 288 384 L 288 432 Q 288 438 282 438 L 280 438' fill='none' stroke='#7a5aa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_back)'/>
+<circle cx='390' cy='378' r='2.9' fill='#7a5aa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 390 393 L 289 393 Q 283 393 283 399 L 283 447 Q 283 453 277 453 L 280 453' fill='none' stroke='#7a5aa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_back)'/>
+<circle cx='390' cy='393' r='2.9' fill='#7a5aa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 303 L 710 303 Q 716 303 716 309 L 716 312 Q 716 318 722 318 L 740 318' fill='none' stroke='#c07a2a' stroke-width='1.7' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_idx)'/>
+<circle cx='630' cy='303' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 333 L 702 333 Q 708 333 708 339 L 708 483.5 Q 708 489.5 714 489.5 L 740 489.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='333' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 348 L 694 348 Q 700 348 700 354 L 700 914.5 Q 700 920.5 706 920.5 L 740 920.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='348' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 363 L 686 363 Q 692 363 692 369 L 692 929.5 Q 692 935.5 698 935.5 L 740 935.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='363' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 393 L 678 393 Q 684 393 684 399 L 684 944.5 Q 684 950.5 690 950.5 L 740 950.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='393' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 408 L 670 408 Q 676 408 676 414 L 676 1071 Q 676 1077 682 1077 L 740 1077' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='408' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 423 L 662 423 Q 668 423 668 429 L 668 1086 Q 668 1092 674 1092 L 740 1092' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='423' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 438 L 654 438 Q 660 438 660 444 L 660 1056 Q 660 1062 666 1062 L 740 1062' fill='none' stroke='#a8456b' stroke-width='2.1' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_copy)'/>
+<circle cx='630' cy='438' r='2.9' fill='#a8456b' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 549.5 L 646 549.5 Q 652 549.5 652 543.5 L 652 480.5 Q 652 474.5 658 474.5 L 740 474.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='549.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 579.5 L 630 579.5 Q 636 579.5 636 573.5 L 636 495.5 Q 636 489.5 642 489.5 L 740 489.5' fill='none' stroke='#2f6fa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_eq)'/>
+<circle cx='630' cy='579.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 630 564.5 L 638 564.5 Q 644 564.5 644 558.5 L 644 324 Q 644 318 650 318 L 740 318' fill='none' stroke='#c07a2a' stroke-width='1.7' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_idx)'/>
+<circle cx='630' cy='564.5' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 740 474.5 L 638 474.5 Q 632 474.5 632 468.5 L 632 324 Q 632 318 626 318 L 630 318' fill='none' stroke='#7a5aa8' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_back)'/>
+<circle cx='740' cy='474.5' r='2.9' fill='#7a5aa8' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 206.5 L 998 206.5 Q 1004 206.5 1004 212.5 L 1004 1197.5 Q 1004 1203.5 998 1203.5 L 980 1203.5' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='206.5' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 191.5 L 992 191.5 Q 998 191.5 998 197.5 L 998 312 Q 998 318 992 318 L 980 318' fill='none' stroke='#c07a2a' stroke-width='1.7' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_idx)'/>
+<circle cx='980' cy='191.5' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 176.5 L 986 176.5 Q 992 176.5 992 182.5 L 992 468.5 Q 992 474.5 986 474.5 L 980 474.5' fill='none' stroke='#c07a2a' stroke-width='1.7' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_idx)'/>
+<circle cx='980' cy='176.5' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 161.5 L 980 161.5 Q 986 161.5 986 167.5 L 986 818 Q 986 824 980 824 L 980 824' fill='none' stroke='#c07a2a' stroke-width='1.7' stroke-dasharray='5 3' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_idx)'/>
+<circle cx='980' cy='161.5' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 363 L 1004 363 Q 1010 363 1010 369 L 1010 468.5 Q 1010 474.5 1004 474.5 L 980 474.5' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='363' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 393 L 1010 393 Q 1016 393 1016 399 L 1016 625 Q 1016 631 1010 631 L 980 631' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='393' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 408 L 1016 408 Q 1022 408 1022 414 L 1022 706.5 Q 1022 712.5 1016 712.5 L 980 712.5' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='408' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 794 L 1022 794 Q 1028 794 1028 800 L 1028 914.5 Q 1028 920.5 1022 920.5 L 980 920.5' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='794' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 995.5 L 1034 995.5 Q 1040 995.5 1040 1001.5 L 1040 1056 Q 1040 1062 1034 1062 L 980 1062' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='995.5' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 965.5 L 1028 965.5 Q 1034 965.5 1034 959.5 L 1034 242.5 Q 1034 236.5 1028 236.5 L 980 236.5' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='965.5' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<path d='M 980 1203.5 L 1040 1203.5 Q 1046 1203.5 1046 1197.5 L 1046 1068 Q 1046 1062 1040 1062 L 980 1062' fill='none' stroke='#3f8f60' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round' marker-end='url(#ar_ptr)'/>
+<circle cx='980' cy='1203.5' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1.1'/>
+<rect x='988' y='249.55' width='54.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1015.2' y='257.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#c07a2a'>rb-tree</text>
+<rect x='330.6' y='279.55' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='347' y='287.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>地址直传</text>
+<rect x='364.8' y='294.55' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='374' y='302.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='355.2' y='305.55' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='371.6' y='313.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#a8456b'>一次拷贝</text>
+<rect x='683.6' y='316.55' width='54.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='710.8' y='324.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#c07a2a'>rb-tree</text>
+<rect x='321.6' y='327.55' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='338' y='335.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>地址直传</text>
+<rect x='988' y='338.55' width='54.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1015.2' y='346.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#c07a2a'>rb-tree</text>
+<rect x='328.8' y='349.55' width='54.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='356' y='357.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>×sizeof</text>
+<rect x='348.6' y='360.55' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='365' y='368.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>地址直传</text>
+<rect x='638' y='391.05' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='654.4' y='398.65' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#7a5aa8'>回填寻址</text>
+<rect x='286' y='402.8' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='302.4' y='410.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#7a5aa8'>驱动回填</text>
+<rect x='698.8' y='413.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='708' y='421.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='1000.8' y='424.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1010' y='432.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>指针</text>
+<rect x='286' y='435.8' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='302.4' y='443.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#7a5aa8'>驱动回填</text>
+<rect x='638' y='446.8' width='25.6' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='650.8' y='454.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#c07a2a'>重定向</text>
+<rect x='988' y='487.55' width='54.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1015.2' y='495.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#c07a2a'>rb-tree</text>
+<rect x='642.8' y='506.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='652' y='514.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='1006.8' y='517.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1016' y='525.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>指针</text>
+<rect x='638' y='529.3' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='647.2' y='536.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='319.8' y='544.3' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='329' y='551.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='1012.8' y='555.3' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1022' y='562.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>指针</text>
+<rect x='1024.8' y='595.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1034' y='603.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>指针</text>
+<rect x='690.8' y='629.05' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='700' y='636.65' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='682.8' y='644.05' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='692' y='651.65' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='674.8' y='666.55' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='684' y='674.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='994.8' y='699.8' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1004' y='707.4' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>内嵌</text>
+<rect x='666.8' y='737.3' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='676' y='744.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='643.6' y='748.3' width='32.8' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='660' y='755.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#a8456b'>一次拷贝</text>
+<rect x='296.4' y='759.3' width='47.2' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='320' y='766.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>= desc</text>
+<rect x='658.8' y='770.3' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='668' y='777.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>相等</text>
+<rect x='287.4' y='781.3' width='47.2' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='311' y='788.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>= this</text>
+<rect x='286' y='792.3' width='76' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='324' y='799.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>= weakrefs</text>
+<rect x='286' y='803.3' width='47.2' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='309.6' y='810.9' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#2f6fa8'>= this</text>
+<rect x='1022.4' y='852.05' width='11.2' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1028' y='859.65' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>栈</text>
+<rect x='1030.8' y='1023.55' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1040' y='1031.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>指针</text>
+<rect x='1035.6' y='1127.55' width='18.4' height='10.4' rx='2' fill='#fbfcfe' opacity='0.92'/>
+<text x='1044.8' y='1135.15' text-anchor='middle' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.2' fill='#3f8f60'>链表</text>
+<line x1='40' y1='1287.5' x2='1036' y2='1287.5' stroke='#d7dfe8' stroke-width='1'/>
+<text x='40' y='1303.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='9.6' font-weight='700' fill='#243447'>AOSP 10 → 17 · 关键差异（源码核对）</text>
+<rect x='40' y='1311.5' width='240' height='93' rx='5' fill='#ffffff' stroke='#4a6d8c' stroke-width='1' opacity='0.95'/>
+<text x='50' y='1324.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#4a6d8c'>用户态 libbinder</text>
+<text x='50' y='1338.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>Parcel.mObjects 收进 mVariantFields</text>
+<text x='50' y='1350' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>BpBinder.mHandle → variant&lt;Binder,Rpc&gt;</text>
+<text x='50' y='1361.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>BBinder.mExtras → atomic&lt;Extras*&gt; + mStability</text>
+<text x='50' y='1373' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>IPCThreadState + mCallingSid / mWorkSource</text>
+<text x='50' y='1384.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>ProcessState + mKernelStartedThreads</text>
+<text x='50' y='1396' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>BpBinder + mFrozen（冻结通知回调链）</text>
+<rect x='390' y='1311.5' width='240' height='93' rx='5' fill='#ffffff' stroke='#8a5a9e' stroke-width='1' opacity='0.95'/>
+<text x='400' y='1324.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#8a5a9e'>内核 ABI（uapi · 冻结不变）</text>
+<text x='400' y='1338.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_transaction_data 布局自 10 起未变</text>
+<text x='400' y='1350' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>sender_pid/euid → __kernel_pid_t / uid32_t</text>
+<text x='400' y='1361.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>新增 freeze 三件套（freeze / frozen_status）</text>
+<text x='400' y='1373' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>新增 binder_extended_error（扩展错误）</text>
+<text x='400' y='1384.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>新增 BINDER_ENABLE_ONEWAY_SPAM_DETECTION</text>
+<text x='400' y='1396' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>BC/BR 新增冻结与 spam 码，版本仍 8 / 7</text>
+<rect x='740' y='1311.5' width='240' height='93' rx='5' fill='#ffffff' stroke='#3f7f8f' stroke-width='1' opacity='0.95'/>
+<text x='750' y='1324.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.6' font-weight='700' fill='#3f7f8f'>内核驱动内部（6.18）</text>
+<text x='750' y='1338.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_ref 收敛出 data{desc, strong, weak}</text>
+<text x='750' y='1350' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_proc 新增 tsk / dmap(dbitmap)</text>
+<text x='750' y='1361.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>新增冻结位：is_frozen / sync_recv</text>
+<text x='750' y='1373' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_ref_death 之外新增 binder_ref_freeze</text>
+<text x='750' y='1384.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_buffer.data → user_data（柔性数组移除）</text>
+<text x='750' y='1396' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.6' fill='#5c6b7a'>binder_alloc：buffer/vma → vm_start / mm</text>
+<line x1='40' y1='1422.5' x2='1036' y2='1422.5' stroke='#d7dfe8' stroke-width='1'/>
+<text x='40' y='1438.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='9.6' font-weight='700' fill='#243447'>引用类型</text>
+<line x1='40' y1='1434.5' x2='64' y2='1434.5' stroke='#2f6fa8' stroke-width='2' marker-end='url(#ar_eq)'/>
+<circle cx='40' cy='1434.5' r='2.9' fill='#2f6fa8' stroke='#ffffff' stroke-width='1'/>
+<text x='70' y='1437.9' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.4' fill='#54626f'>值相等 · 同一个值的不同名字</text>
+<line x1='217' y1='1434.5' x2='241' y2='1434.5' stroke='#3f8f60' stroke-width='2' marker-end='url(#ar_ptr)'/>
+<circle cx='217' cy='1434.5' r='2.9' fill='#3f8f60' stroke='#ffffff' stroke-width='1'/>
+<text x='247' y='1437.9' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.4' fill='#54626f'>指针引用 · 字段指向该结构体</text>
+<line x1='394' y1='1434.5' x2='418' y2='1434.5' stroke='#c07a2a' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#ar_idx)'/>
+<circle cx='394' cy='1434.5' r='2.9' fill='#c07a2a' stroke='#ffffff' stroke-width='1'/>
+<text x='424' y='1437.9' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.4' fill='#54626f'>索引查找 · 经 rb-tree / 换算得到</text>
+<line x1='639.8' y1='1434.5' x2='663.8' y2='1434.5' stroke='#a8456b' stroke-width='2' stroke-dasharray='5 3' marker-end='url(#ar_copy)'/>
+<circle cx='639.8' cy='1434.5' r='2.9' fill='#a8456b' stroke='#ffffff' stroke-width='1'/>
+<text x='669.8' y='1437.9' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.4' fill='#54626f'>数据拷贝 · 一次拷贝跨进程</text>
+<line x1='808.2' y1='1434.5' x2='832.2' y2='1434.5' stroke='#7a5aa8' stroke-width='2' marker-end='url(#ar_back)'/>
+<circle cx='808.2' cy='1434.5' r='2.9' fill='#7a5aa8' stroke='#ffffff' stroke-width='1'/>
+<text x='838.2' y='1437.9' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='8.4' fill='#54626f'>驱动回填 · 用户态不可伪造</text>
+<text x='40' y='1456.5' font-family="'Noto Sans CJK SC','Source Han Sans SC','PingFang SC','Microsoft YaHei',sans-serif" font-size='7.8' fill='#7c8a99'>左侧彩色竖条 = 该字段是引用端点 ｜ 卡片头部 ★ = 核心结构 ｜ 字段名后 + = Android 10 之后新增或改型 ｜ 箭头 = 值的流向（写入方 → 读取方）</text>
+<text x='40' y='1468.5' font-family="ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace" font-size='7.8' fill='#9aa8b6'>源码基线：frameworks/native@main · bionic@main（uapi 生成头） · kernel/common@android17-6.18-2026-06</text>
+</svg>
